@@ -14,13 +14,123 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      calendar_entries: {
+        Row: {
+          added_by: string
+          created_at: string
+          date: string
+          description: string | null
+          duration: string | null
+          estimated_cost: string | null
+          id: string
+          partner_link_id: string
+          title: string
+          vibe: string | null
+        }
+        Insert: {
+          added_by: string
+          created_at?: string
+          date: string
+          description?: string | null
+          duration?: string | null
+          estimated_cost?: string | null
+          id?: string
+          partner_link_id: string
+          title: string
+          vibe?: string | null
+        }
+        Update: {
+          added_by?: string
+          created_at?: string
+          date?: string
+          description?: string | null
+          duration?: string | null
+          estimated_cost?: string | null
+          id?: string
+          partner_link_id?: string
+          title?: string
+          vibe?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_entries_partner_link_id_fkey"
+            columns: ["partner_link_id"]
+            isOneToOne: false
+            referencedRelation: "partner_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_links: {
+        Row: {
+          created_at: string
+          id: string
+          status: string
+          updated_at: string
+          user1_id: string
+          user2_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user1_id: string
+          user2_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user1_id?: string
+          user2_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          age: number | null
+          created_at: string
+          gender: string | null
+          id: string
+          name: string
+          partner_code: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          age?: number | null
+          created_at?: string
+          gender?: string | null
+          id?: string
+          name?: string
+          partner_code?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          age?: number | null
+          created_at?: string
+          gender?: string | null
+          id?: string
+          name?: string
+          partner_code?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_accepted_partner_link_id: {
+        Args: { _user_id: string }
+        Returns: string
+      }
+      get_partner_user_id: { Args: { _user_id: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
