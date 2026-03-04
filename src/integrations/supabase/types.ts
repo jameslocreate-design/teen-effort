@@ -131,6 +131,7 @@ export type Database = {
         Returns: string
       }
       get_partner_user_id: { Args: { _user_id: string }; Returns: string }
+      lookup_user_by_partner_code: { Args: { _code: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
