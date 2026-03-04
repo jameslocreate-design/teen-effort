@@ -54,11 +54,10 @@ const PartnerLink = ({ onLinked }: PartnerLinkProps) => {
     setLoading(true);
 
     // Find partner by code
-    const { data: partner } = await supabase
-      .from("profiles")
-      .select("user_id")
-      .eq("partner_code", partnerCode.trim())
-      .maybeSingle();
+    const { data: partnerId } = await supabase
+      .rpc("lookup_user_by_partner_code", { _code: partnerCode.trim() });
+
+    const partner = partnerId ? { user_id: partnerId } : null;
 
     if (!partner) {
       toast.error("No user found with that code");
