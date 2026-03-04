@@ -1,7 +1,7 @@
-import ChatWindow from "@/components/ChatWindow";
+import DatePlanner from "@/components/DatePlanner";
 
 const Index = () => {
-  return <ChatWindow />;
+  return <DatePlanner />;
 };
 
 export default Index;
