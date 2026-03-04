@@ -1,9 +1,11 @@
-import { useState } from "react";
-import { Heart, Loader2, Sparkles } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Heart, Loader2, Sparkles, CalendarPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FilterGroup from "@/components/FilterGroup";
 import DateIdeaCard from "@/components/DateIdeaCard";
 import { generateDateIdeas, type DateFilters, type DateIdea } from "@/lib/date-planner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 const costOptions = [
@@ -35,6 +37,7 @@ const distanceOptions = [
 ];
 
 const DatePlanner = () => {
+  const { user } = useAuth();
   const [filters, setFilters] = useState<DateFilters>({
     cost: null,
     location: null,
@@ -44,6 +47,21 @@ const DatePlanner = () => {
   const [ideas, setIdeas] = useState<DateIdea[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
+  const [partnerLinkId, setPartnerLinkId] = useState<string | null>(null);
+  const [savingIndex, setSavingIndex] = useState<number | null>(null);
+
+  const fetchPartnerLink = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("partner_links")
+      .select("id")
+      .eq("status", "accepted")
+      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+      .maybeSingle();
+    if (data) setPartnerLinkId(data.id);
+  }, [user]);
+
+  useEffect(() => { fetchPartnerLink(); }, [fetchPartnerLink]);
 
   const updateFilter = (key: keyof DateFilters) => (value: string | null) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -64,78 +82,93 @@ const DatePlanner = () => {
     }
   };
 
+  const handleSaveToCalendar = async (idea: DateIdea, index: number) => {
+    if (!user || !partnerLinkId) {
+      toast.error("Link with a partner first to save dates!");
+      return;
+    }
+
+    // Default to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dateStr = prompt("Enter date (YYYY-MM-DD):", tomorrow.toISOString().split("T")[0]);
+    if (!dateStr) return;
+
+    setSavingIndex(index);
+    const { error } = await supabase.from("calendar_entries").insert({
+      partner_link_id: partnerLinkId,
+      added_by: user.id,
+      date: dateStr,
+      title: idea.title,
+      description: idea.description,
+      estimated_cost: idea.estimated_cost,
+      duration: idea.duration,
+      vibe: idea.vibe,
+    });
+
+    if (error) {
+      toast.error("Failed to save to calendar");
+    } else {
+      toast.success(`"${idea.title}" added to calendar!`);
+    }
+    setSavingIndex(null);
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border">
-        <div className="mx-auto max-w-3xl px-6 py-6">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-primary/15 flex items-center justify-center glow-sm">
-              <Heart className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground tracking-tight">Date Planner</h1>
-              <p className="text-xs text-muted-foreground">Plan the perfect date in seconds</p>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="space-y-8">
+      <div className="space-y-6">
+        <FilterGroup label="Budget" options={costOptions} selected={filters.cost} onSelect={updateFilter("cost")} />
+        <FilterGroup label="Setting" options={locationOptions} selected={filters.location} onSelect={updateFilter("location")} />
+        <FilterGroup label="Vibe" options={activityOptions} selected={filters.activity} onSelect={updateFilter("activity")} />
+        <FilterGroup label="Distance" options={distanceOptions} selected={filters.distance} onSelect={updateFilter("distance")} />
+      </div>
 
-      {/* Filters */}
-      <main className="mx-auto max-w-3xl px-6 py-8 space-y-8">
-        <div className="space-y-6">
-          <FilterGroup label="Budget" options={costOptions} selected={filters.cost} onSelect={updateFilter("cost")} />
-          <FilterGroup label="Setting" options={locationOptions} selected={filters.location} onSelect={updateFilter("location")} />
-          <FilterGroup label="Vibe" options={activityOptions} selected={filters.activity} onSelect={updateFilter("activity")} />
-          <FilterGroup label="Distance" options={distanceOptions} selected={filters.distance} onSelect={updateFilter("distance")} />
-        </div>
-
-        {/* Generate Button */}
-        <Button
-          onClick={handleGenerate}
-          disabled={isLoading}
-          size="lg"
-          className="w-full rounded-xl text-base font-semibold h-12"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Generating ideas...
-            </>
-          ) : (
-            <>
-              <Sparkles className="h-4 w-4" />
-              {hasAnyFilter ? "Generate Date Ideas" : "Surprise Me"}
-            </>
-          )}
-        </Button>
-
-        {/* Results */}
-        {hasGenerated && !isLoading && ideas.length > 0 && (
-          <div className="space-y-4 pb-12">
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-              Your Date Ideas
-            </h2>
-            {ideas.map((idea, i) => (
-              <DateIdeaCard key={i} idea={idea} index={i} />
-            ))}
-            <Button
-              variant="outline"
-              onClick={handleGenerate}
-              className="w-full rounded-xl"
-            >
-              <Sparkles className="h-4 w-4" />
-              Generate More
-            </Button>
-          </div>
+      <Button onClick={handleGenerate} disabled={isLoading} size="lg" className="w-full rounded-xl text-base font-semibold h-12">
+        {isLoading ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Generating ideas...
+          </>
+        ) : (
+          <>
+            <Sparkles className="h-4 w-4" />
+            {hasAnyFilter ? "Generate Date Ideas" : "Surprise Me"}
+          </>
         )}
+      </Button>
 
-        {hasGenerated && !isLoading && ideas.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            <p>No ideas generated. Try adjusting your filters.</p>
-          </div>
-        )}
-      </main>
+      {hasGenerated && !isLoading && ideas.length > 0 && (
+        <div className="space-y-4 pb-4">
+          <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+            Your Date Ideas
+          </h2>
+          {ideas.map((idea, i) => (
+            <div key={i} className="relative">
+              <DateIdeaCard idea={idea} index={i} />
+              {partnerLinkId && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSaveToCalendar(idea, i)}
+                  disabled={savingIndex === i}
+                  className="absolute top-3 right-3 rounded-lg text-xs"
+                >
+                  <CalendarPlus className="h-3.5 w-3.5" />
+                  {savingIndex === i ? "Saving..." : "Add to Calendar"}
+                </Button>
+              )}
+            </div>
+          ))}
+          <Button variant="outline" onClick={handleGenerate} className="w-full rounded-xl">
+            <Sparkles className="h-4 w-4" />
+            Generate More
+          </Button>
+        </div>
+      )}
+
+      {hasGenerated && !isLoading && ideas.length === 0 && (
+        <p className="text-center py-8 text-muted-foreground">No ideas generated. Try different filters.</p>
+      )}
     </div>
   );
 };

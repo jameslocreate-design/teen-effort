@@ -1,7 +1,12 @@
-import DatePlanner from "@/components/DatePlanner";
+import { AuthProvider } from "@/contexts/AuthContext";
+import AppShell from "@/components/AppShell";
 
 const Index = () => {
-  return <DatePlanner />;
+  return (
+    <AuthProvider>
+      <AppShell />
+    </AuthProvider>
+  );
 };
 
 export default Index;
