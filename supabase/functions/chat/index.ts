@@ -12,9 +12,27 @@ serve(async (req) => {
   }
 
   try {
-    const { messages } = await req.json();
+    const { cost, location, activity, distance } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    const prompt = `You are a creative date planner. Generate exactly 3 unique, specific date ideas based on these preferences:
+
+- Budget: ${cost || "any"}
+- Setting: ${location || "any"}
+- Activity Style: ${activity || "any"}
+- Distance willing to travel: ${distance || "any"}
+
+For each idea, respond ONLY with valid JSON — no markdown, no code fences, no extra text. Use this exact format:
+[
+  {
+    "title": "Short catchy title",
+    "description": "2-3 sentence vivid description of the date",
+    "estimated_cost": "e.g. Free, $10-20, $50+",
+    "duration": "e.g. 2-3 hours",
+    "vibe": "one word mood like Romantic, Adventurous, Cozy"
+  }
+]`;
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -27,14 +45,9 @@ serve(async (req) => {
         body: JSON.stringify({
           model: "google/gemini-3-flash-preview",
           messages: [
-            {
-              role: "system",
-              content:
-                "You are a helpful, friendly AI assistant. Provide clear, concise answers. Use markdown formatting when appropriate for code blocks, lists, and emphasis.",
-            },
-            ...messages,
+            { role: "system", content: "You are a date planning assistant. Always respond with valid JSON arrays only. No markdown formatting." },
+            { role: "user", content: prompt },
           ],
-          stream: true,
         }),
       }
     );
@@ -42,13 +55,13 @@ serve(async (req) => {
     if (!response.ok) {
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
+          JSON.stringify({ error: "Too many requests. Please wait a moment." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: "AI usage credits exhausted. Please add credits to continue." }),
+          JSON.stringify({ error: "AI credits exhausted." }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -60,8 +73,22 @@ serve(async (req) => {
       );
     }
 
-    return new Response(response.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+    const data = await response.json();
+    const raw = data.choices?.[0]?.message?.content || "[]";
+
+    // Strip markdown code fences if present
+    const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+
+    let ideas;
+    try {
+      ideas = JSON.parse(cleaned);
+    } catch {
+      console.error("Failed to parse AI response:", raw);
+      ideas = [];
+    }
+
+    return new Response(JSON.stringify({ ideas }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
     console.error("chat error:", e);
