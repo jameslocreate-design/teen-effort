@@ -7,6 +7,7 @@ import DatePlanner from "@/components/DatePlanner";
 import SharedCalendar from "@/components/SharedCalendar";
 import ProfileSetup from "@/components/ProfileSetup";
 import PartnerLink from "@/components/PartnerLink";
+import PartnerView from "@/components/PartnerView";
 import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
