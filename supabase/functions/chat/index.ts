@@ -26,6 +26,8 @@ serve(async (req) => {
 - Distance willing to travel: ${distance || "any"}
 - Location: ${locationContext}
 
+When a zip code is provided, suggest real local venues, parks, restaurants, and attractions near that area. Be specific with place names.
+
 For each idea, respond ONLY with valid JSON — no markdown, no code fences, no extra text. Use this exact format:
 [
   {
