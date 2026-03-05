@@ -103,7 +103,8 @@ const AppShell = () => {
               }}
             />
           )}
-          {activeTab === "partner" && <PartnerLink onLinked={() => setActiveTab("calendar")} />}
+          {activeTab === "partner" && <PartnerLink onLinked={() => setActiveTab("partner-view")} />}
+          {activeTab === "partner-view" && <PartnerView onUnlinked={() => setActiveTab("partner")} />}
           {activeTab === "profile" && <ProfileSetup onComplete={() => {}} />}
         </div>
       </main>
