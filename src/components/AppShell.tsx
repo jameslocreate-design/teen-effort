@@ -11,7 +11,7 @@ import PartnerView from "@/components/PartnerView";
 import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
-type Tab = "planner" | "calendar" | "partner" | "profile";
+type Tab = "planner" | "calendar" | "partner" | "partner-view" | "profile";
 
 const AppShell = () => {
   const { user, loading, signOut } = useAuth();
