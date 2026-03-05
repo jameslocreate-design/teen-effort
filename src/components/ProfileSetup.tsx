@@ -45,7 +45,8 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
         name: name.trim(),
         age: age ? parseInt(age) : null,
         gender,
-      })
+        zipcode: zipcode.trim() || null,
+      } as any)
       .eq("user_id", user.id);
 
     if (error) {
