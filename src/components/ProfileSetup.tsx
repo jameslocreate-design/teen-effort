@@ -11,6 +11,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [gender, setGender] = useState<string | null>(null);
+  const [zipcode, setZipcode] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
