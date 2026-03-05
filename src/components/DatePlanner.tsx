@@ -43,7 +43,9 @@ const DatePlanner = () => {
     location: null,
     activity: null,
     distance: null,
+    zipcode: null,
   });
+
   const [ideas, setIdeas] = useState<DateIdea[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
