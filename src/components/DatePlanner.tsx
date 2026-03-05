@@ -43,25 +43,37 @@ const DatePlanner = () => {
     location: null,
     activity: null,
     distance: null,
+    zipcode: null,
   });
+
   const [ideas, setIdeas] = useState<DateIdea[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
   const [partnerLinkId, setPartnerLinkId] = useState<string | null>(null);
   const [savingIndex, setSavingIndex] = useState<number | null>(null);
 
-  const fetchPartnerLink = useCallback(async () => {
+  const fetchPartnerLinkAndZipcode = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from("partner_links")
-      .select("id")
-      .eq("status", "accepted")
-      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
-      .maybeSingle();
-    if (data) setPartnerLinkId(data.id);
+    const [{ data: linkData }, { data: profileData }] = await Promise.all([
+      supabase
+        .from("partner_links")
+        .select("id")
+        .eq("status", "accepted")
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .maybeSingle(),
+      supabase
+        .from("profiles")
+        .select("zipcode")
+        .eq("user_id", user.id)
+        .single(),
+    ]);
+    if (linkData) setPartnerLinkId(linkData.id);
+    if (profileData?.zipcode) {
+      setFilters(prev => ({ ...prev, zipcode: profileData.zipcode }));
+    }
   }, [user]);
 
-  useEffect(() => { fetchPartnerLink(); }, [fetchPartnerLink]);
+  useEffect(() => { fetchPartnerLinkAndZipcode(); }, [fetchPartnerLinkAndZipcode]);
 
   const updateFilter = (key: keyof DateFilters) => (value: string | null) => {
     setFilters((prev) => ({ ...prev, [key]: value }));

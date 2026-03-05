@@ -98,6 +98,7 @@ export type Database = {
           partner_code: string | null
           updated_at: string
           user_id: string
+          zipcode: string | null
         }
         Insert: {
           age?: number | null
@@ -108,6 +109,7 @@ export type Database = {
           partner_code?: string | null
           updated_at?: string
           user_id: string
+          zipcode?: string | null
         }
         Update: {
           age?: number | null
@@ -118,6 +120,7 @@ export type Database = {
           partner_code?: string | null
           updated_at?: string
           user_id?: string
+          zipcode?: string | null
         }
         Relationships: []
       }

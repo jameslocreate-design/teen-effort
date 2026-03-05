@@ -11,13 +11,14 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [gender, setGender] = useState<string | null>(null);
+  const [zipcode, setZipcode] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     supabase
       .from("profiles")
-      .select("name, age, gender")
+      .select("name, age, gender, zipcode")
       .eq("user_id", user.id)
       .single()
       .then(({ data }) => {
@@ -25,6 +26,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
           if (data.name) setName(data.name);
           if (data.age) setAge(String(data.age));
           if (data.gender) setGender(data.gender);
+          if (data.zipcode) setZipcode(data.zipcode);
         }
       });
   }, [user]);
@@ -43,7 +45,8 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
         name: name.trim(),
         age: age ? parseInt(age) : null,
         gender,
-      })
+        zipcode: zipcode.trim() || null,
+      } as any)
       .eq("user_id", user.id);
 
     if (error) {
@@ -86,6 +89,17 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
               placeholder="Your age"
               min={18}
               max={120}
+              className="bg-secondary/50 border-border"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 block">Zip Code</label>
+            <Input
+              value={zipcode}
+              onChange={(e) => setZipcode(e.target.value)}
+              placeholder="e.g. 90210"
+              maxLength={10}
               className="bg-secondary/50 border-border"
             />
           </div>
