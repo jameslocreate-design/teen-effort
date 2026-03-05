@@ -51,7 +51,8 @@ const AppShell = () => {
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: "planner", label: "Plan", icon: <Sparkles className="h-4 w-4" /> },
     { id: "calendar", label: "Calendar", icon: <CalendarDays className="h-4 w-4" /> },
-    { id: "partner", label: "Partner", icon: <Link2 className="h-4 w-4" /> },
+    { id: "partner", label: "Link", icon: <Link2 className="h-4 w-4" /> },
+    { id: "partner-view", label: "Partner", icon: <Users className="h-4 w-4" /> },
     { id: "profile", label: "Profile", icon: <User className="h-4 w-4" /> },
   ];
 
