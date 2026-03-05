@@ -12,9 +12,11 @@ serve(async (req) => {
   }
 
   try {
-    const { cost, location, activity, distance } = await req.json();
+    const { cost, location, activity, distance, zipcode } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    const locationContext = zipcode ? `near zip code ${zipcode}` : "anywhere";
 
     const prompt = `You are a creative date planner. Generate exactly 3 unique, specific date ideas based on these preferences:
 
@@ -22,6 +24,7 @@ serve(async (req) => {
 - Setting: ${location || "any"}
 - Activity Style: ${activity || "any"}
 - Distance willing to travel: ${distance || "any"}
+- Location: ${locationContext}
 
 For each idea, respond ONLY with valid JSON — no markdown, no code fences, no extra text. Use this exact format:
 [

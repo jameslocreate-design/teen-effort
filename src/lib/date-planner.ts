@@ -11,6 +11,7 @@ export interface DateFilters {
   location: string | null;
   activity: string | null;
   distance: string | null;
+  zipcode: string | null;
 }
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;

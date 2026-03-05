@@ -73,7 +73,7 @@ const DatePlanner = () => {
     }
   }, [user]);
 
-  useEffect(() => { fetchPartnerLink(); }, [fetchPartnerLink]);
+  useEffect(() => { fetchPartnerLinkAndZipcode(); }, [fetchPartnerLinkAndZipcode]);
 
   const updateFilter = (key: keyof DateFilters) => (value: string | null) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
