@@ -94,6 +94,17 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
           </div>
 
           <div>
+            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 block">Zip Code</label>
+            <Input
+              value={zipcode}
+              onChange={(e) => setZipcode(e.target.value)}
+              placeholder="e.g. 90210"
+              maxLength={10}
+              className="bg-secondary/50 border-border"
+            />
+          </div>
+
+          <div>
             <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 block">Gender</label>
             <div className="flex flex-wrap gap-2">
               {genderOptions.map((g) => (
