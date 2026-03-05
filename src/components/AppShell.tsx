@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Heart, CalendarDays, Sparkles, User, Link2, LogOut } from "lucide-react";
+import { Heart, CalendarDays, Sparkles, User, Link2, LogOut, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DatePlanner from "@/components/DatePlanner";
 import SharedCalendar from "@/components/SharedCalendar";
 import ProfileSetup from "@/components/ProfileSetup";
 import PartnerLink from "@/components/PartnerLink";
+import PartnerView from "@/components/PartnerView";
 import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
-type Tab = "planner" | "calendar" | "partner" | "profile";
+type Tab = "planner" | "calendar" | "partner" | "partner-view" | "profile";
 
 const AppShell = () => {
   const { user, loading, signOut } = useAuth();
@@ -50,7 +51,8 @@ const AppShell = () => {
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: "planner", label: "Plan", icon: <Sparkles className="h-4 w-4" /> },
     { id: "calendar", label: "Calendar", icon: <CalendarDays className="h-4 w-4" /> },
-    { id: "partner", label: "Partner", icon: <Link2 className="h-4 w-4" /> },
+    { id: "partner", label: "Link", icon: <Link2 className="h-4 w-4" /> },
+    { id: "partner-view", label: "Partner", icon: <Users className="h-4 w-4" /> },
     { id: "profile", label: "Profile", icon: <User className="h-4 w-4" /> },
   ];
 
@@ -101,7 +103,8 @@ const AppShell = () => {
               }}
             />
           )}
-          {activeTab === "partner" && <PartnerLink onLinked={() => setActiveTab("calendar")} />}
+          {activeTab === "partner" && <PartnerLink onLinked={() => setActiveTab("partner-view")} />}
+          {activeTab === "partner-view" && <PartnerView onUnlinked={() => setActiveTab("partner")} />}
           {activeTab === "profile" && <ProfileSetup onComplete={() => {}} />}
         </div>
       </main>
