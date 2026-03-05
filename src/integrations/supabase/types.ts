@@ -124,6 +124,47 @@ export type Database = {
         }
         Relationships: []
       }
+      special_events: {
+        Row: {
+          added_by: string
+          created_at: string
+          event_date: string
+          event_type: string
+          id: string
+          partner_link_id: string
+          recurring: boolean
+          title: string
+        }
+        Insert: {
+          added_by: string
+          created_at?: string
+          event_date: string
+          event_type?: string
+          id?: string
+          partner_link_id: string
+          recurring?: boolean
+          title: string
+        }
+        Update: {
+          added_by?: string
+          created_at?: string
+          event_date?: string
+          event_type?: string
+          id?: string
+          partner_link_id?: string
+          recurring?: boolean
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "special_events_partner_link_id_fkey"
+            columns: ["partner_link_id"]
+            isOneToOne: false
+            referencedRelation: "partner_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
