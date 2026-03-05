@@ -2,9 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Plus, Trash2, CalendarDays } from "lucide-react";
+import { ChevronLeft, ChevronRight, Trash2, CalendarDays } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isToday } from "date-fns";
 import { toast } from "sonner";
+import CalendarInsights from "@/components/CalendarInsights";
 
 interface CalendarEntry {
   id: string;
@@ -17,11 +18,16 @@ interface CalendarEntry {
   added_by: string;
 }
 
-const SharedCalendar = () => {
+interface SharedCalendarProps {
+  onPlanDate?: (title: string, date: string) => void;
+}
+
+const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
   const { user } = useAuth();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [entries, setEntries] = useState<CalendarEntry[]>([]);
+  const [totalDates, setTotalDates] = useState(0);
   const [partnerLinkId, setPartnerLinkId] = useState<string | null>(null);
 
   const fetchPartnerLink = useCallback(async () => {
@@ -50,8 +56,18 @@ const SharedCalendar = () => {
     if (data) setEntries(data);
   }, [user, partnerLinkId, currentMonth]);
 
+  const fetchTotalDates = useCallback(async () => {
+    if (!partnerLinkId) return;
+    const { count } = await supabase
+      .from("calendar_entries")
+      .select("id", { count: "exact", head: true })
+      .eq("partner_link_id", partnerLinkId);
+    setTotalDates(count ?? 0);
+  }, [partnerLinkId]);
+
   useEffect(() => { fetchPartnerLink(); }, [fetchPartnerLink]);
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
+  useEffect(() => { fetchTotalDates(); }, [fetchTotalDates]);
 
   const deleteEntry = async (id: string) => {
     const { error } = await supabase.from("calendar_entries").delete().eq("id", id);
@@ -59,7 +75,16 @@ const SharedCalendar = () => {
       toast.error("Failed to delete");
     } else {
       setEntries((prev) => prev.filter((e) => e.id !== id));
+      setTotalDates((prev) => Math.max(0, prev - 1));
       toast.success("Removed from calendar");
+    }
+  };
+
+  const handlePlanDate = (title: string, date: string) => {
+    if (onPlanDate) {
+      onPlanDate(title, date);
+    } else {
+      toast("Switch to the Plan tab to create a date idea!");
     }
   };
 
@@ -100,12 +125,10 @@ const SharedCalendar = () => {
           <div key={d} className="text-xs font-medium text-muted-foreground py-2">{d}</div>
         ))}
 
-        {/* Empty cells */}
         {Array.from({ length: startDay }).map((_, i) => (
           <div key={`empty-${i}`} />
         ))}
 
-        {/* Days */}
         {days.map((day) => {
           const hasEntries = entries.some((e) => isSameDay(new Date(e.date), day));
           const isSelected = selectedDate && isSameDay(day, selectedDate);
@@ -161,6 +184,13 @@ const SharedCalendar = () => {
           )}
         </div>
       )}
+
+      {/* Insights section */}
+      <CalendarInsights
+        partnerLinkId={partnerLinkId}
+        totalDates={totalDates}
+        onPlanDate={handlePlanDate}
+      />
     </div>
   );
 };

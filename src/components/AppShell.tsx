@@ -7,6 +7,7 @@ import DatePlanner from "@/components/DatePlanner";
 import SharedCalendar from "@/components/SharedCalendar";
 import ProfileSetup from "@/components/ProfileSetup";
 import PartnerLink from "@/components/PartnerLink";
+import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
 type Tab = "planner" | "calendar" | "partner" | "profile";
@@ -92,7 +93,14 @@ const AppShell = () => {
       <main className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-3xl px-6 py-8">
           {activeTab === "planner" && <DatePlanner />}
-          {activeTab === "calendar" && <SharedCalendar />}
+          {activeTab === "calendar" && (
+            <SharedCalendar
+              onPlanDate={(title, date) => {
+                toast.info(`Plan a date for "${title}" on ${date} — use the filters below!`);
+                setActiveTab("planner");
+              }}
+            />
+          )}
           {activeTab === "partner" && <PartnerLink onLinked={() => setActiveTab("calendar")} />}
           {activeTab === "profile" && <ProfileSetup onComplete={() => {}} />}
         </div>
