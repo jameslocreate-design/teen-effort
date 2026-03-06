@@ -14,7 +14,7 @@ import AskTheExpert from "@/components/AskTheExpert";
 import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
-type Tab = "planner" | "gifts" | "bucket" | "calendar" | "partner" | "partner-view" | "profile";
+type Tab = "planner" | "gifts" | "bucket" | "expert" | "calendar" | "partner" | "partner-view" | "profile";
 
 const AppShell = () => {
   const { user, loading, signOut } = useAuth();
