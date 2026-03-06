@@ -12,6 +12,7 @@ export interface DateFilters {
   location: string | null;
   activity: string | null;
   distance: string | null;
+  timeRange: string | null;
   latitude: number | null;
   longitude: number | null;
 }

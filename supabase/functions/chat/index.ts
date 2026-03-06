@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { cost, location, activity, distance, latitude, longitude } = await req.json();
+    const { cost, location, activity, distance, timeRange, latitude, longitude } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -31,6 +31,7 @@ serve(async (req) => {
 - Setting: ${location || "any"}
 - Activity Style: ${activity || "any"}
 - Distance willing to travel: ${distance || "any"}
+- Time available: ${timeRange || "any"}
 - Location: ${locationContext}
 
 ${hasLocation ? "IMPORTANT: Suggest real, existing places near the user's coordinates. Estimate the driving distance in miles from the user's location to each venue." : ""}
