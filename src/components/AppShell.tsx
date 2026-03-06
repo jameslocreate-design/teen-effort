@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Heart, CalendarDays, Sparkles, User, Link2, LogOut, Users, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DatePlanner from "@/components/DatePlanner";
+import GiftPlanner from "@/components/GiftPlanner";
 import SharedCalendar from "@/components/SharedCalendar";
 import ProfileSetup from "@/components/ProfileSetup";
 import PartnerLink from "@/components/PartnerLink";
