@@ -11,7 +11,20 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [gender, setGender] = useState<string | null>(null);
+  const [descriptors, setDescriptors] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const descriptorOptions = [
+    "🎮 Gamer", "🏋️ Jock", "🛍️ Shopper", "📱 Influencer",
+    "📚 Bookworm", "🎨 Creative", "🍳 Foodie", "🌍 Traveler",
+    "🎵 Music Lover", "🧘 Wellness", "🎬 Movie Buff", "🐾 Pet Parent",
+  ];
+
+  const toggleDescriptor = (d: string) => {
+    setDescriptors((prev) =>
+      prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]
+    );
+  };
 
   useEffect(() => {
     if (!user) return;
