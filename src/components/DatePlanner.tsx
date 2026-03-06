@@ -102,7 +102,7 @@ const DatePlanner = () => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  const hasAnyFilter = filters.cost || filters.location || filters.activity || filters.distance;
+  const hasAnyFilter = filters.cost || filters.location || filters.activity || filters.distance || filters.timeRange;
 
   const handleGenerate = async () => {
     setIsLoading(true);
