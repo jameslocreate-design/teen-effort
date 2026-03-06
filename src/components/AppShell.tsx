@@ -55,6 +55,7 @@ const AppShell = () => {
     { id: "planner", label: "Dates", icon: <Sparkles className="h-4 w-4" /> },
     { id: "gifts", label: "Gifts", icon: <Gift className="h-4 w-4" /> },
     { id: "bucket", label: "Bucket List", icon: <ListChecks className="h-4 w-4" /> },
+    { id: "expert", label: "Expert", icon: <HelpCircle className="h-4 w-4" /> },
     { id: "calendar", label: "Calendar", icon: <CalendarDays className="h-4 w-4" /> },
     { id: "partner", label: "Link", icon: <Link2 className="h-4 w-4" /> },
     { id: "partner-view", label: "Partner", icon: <Users className="h-4 w-4" /> },
