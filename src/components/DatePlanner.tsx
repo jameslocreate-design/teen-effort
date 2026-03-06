@@ -36,6 +36,13 @@ const distanceOptions = [
   { value: "Road trip (1+ hours)", label: "Road Trip", icon: "🛣️" },
 ];
 
+const timePresets = [
+  { value: "1 hour", label: "1 hr", icon: "⚡" },
+  { value: "2-3 hours", label: "2-3 hrs", icon: "🕐" },
+  { value: "Half day (4-6 hours)", label: "Half Day", icon: "🌤️" },
+  { value: "Full day", label: "Full Day", icon: "☀️" },
+];
+
 const DatePlanner = () => {
   const { user } = useAuth();
   const [filters, setFilters] = useState<DateFilters>({
