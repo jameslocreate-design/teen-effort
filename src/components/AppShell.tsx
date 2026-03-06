@@ -13,7 +13,7 @@ import BucketList from "@/components/BucketList";
 import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
-type Tab = "planner" | "gifts" | "calendar" | "partner" | "partner-view" | "profile";
+type Tab = "planner" | "gifts" | "bucket" | "calendar" | "partner" | "partner-view" | "profile";
 
 const AppShell = () => {
   const { user, loading, signOut } = useAuth();
