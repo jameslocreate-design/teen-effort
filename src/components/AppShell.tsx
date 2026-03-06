@@ -97,6 +97,7 @@ const AppShell = () => {
       <main className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-3xl px-6 py-8">
           {activeTab === "planner" && <DatePlanner />}
+          {activeTab === "gifts" && <GiftPlanner />}
           {activeTab === "calendar" && (
             <SharedCalendar
               onPlanDate={(title, date) => {
