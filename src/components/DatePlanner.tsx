@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Heart, Loader2, Sparkles, CalendarPlus } from "lucide-react";
+import { Loader2, Sparkles, CalendarPlus, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FilterGroup from "@/components/FilterGroup";
 import DateIdeaCard from "@/components/DateIdeaCard";
@@ -43,7 +43,8 @@ const DatePlanner = () => {
     location: null,
     activity: null,
     distance: null,
-    zipcode: null,
+    latitude: null,
+    longitude: null,
   });
 
   const [ideas, setIdeas] = useState<DateIdea[]>([]);
@@ -51,35 +52,49 @@ const DatePlanner = () => {
   const [hasGenerated, setHasGenerated] = useState(false);
   const [partnerLinkId, setPartnerLinkId] = useState<string | null>(null);
   const [savingIndex, setSavingIndex] = useState<number | null>(null);
+  const [locationStatus, setLocationStatus] = useState<"idle" | "loading" | "granted" | "denied">("idle");
 
-  const fetchPartnerLinkAndZipcode = useCallback(async () => {
+  const fetchPartnerLink = useCallback(async () => {
     if (!user) return;
-    const [{ data: linkData }, { data: profileData }] = await Promise.all([
-      supabase
-        .from("partner_links")
-        .select("id")
-        .eq("status", "accepted")
-        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
-        .maybeSingle(),
-      supabase
-        .from("profiles")
-        .select("zipcode")
-        .eq("user_id", user.id)
-        .single(),
-    ]);
-    if (linkData) setPartnerLinkId(linkData.id);
-    if (profileData?.zipcode) {
-      setFilters(prev => ({ ...prev, zipcode: profileData.zipcode }));
-    }
+    const { data } = await supabase
+      .from("partner_links")
+      .select("id")
+      .eq("status", "accepted")
+      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+      .maybeSingle();
+    if (data) setPartnerLinkId(data.id);
   }, [user]);
 
-  useEffect(() => { fetchPartnerLinkAndZipcode(); }, [fetchPartnerLinkAndZipcode]);
+  useEffect(() => { fetchPartnerLink(); }, [fetchPartnerLink]);
+
+  // Auto-request geolocation on mount
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setLocationStatus("denied");
+      return;
+    }
+    setLocationStatus("loading");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setFilters(prev => ({
+          ...prev,
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        }));
+        setLocationStatus("granted");
+      },
+      () => {
+        setLocationStatus("denied");
+      },
+      { timeout: 10000 }
+    );
+  }, []);
 
   const updateFilter = (key: keyof DateFilters) => (value: string | null) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  const hasAnyFilter = Object.values(filters).some(Boolean);
+  const hasAnyFilter = filters.cost || filters.location || filters.activity || filters.distance;
 
   const handleGenerate = async () => {
     setIsLoading(true);
@@ -100,7 +115,6 @@ const DatePlanner = () => {
       return;
     }
 
-    // Default to tomorrow
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const dateStr = prompt("Enter date (YYYY-MM-DD):", tomorrow.toISOString().split("T")[0]);
@@ -128,6 +142,19 @@ const DatePlanner = () => {
 
   return (
     <div className="space-y-8">
+      {/* Location status indicator */}
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <MapPin className="h-3.5 w-3.5" />
+        {locationStatus === "loading" && "Detecting location..."}
+        {locationStatus === "granted" && (
+          <span className="text-primary">Location detected — dates will be nearby</span>
+        )}
+        {locationStatus === "denied" && (
+          <span>Location unavailable — enable location for local suggestions</span>
+        )}
+        {locationStatus === "idle" && "Waiting for location..."}
+      </div>
+
       <div className="space-y-6">
         <FilterGroup label="Budget" options={costOptions} selected={filters.cost} onSelect={updateFilter("cost")} />
         <FilterGroup label="Setting" options={locationOptions} selected={filters.location} onSelect={updateFilter("location")} />

@@ -1,5 +1,5 @@
 import type { DateIdea } from "@/lib/date-planner";
-import { Clock, DollarSign, Sparkles } from "lucide-react";
+import { Clock, DollarSign, Sparkles, MapPin } from "lucide-react";
 
 interface DateIdeaCardProps {
   idea: DateIdea;
@@ -32,7 +32,7 @@ const DateIdeaCard = ({ idea, index }: DateIdeaCardProps) => {
 
       <p className="text-sm text-muted-foreground leading-relaxed">{idea.description}</p>
 
-      <div className="flex items-center gap-4 pt-1 text-xs text-muted-foreground">
+      <div className="flex items-center gap-4 pt-1 text-xs text-muted-foreground flex-wrap">
         <span className="flex items-center gap-1.5">
           <DollarSign className="h-3.5 w-3.5 text-primary/70" />
           {idea.estimated_cost}
@@ -45,6 +45,12 @@ const DateIdeaCard = ({ idea, index }: DateIdeaCardProps) => {
           <Sparkles className="h-3.5 w-3.5 text-primary/70" />
           {idea.vibe}
         </span>
+        {idea.distance_miles && (
+          <span className="flex items-center gap-1.5">
+            <MapPin className="h-3.5 w-3.5 text-primary/70" />
+            {idea.distance_miles}
+          </span>
+        )}
       </div>
     </div>
   );
