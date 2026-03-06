@@ -141,11 +141,14 @@ const BucketList = () => {
           {todo.map((item) => (
             <Card key={item.id} className="group">
               <CardContent className="p-4 flex items-start gap-3">
-                <button
+                <Button
                   onClick={() => markComplete(item.id)}
-                  className="mt-0.5 h-5 w-5 rounded-full border-2 border-primary/40 hover:border-primary hover:bg-primary/10 transition-colors flex-shrink-0"
-                  title="Mark complete"
-                />
+                  variant="outline"
+                  size="sm"
+                  className="flex-shrink-0 text-xs"
+                >
+                  <Check className="h-3.5 w-3.5" /> Complete
+                </Button>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-foreground">{item.title}</p>
                   {item.description && (
