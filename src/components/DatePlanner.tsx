@@ -168,6 +168,32 @@ const DatePlanner = () => {
         <FilterGroup label="Setting" options={locationOptions} selected={filters.location} onSelect={updateFilter("location")} />
         <FilterGroup label="Vibe" options={activityOptions} selected={filters.activity} onSelect={updateFilter("activity")} />
         <FilterGroup label="Distance" options={distanceOptions} selected={filters.distance} onSelect={updateFilter("distance")} />
+        <div className="space-y-2.5">
+          <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Time Available</h3>
+          <div className="flex flex-wrap gap-2">
+            {timePresets.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => updateFilter("timeRange")(filters.timeRange === opt.value ? null : opt.value)}
+                className={cn(
+                  "flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all duration-200",
+                  filters.timeRange === opt.value
+                    ? "border-primary/50 bg-primary/15 text-primary glow-sm"
+                    : "border-border bg-secondary/40 text-secondary-foreground hover:border-primary/30 hover:bg-secondary/70"
+                )}
+              >
+                <span className="text-base">{opt.icon}</span>
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <Input
+            placeholder="Or type custom time, e.g. '6pm - 9pm' or '3 hours'"
+            value={filters.timeRange && !timePresets.some(p => p.value === filters.timeRange) ? filters.timeRange : ""}
+            onChange={(e) => updateFilter("timeRange")(e.target.value || null)}
+            className="rounded-xl border-border bg-secondary/40 text-sm"
+          />
+        </div>
       </div>
 
       <Button onClick={handleGenerate} disabled={isLoading} size="lg" className="w-full rounded-xl text-base font-semibold h-12">
