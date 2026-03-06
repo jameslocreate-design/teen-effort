@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      bucket_list: {
+        Row: {
+          added_by: string
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          id: string
+          partner_link_id: string
+          title: string
+        }
+        Insert: {
+          added_by: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          partner_link_id: string
+          title: string
+        }
+        Update: {
+          added_by?: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          partner_link_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bucket_list_partner_link_id_fkey"
+            columns: ["partner_link_id"]
+            isOneToOne: false
+            referencedRelation: "partner_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calendar_entries: {
         Row: {
           added_by: string
