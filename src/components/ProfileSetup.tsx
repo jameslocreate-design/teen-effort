@@ -11,13 +11,26 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [gender, setGender] = useState<string | null>(null);
+  const [descriptors, setDescriptors] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const descriptorOptions = [
+    "🎮 Gamer", "🏋️ Jock", "🛍️ Shopper", "📱 Influencer",
+    "📚 Bookworm", "🎨 Creative", "🍳 Foodie", "🌍 Traveler",
+    "🎵 Music Lover", "🧘 Wellness", "🎬 Movie Buff", "🐾 Pet Parent",
+  ];
+
+  const toggleDescriptor = (d: string) => {
+    setDescriptors((prev) =>
+      prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]
+    );
+  };
 
   useEffect(() => {
     if (!user) return;
     supabase
       .from("profiles")
-      .select("name, age, gender")
+      .select("name, age, gender, descriptors")
       .eq("user_id", user.id)
       .single()
       .then(({ data }) => {
@@ -25,6 +38,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
           if (data.name) setName(data.name);
           if (data.age) setAge(String(data.age));
           if (data.gender) setGender(data.gender);
+          if ((data as any).descriptors) setDescriptors((data as any).descriptors);
         }
       });
   }, [user]);
@@ -43,6 +57,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
         name: name.trim(),
         age: age ? parseInt(age) : null,
         gender,
+        descriptors,
       } as any)
       .eq("user_id", user.id);
 
@@ -104,6 +119,27 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
                   }`}
                 >
                   {g}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 block">
+              Descriptors <span className="normal-case font-normal">(optional)</span>
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {descriptorOptions.map((d) => (
+                <button
+                  key={d}
+                  onClick={() => toggleDescriptor(d)}
+                  className={`rounded-xl border px-4 py-2.5 text-sm font-medium transition-all ${
+                    descriptors.includes(d)
+                      ? "border-primary/50 bg-primary/15 text-primary glow-sm"
+                      : "border-border bg-secondary/40 text-secondary-foreground hover:border-primary/30"
+                  }`}
+                >
+                  {d}
                 </button>
               ))}
             </div>

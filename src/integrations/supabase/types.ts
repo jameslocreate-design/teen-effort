@@ -133,6 +133,7 @@ export type Database = {
         Row: {
           age: number | null
           created_at: string
+          descriptors: string[] | null
           gender: string | null
           id: string
           name: string
@@ -144,6 +145,7 @@ export type Database = {
         Insert: {
           age?: number | null
           created_at?: string
+          descriptors?: string[] | null
           gender?: string | null
           id?: string
           name?: string
@@ -155,6 +157,7 @@ export type Database = {
         Update: {
           age?: number | null
           created_at?: string
+          descriptors?: string[] | null
           gender?: string | null
           id?: string
           name?: string
