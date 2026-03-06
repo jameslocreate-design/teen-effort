@@ -124,6 +124,42 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_gifts: {
+        Row: {
+          created_at: string
+          description: string | null
+          estimated_cost: string | null
+          id: string
+          personalization_tip: string | null
+          title: string
+          user_id: string
+          vibe: string | null
+          where_to_buy: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          estimated_cost?: string | null
+          id?: string
+          personalization_tip?: string | null
+          title: string
+          user_id: string
+          vibe?: string | null
+          where_to_buy?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          estimated_cost?: string | null
+          id?: string
+          personalization_tip?: string | null
+          title?: string
+          user_id?: string
+          vibe?: string | null
+          where_to_buy?: string | null
+        }
+        Relationships: []
+      }
       special_events: {
         Row: {
           added_by: string
