@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { Loader2, Sparkles, CalendarPlus, MapPin } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import FilterGroup from "@/components/FilterGroup";
 import DateIdeaCard from "@/components/DateIdeaCard";
 import { generateDateIdeas, type DateFilters, type DateIdea } from "@/lib/date-planner";
