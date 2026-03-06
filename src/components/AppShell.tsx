@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Heart, CalendarDays, Sparkles, User, Link2, LogOut, Users } from "lucide-react";
+import { Heart, CalendarDays, Sparkles, User, Link2, LogOut, Users, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DatePlanner from "@/components/DatePlanner";
+import GiftPlanner from "@/components/GiftPlanner";
 import SharedCalendar from "@/components/SharedCalendar";
 import ProfileSetup from "@/components/ProfileSetup";
 import PartnerLink from "@/components/PartnerLink";
@@ -11,7 +12,7 @@ import PartnerView from "@/components/PartnerView";
 import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
-type Tab = "planner" | "calendar" | "partner" | "partner-view" | "profile";
+type Tab = "planner" | "gifts" | "calendar" | "partner" | "partner-view" | "profile";
 
 const AppShell = () => {
   const { user, loading, signOut } = useAuth();
@@ -49,7 +50,8 @@ const AppShell = () => {
   }
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: "planner", label: "Plan", icon: <Sparkles className="h-4 w-4" /> },
+    { id: "planner", label: "Dates", icon: <Sparkles className="h-4 w-4" /> },
+    { id: "gifts", label: "Gifts", icon: <Gift className="h-4 w-4" /> },
     { id: "calendar", label: "Calendar", icon: <CalendarDays className="h-4 w-4" /> },
     { id: "partner", label: "Link", icon: <Link2 className="h-4 w-4" /> },
     { id: "partner-view", label: "Partner", icon: <Users className="h-4 w-4" /> },
@@ -95,6 +97,7 @@ const AppShell = () => {
       <main className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-3xl px-6 py-8">
           {activeTab === "planner" && <DatePlanner />}
+          {activeTab === "gifts" && <GiftPlanner />}
           {activeTab === "calendar" && (
             <SharedCalendar
               onPlanDate={(title, date) => {
