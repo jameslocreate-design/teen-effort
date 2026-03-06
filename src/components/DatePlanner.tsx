@@ -50,6 +50,7 @@ const DatePlanner = () => {
     location: null,
     activity: null,
     distance: null,
+    timeRange: null,
     latitude: null,
     longitude: null,
   });
