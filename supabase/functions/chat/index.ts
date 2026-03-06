@@ -31,6 +31,7 @@ serve(async (req) => {
 - Setting: ${location || "any"}
 - Activity Style: ${activity || "any"}
 - Distance willing to travel: ${distance || "any"}
+- Time available: ${timeRange || "any"}
 - Location: ${locationContext}
 
 ${hasLocation ? "IMPORTANT: Suggest real, existing places near the user's coordinates. Estimate the driving distance in miles from the user's location to each venue." : ""}
