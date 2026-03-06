@@ -102,6 +102,68 @@ export type Database = {
           },
         ]
       }
+      expert_posts: {
+        Row: {
+          anonymous_name: string
+          content: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          anonymous_name?: string
+          content: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          anonymous_name?: string
+          content?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      expert_replies: {
+        Row: {
+          anonymous_name: string
+          content: string
+          created_at: string
+          id: string
+          is_ai: boolean
+          post_id: string
+          user_id: string | null
+        }
+        Insert: {
+          anonymous_name?: string
+          content: string
+          created_at?: string
+          id?: string
+          is_ai?: boolean
+          post_id: string
+          user_id?: string | null
+        }
+        Update: {
+          anonymous_name?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_ai?: boolean
+          post_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expert_replies_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "expert_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partner_links: {
         Row: {
           created_at: string
