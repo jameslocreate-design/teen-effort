@@ -12,11 +12,18 @@ serve(async (req) => {
   }
 
   try {
-    const { cost, location, activity, distance, zipcode } = await req.json();
+    const { cost, location, activity, distance, latitude, longitude } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const locationContext = zipcode ? `near zip code ${zipcode}` : "anywhere";
+    const hasLocation = typeof latitude === "number" && typeof longitude === "number";
+    const locationContext = hasLocation
+      ? `near coordinates ${latitude.toFixed(4)}, ${longitude.toFixed(4)}. Use these coordinates to suggest REAL, specific venues, restaurants, parks, and attractions that actually exist near this location.`
+      : "anywhere (no specific location provided)";
+
+    const distanceField = hasLocation
+      ? `"distance_miles": "estimated miles from the user's location, e.g. '2.5 miles', '12 miles'"`
+      : `"distance_miles": "N/A"`;
 
     const prompt = `You are a creative date planner. Generate exactly 3 unique, specific date ideas based on these preferences:
 
@@ -26,16 +33,17 @@ serve(async (req) => {
 - Distance willing to travel: ${distance || "any"}
 - Location: ${locationContext}
 
-When a zip code is provided, suggest real local venues, parks, restaurants, and attractions near that area. Be specific with place names.
+${hasLocation ? "IMPORTANT: Suggest real, existing places near the user's coordinates. Estimate the driving distance in miles from the user's location to each venue." : ""}
 
 For each idea, respond ONLY with valid JSON — no markdown, no code fences, no extra text. Use this exact format:
 [
   {
     "title": "Short catchy title",
-    "description": "2-3 sentence vivid description of the date",
+    "description": "2-3 sentence vivid description of the date mentioning the specific venue/place name",
     "estimated_cost": "e.g. Free, $10-20, $50+",
     "duration": "e.g. 2-3 hours",
-    "vibe": "one word mood like Romantic, Adventurous, Cozy"
+    "vibe": "one word mood like Romantic, Adventurous, Cozy",
+    ${distanceField}
   }
 ]`;
 
@@ -81,7 +89,6 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
     const data = await response.json();
     const raw = data.choices?.[0]?.message?.content || "[]";
 
-    // Strip markdown code fences if present
     const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
 
     let ideas;

@@ -4,6 +4,7 @@ export interface DateIdea {
   estimated_cost: string;
   duration: string;
   vibe: string;
+  distance_miles: string;
 }
 
 export interface DateFilters {
@@ -11,7 +12,8 @@ export interface DateFilters {
   location: string | null;
   activity: string | null;
   distance: string | null;
-  zipcode: string | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
