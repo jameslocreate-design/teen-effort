@@ -57,6 +57,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
         name: name.trim(),
         age: age ? parseInt(age) : null,
         gender,
+        descriptors,
       } as any)
       .eq("user_id", user.id);
 
