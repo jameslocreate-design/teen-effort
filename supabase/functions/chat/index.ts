@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { cost, location, activity, distance, timeRange, latitude, longitude } = await req.json();
+    const { cost, location, activity, distance, timeRange, cuisine, latitude, longitude } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -30,6 +30,7 @@ serve(async (req) => {
 - Budget: ${cost || "any"}
 - Setting: ${location || "any"}
 - Activity Style: ${activity || "any"}
+- Cuisine: ${cuisine || "any"}
 - Distance willing to travel: ${distance || "any"}
 - Time available: ${timeRange || "any"}
 - Location: ${locationContext}

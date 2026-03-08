@@ -180,6 +180,7 @@ const DatePlanner = () => {
         <FilterGroup label="Budget" options={costOptions} selected={filters.cost} onSelect={updateFilter("cost")} />
         <FilterGroup label="Setting" options={locationOptions} selected={filters.location} onSelect={updateFilter("location")} />
         <FilterGroup label="Vibe" options={activityOptions} selected={filters.activity} onSelect={updateFilter("activity")} />
+        <FilterGroup label="Cuisine" options={cuisineOptions} selected={filters.cuisine} onSelect={updateFilter("cuisine")} />
         <FilterGroup label="Distance" options={distanceOptions} selected={filters.distance} onSelect={updateFilter("distance")} />
         <div className="space-y-2.5">
           <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Time Available</h3>

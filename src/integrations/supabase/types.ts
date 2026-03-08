@@ -193,7 +193,7 @@ export type Database = {
       }
       profiles: {
         Row: {
-          age: number | null
+          birthday: string | null
           created_at: string
           descriptors: string[] | null
           gender: string | null
@@ -205,7 +205,7 @@ export type Database = {
           zipcode: string | null
         }
         Insert: {
-          age?: number | null
+          birthday?: string | null
           created_at?: string
           descriptors?: string[] | null
           gender?: string | null
@@ -217,7 +217,7 @@ export type Database = {
           zipcode?: string | null
         }
         Update: {
-          age?: number | null
+          birthday?: string | null
           created_at?: string
           descriptors?: string[] | null
           gender?: string | null
