@@ -55,7 +55,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
       .from("profiles")
       .update({
         name: name.trim(),
-        age: age ? parseInt(age) : null,
+        birthday: birthday || null,
         gender,
         descriptors,
       } as any)
