@@ -28,7 +28,17 @@ const activityOptions = [
   { value: "Romantic & intimate", label: "Romantic", icon: "💕" },
   { value: "Relaxed & laid-back", label: "Relaxed", icon: "☕" },
   { value: "Creative & artistic", label: "Creative", icon: "🎨" },
-  { value: "Food & drink focused", label: "Foodie", icon: "🍷" },
+];
+
+const cuisineOptions = [
+  { value: "Italian", label: "Italian", icon: "🍝" },
+  { value: "American", label: "American", icon: "🍔" },
+  { value: "Chinese", label: "Chinese", icon: "🥡" },
+  { value: "Japanese", label: "Japanese", icon: "🍣" },
+  { value: "Mexican", label: "Mexican", icon: "🌮" },
+  { value: "Thai", label: "Thai", icon: "🍜" },
+  { value: "French", label: "French", icon: "🥐" },
+  { value: "Indian", label: "Indian", icon: "🍛" },
 ];
 
 const distanceOptions = [
