@@ -9,7 +9,7 @@ import { User, Save } from "lucide-react";
 const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
   const { user } = useAuth();
   const [name, setName] = useState("");
-  const [age, setAge] = useState("");
+  const [birthday, setBirthday] = useState("");
   const [gender, setGender] = useState<string | null>(null);
   const [descriptors, setDescriptors] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
