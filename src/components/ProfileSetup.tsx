@@ -30,13 +30,13 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
     if (!user) return;
     supabase
       .from("profiles")
-      .select("name, age, gender, descriptors")
+      .select("name, birthday, gender, descriptors")
       .eq("user_id", user.id)
       .single()
       .then(({ data }) => {
         if (data) {
           if (data.name) setName(data.name);
-          if (data.age) setAge(String(data.age));
+          if (data.birthday) setBirthday(data.birthday);
           if (data.gender) setGender(data.gender);
           if ((data as any).descriptors) setDescriptors((data as any).descriptors);
         }
