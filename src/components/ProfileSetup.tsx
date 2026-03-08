@@ -93,14 +93,12 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
           </div>
 
           <div>
-            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 block">Age</label>
+            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 block">Birthday</label>
             <Input
-              type="number"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-              placeholder="Your age"
-              min={18}
-              max={120}
+              type="date"
+              value={birthday}
+              onChange={(e) => setBirthday(e.target.value)}
+              placeholder="Your birthday"
               className="bg-secondary/50 border-border"
             />
           </div>
