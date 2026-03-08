@@ -28,7 +28,17 @@ const activityOptions = [
   { value: "Romantic & intimate", label: "Romantic", icon: "💕" },
   { value: "Relaxed & laid-back", label: "Relaxed", icon: "☕" },
   { value: "Creative & artistic", label: "Creative", icon: "🎨" },
-  { value: "Food & drink focused", label: "Foodie", icon: "🍷" },
+];
+
+const cuisineOptions = [
+  { value: "Italian", label: "Italian", icon: "🍝" },
+  { value: "American", label: "American", icon: "🍔" },
+  { value: "Chinese", label: "Chinese", icon: "🥡" },
+  { value: "Japanese", label: "Japanese", icon: "🍣" },
+  { value: "Mexican", label: "Mexican", icon: "🌮" },
+  { value: "Thai", label: "Thai", icon: "🍜" },
+  { value: "French", label: "French", icon: "🥐" },
+  { value: "Indian", label: "Indian", icon: "🍛" },
 ];
 
 const distanceOptions = [
@@ -53,6 +63,7 @@ const DatePlanner = () => {
     activity: null,
     distance: null,
     timeRange: null,
+    cuisine: null,
     latitude: null,
     longitude: null,
   });
@@ -104,7 +115,7 @@ const DatePlanner = () => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  const hasAnyFilter = filters.cost || filters.location || filters.activity || filters.distance || filters.timeRange;
+  const hasAnyFilter = filters.cost || filters.location || filters.activity || filters.distance || filters.timeRange || filters.cuisine;
 
   const handleGenerate = async () => {
     setIsLoading(true);
@@ -169,6 +180,7 @@ const DatePlanner = () => {
         <FilterGroup label="Budget" options={costOptions} selected={filters.cost} onSelect={updateFilter("cost")} />
         <FilterGroup label="Setting" options={locationOptions} selected={filters.location} onSelect={updateFilter("location")} />
         <FilterGroup label="Vibe" options={activityOptions} selected={filters.activity} onSelect={updateFilter("activity")} />
+        <FilterGroup label="Cuisine" options={cuisineOptions} selected={filters.cuisine} onSelect={updateFilter("cuisine")} />
         <FilterGroup label="Distance" options={distanceOptions} selected={filters.distance} onSelect={updateFilter("distance")} />
         <div className="space-y-2.5">
           <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Time Available</h3>

@@ -8,7 +8,7 @@ import { format } from "date-fns";
 
 interface PartnerProfile {
   name: string;
-  age: number | null;
+  birthday: string | null;
   gender: string | null;
 }
 
@@ -48,7 +48,7 @@ const PartnerView = ({ onUnlinked }: PartnerViewProps) => {
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("name, age, gender")
+      .select("name, birthday, gender")
       .eq("user_id", partnerId)
       .single();
 
@@ -114,8 +114,8 @@ const PartnerView = ({ onUnlinked }: PartnerViewProps) => {
             </div>
             <h2 className="text-xl font-bold text-foreground">{partner.name}</h2>
             <div className="flex items-center justify-center gap-3 text-sm text-muted-foreground">
-              {partner.age && <span>{partner.age} years old</span>}
-              {partner.age && partner.gender && <span>·</span>}
+              {partner.birthday && <span>{format(new Date(partner.birthday), "MMM d, yyyy")}</span>}
+              {partner.birthday && partner.gender && <span>·</span>}
               {partner.gender && <span>{partner.gender}</span>}
             </div>
           </div>

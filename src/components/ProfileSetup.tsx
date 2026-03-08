@@ -9,7 +9,7 @@ import { User, Save } from "lucide-react";
 const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
   const { user } = useAuth();
   const [name, setName] = useState("");
-  const [age, setAge] = useState("");
+  const [birthday, setBirthday] = useState("");
   const [gender, setGender] = useState<string | null>(null);
   const [descriptors, setDescriptors] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -30,13 +30,13 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
     if (!user) return;
     supabase
       .from("profiles")
-      .select("name, age, gender, descriptors")
+      .select("name, birthday, gender, descriptors")
       .eq("user_id", user.id)
       .single()
       .then(({ data }) => {
         if (data) {
           if (data.name) setName(data.name);
-          if (data.age) setAge(String(data.age));
+          if (data.birthday) setBirthday(data.birthday);
           if (data.gender) setGender(data.gender);
           if ((data as any).descriptors) setDescriptors((data as any).descriptors);
         }
@@ -55,7 +55,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
       .from("profiles")
       .update({
         name: name.trim(),
-        age: age ? parseInt(age) : null,
+        birthday: birthday || null,
         gender,
         descriptors,
       } as any)
@@ -93,14 +93,12 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
           </div>
 
           <div>
-            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 block">Age</label>
+            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 block">Birthday</label>
             <Input
-              type="number"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-              placeholder="Your age"
-              min={18}
-              max={120}
+              type="date"
+              value={birthday}
+              onChange={(e) => setBirthday(e.target.value)}
+              placeholder="Your birthday"
               className="bg-secondary/50 border-border"
             />
           </div>
