@@ -48,7 +48,7 @@ const PartnerView = ({ onUnlinked }: PartnerViewProps) => {
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("name, age, gender")
+      .select("name, birthday, gender")
       .eq("user_id", partnerId)
       .single();
 
