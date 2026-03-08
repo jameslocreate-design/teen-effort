@@ -8,7 +8,7 @@ import { format } from "date-fns";
 
 interface PartnerProfile {
   name: string;
-  age: number | null;
+  birthday: string | null;
   gender: string | null;
 }
 
