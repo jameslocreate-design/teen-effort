@@ -17,6 +17,9 @@ interface CalendarEntry {
   duration: string | null;
   vibe: string | null;
   added_by: string;
+  yelp_url: string | null;
+  yelp_rating: number | null;
+  yelp_review_count: number | null;
 }
 
 interface SharedCalendarProps {
