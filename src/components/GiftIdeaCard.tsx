@@ -1,5 +1,6 @@
 import type { GiftIdea } from "@/lib/gift-planner";
-import { DollarSign, ShoppingBag, Sparkles, Lightbulb } from "lucide-react";
+import { DollarSign, ShoppingBag, Sparkles, Lightbulb, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface GiftIdeaCardProps {
   idea: GiftIdea;
