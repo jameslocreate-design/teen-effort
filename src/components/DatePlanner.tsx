@@ -177,6 +177,7 @@ const DatePlanner = () => {
       partner_link_id: partnerLinkId,
       added_by: user.id,
       date: localDateStr,
+      event_time: selectedTime || null,
       title: selectedIdea.title,
       description: selectedIdea.description,
       estimated_cost: selectedIdea.estimated_cost,
