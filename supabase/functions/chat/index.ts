@@ -142,8 +142,8 @@ serve(async (req) => {
     }
 
     const yelpContext = yelpVenues.length > 0
-      ? `\n\nHere are real venues from Yelp near the user (use EXACTLY these names and details):\n${yelpVenues
-          .slice(0, 6)
+      ? `\n\nHere are real venues from Yelp near the user. EVERY date idea MUST reference at least one of these venues:\n${yelpVenues
+          .slice(0, 10)
           .map(
             (v, i) =>
               `${i + 1}. ${v.name} - ${v.rating}★ (${v.review_count} reviews), ${v.categories.map(c => c.title).join(", ")}, ${metersToMiles(v.distance)} away`
