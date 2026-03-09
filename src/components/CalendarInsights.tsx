@@ -303,7 +303,7 @@ const CalendarInsights = ({ partnerLinkId, totalDates, onPlanDate }: Props) => {
                     <Calendar className="h-3.5 w-3.5" />
                     Plan
                   </Button>
-                  {event.added_by === user?.id && (
+                  {event.added_by === user?.id && !event.is_birthday && (
                     <Button
                       variant="ghost"
                       size="icon"
