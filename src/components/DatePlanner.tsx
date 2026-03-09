@@ -276,6 +276,49 @@ const DatePlanner = () => {
       {hasGenerated && !isLoading && ideas.length === 0 && (
         <p className="text-center py-8 text-muted-foreground">No ideas generated. Try different filters.</p>
       )}
+
+      {/* Date Picker Dialog */}
+      <Dialog open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Choose a Date</DialogTitle>
+            <DialogDescription>
+              Select when you'd like to schedule "{selectedIdea?.title}"
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center py-4">
+            <Calendar
+              mode="single"
+              selected={selectedCalendarDate}
+              onSelect={setSelectedCalendarDate}
+              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+              initialFocus
+              className="rounded-xl border border-border"
+            />
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDatePickerOpen(false);
+                setSelectedIdea(null);
+                setSelectedIdeaIndex(null);
+                setSelectedCalendarDate(undefined);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmDate}
+              disabled={!selectedCalendarDate}
+              className="gap-2"
+            >
+              <CalendarPlus className="h-4 w-4" />
+              Add to Calendar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
