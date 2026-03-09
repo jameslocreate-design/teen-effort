@@ -81,6 +81,7 @@ const DatePlanner = () => {
     cuisine: null,
     latitude: null,
     longitude: null,
+    funActivity: null,
   });
 
   const [ideas, setIdeas] = useState<DateIdea[]>([]);
