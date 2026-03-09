@@ -3,12 +3,15 @@ import { Loader2, Sparkles, CalendarPlus, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Calendar } from "@/components/ui/calendar";
 import FilterGroup from "@/components/FilterGroup";
 import DateIdeaCard from "@/components/DateIdeaCard";
 import { generateDateIdeas, type DateFilters, type DateIdea } from "@/lib/date-planner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { format } from "date-fns";
 
 const costOptions = [
   { value: "Free", label: "Free", icon: "🆓" },
@@ -74,6 +77,10 @@ const DatePlanner = () => {
   const [partnerLinkId, setPartnerLinkId] = useState<string | null>(null);
   const [savingIndex, setSavingIndex] = useState<number | null>(null);
   const [locationStatus, setLocationStatus] = useState<"idle" | "loading" | "granted" | "denied">("idle");
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [selectedIdea, setSelectedIdea] = useState<DateIdea | null>(null);
+  const [selectedIdeaIndex, setSelectedIdeaIndex] = useState<number | null>(null);
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(undefined);
 
   const fetchPartnerLink = useCallback(async () => {
     if (!user) return;
@@ -130,35 +137,48 @@ const DatePlanner = () => {
     }
   };
 
-  const handleSaveToCalendar = async (idea: DateIdea, index: number) => {
+  const handleOpenDatePicker = (idea: DateIdea, index: number) => {
     if (!user || !partnerLinkId) {
       toast.error("Link with a partner first to save dates!");
       return;
     }
-
+    setSelectedIdea(idea);
+    setSelectedIdeaIndex(index);
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const dateStr = prompt("Enter date (YYYY-MM-DD):", tomorrow.toISOString().split("T")[0]);
-    if (!dateStr) return;
+    setSelectedCalendarDate(tomorrow);
+    setDatePickerOpen(true);
+  };
 
-    setSavingIndex(index);
+  const handleConfirmDate = async () => {
+    if (!selectedCalendarDate || !selectedIdea || selectedIdeaIndex === null || !user || !partnerLinkId) return;
+
+    setSavingIndex(selectedIdeaIndex);
+    setDatePickerOpen(false);
+
+    // Format date in local timezone to avoid off-by-one errors
+    const localDateStr = format(selectedCalendarDate, "yyyy-MM-dd");
+
     const { error } = await supabase.from("calendar_entries").insert({
       partner_link_id: partnerLinkId,
       added_by: user.id,
-      date: dateStr,
-      title: idea.title,
-      description: idea.description,
-      estimated_cost: idea.estimated_cost,
-      duration: idea.duration,
-      vibe: idea.vibe,
+      date: localDateStr,
+      title: selectedIdea.title,
+      description: selectedIdea.description,
+      estimated_cost: selectedIdea.estimated_cost,
+      duration: selectedIdea.duration,
+      vibe: selectedIdea.vibe,
     });
 
     if (error) {
       toast.error("Failed to save to calendar");
     } else {
-      toast.success(`"${idea.title}" added to calendar!`);
+      toast.success(`"${selectedIdea.title}" added to calendar!`);
     }
     setSavingIndex(null);
+    setSelectedIdea(null);
+    setSelectedIdeaIndex(null);
+    setSelectedCalendarDate(undefined);
   };
 
   return (
@@ -236,7 +256,7 @@ const DatePlanner = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleSaveToCalendar(idea, i)}
+                  onClick={() => handleOpenDatePicker(idea, i)}
                   disabled={savingIndex === i}
                   className="absolute top-3 right-3 rounded-lg text-xs"
                 >
@@ -256,6 +276,49 @@ const DatePlanner = () => {
       {hasGenerated && !isLoading && ideas.length === 0 && (
         <p className="text-center py-8 text-muted-foreground">No ideas generated. Try different filters.</p>
       )}
+
+      {/* Date Picker Dialog */}
+      <Dialog open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Choose a Date</DialogTitle>
+            <DialogDescription>
+              Select when you'd like to schedule "{selectedIdea?.title}"
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center py-4">
+            <Calendar
+              mode="single"
+              selected={selectedCalendarDate}
+              onSelect={setSelectedCalendarDate}
+              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+              initialFocus
+              className="rounded-xl border border-border"
+            />
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDatePickerOpen(false);
+                setSelectedIdea(null);
+                setSelectedIdeaIndex(null);
+                setSelectedCalendarDate(undefined);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmDate}
+              disabled={!selectedCalendarDate}
+              className="gap-2"
+            >
+              <CalendarPlus className="h-4 w-4" />
+              Add to Calendar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
