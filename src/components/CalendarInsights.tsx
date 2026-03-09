@@ -16,6 +16,7 @@ interface SpecialEvent {
   recurring: boolean;
   event_type: string;
   added_by: string;
+  is_birthday?: boolean;
 }
 
 const SEASONAL_DATES = [
