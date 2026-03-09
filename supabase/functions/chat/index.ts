@@ -81,14 +81,12 @@ serve(async (req) => {
 
     let yelpVenues: YelpBusiness[] = [];
     if (hasLocation) {
-      // Get radius in meters based on distance preference
-      let radius = 8000; // ~5 miles default
-      if (distance?.includes("Walking")) radius = 1600; // ~1 mile
-      else if (distance?.includes("Short drive")) radius = 8000; // ~5 miles
-      else if (distance?.includes("Day trip")) radius = 16000; // ~10 miles
-      else if (distance?.includes("Road trip")) radius = 40000; // ~25 miles
+      let radius = 8000;
+      if (distance?.includes("Walking")) radius = 1600;
+      else if (distance?.includes("Short drive")) radius = 8000;
+      else if (distance?.includes("Day trip")) radius = 16000;
+      else if (distance?.includes("Road trip")) radius = 40000;
 
-      // Map cuisine to Yelp categories
       const categoryMap: Record<string, string> = {
         Italian: "italian",
         American: "tradamerican,newamerican",
@@ -100,15 +98,47 @@ serve(async (req) => {
         Indian: "indian",
       };
 
-      const categories = cuisine ? categoryMap[cuisine] : undefined;
-      const searchTerm = funActivity || 
-                         (activity?.includes("Romantic") ? "romantic date" : 
-                         activity?.includes("Adventure") ? "activities" :
-                         activity?.includes("Creative") ? "art entertainment" :
-                         cuisine || "restaurants");
+      // Build multiple search queries to cover all aspects of the date
+      const searches: Array<{ term: string; categories?: string }> = [];
 
-      yelpVenues = await searchYelp(searchTerm, latitude, longitude, categories, radius);
-      console.log(`Found ${yelpVenues.length} Yelp venues`);
+      if (funActivity) {
+        searches.push({ term: funActivity });
+      }
+      if (cuisine) {
+        searches.push({ term: cuisine, categories: categoryMap[cuisine] });
+      }
+      if (activity?.includes("Romantic")) {
+        searches.push({ term: "romantic date night" });
+      } else if (activity?.includes("Adventure")) {
+        searches.push({ term: "outdoor activities adventures" });
+      } else if (activity?.includes("Creative")) {
+        searches.push({ term: "art classes painting pottery" });
+      } else if (activity?.includes("Relaxed")) {
+        searches.push({ term: "cafe lounge spa" });
+      }
+
+      // Always add a general "things to do" search as fallback
+      if (searches.length === 0) {
+        searches.push({ term: "fun things to do date" });
+        searches.push({ term: "restaurants" });
+      }
+
+      // Run all searches in parallel and combine results
+      const allResults = await Promise.all(
+        searches.map(s => searchYelp(s.term, latitude, longitude, s.categories, radius))
+      );
+
+      // Combine and deduplicate by name
+      const seen = new Set<string>();
+      for (const results of allResults) {
+        for (const biz of results) {
+          if (!seen.has(biz.name)) {
+            seen.add(biz.name);
+            yelpVenues.push(biz);
+          }
+        }
+      }
+      console.log(`Found ${yelpVenues.length} Yelp venues from ${searches.length} searches`);
     }
 
     const yelpContext = yelpVenues.length > 0
