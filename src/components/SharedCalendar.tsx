@@ -174,7 +174,21 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
             selectedEntries.map((entry) => (
               <div key={entry.id} className="rounded-xl border border-border bg-card p-4 space-y-2">
                 <div className="flex items-start justify-between">
-                  <h4 className="font-semibold text-foreground">{entry.title}</h4>
+                  <div>
+                    <h4 className="font-semibold text-foreground">{entry.title}</h4>
+                    {entry.event_time && (
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 text-primary text-xs font-semibold px-2.5 py-1">
+                          🕐 {(() => {
+                            const [h, m] = entry.event_time.split(":").map(Number);
+                            const period = h >= 12 ? "PM" : "AM";
+                            const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+                            return `${h12}:${String(m).padStart(2, "0")} ${period}`;
+                          })()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                   {entry.added_by === user?.id && (
                     <Button variant="ghost" size="icon" onClick={() => deleteEntry(entry.id)} className="h-7 w-7 text-muted-foreground hover:text-destructive">
                       <Trash2 className="h-3.5 w-3.5" />
@@ -183,7 +197,6 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
                 </div>
                 {entry.description && <p className="text-sm text-muted-foreground">{entry.description}</p>}
                 <div className="flex gap-3 text-xs text-muted-foreground">
-                  {entry.event_time && <span>🕐 {entry.event_time}</span>}
                   {entry.estimated_cost && <span>💰 {entry.estimated_cost}</span>}
                   {entry.duration && <span>⏱️ {entry.duration}</span>}
                   {entry.vibe && <span>✨ {entry.vibe}</span>}

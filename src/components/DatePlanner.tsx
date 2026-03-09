@@ -3,6 +3,7 @@ import { Loader2, Sparkles, CalendarPlus, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import ScrollTimePicker from "@/components/ScrollTimePicker";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
 import FilterGroup from "@/components/FilterGroup";
@@ -315,14 +316,9 @@ const DatePlanner = () => {
               className="rounded-xl border border-border pointer-events-auto"
             />
           </div>
-          <div className="px-1">
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Time (optional)</label>
-            <Input
-              type="time"
-              value={selectedTime}
-              onChange={(e) => setSelectedTime(e.target.value)}
-              className="w-full"
-            />
+          <div className="px-1 space-y-2">
+            <label className="text-sm font-medium text-foreground block text-center">Time (optional)</label>
+            <ScrollTimePicker value={selectedTime} onChange={setSelectedTime} />
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
             <Button
