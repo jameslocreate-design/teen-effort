@@ -316,14 +316,9 @@ const DatePlanner = () => {
               className="rounded-xl border border-border pointer-events-auto"
             />
           </div>
-          <div className="px-1">
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Time (optional)</label>
-            <Input
-              type="time"
-              value={selectedTime}
-              onChange={(e) => setSelectedTime(e.target.value)}
-              className="w-full"
-            />
+          <div className="px-1 space-y-2">
+            <label className="text-sm font-medium text-foreground block text-center">Time (optional)</label>
+            <ScrollTimePicker value={selectedTime} onChange={setSelectedTime} />
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
             <Button
