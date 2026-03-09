@@ -5,6 +5,9 @@ export interface DateIdea {
   duration: string;
   vibe: string;
   distance_miles: string;
+  rating?: number;
+  review_count?: number;
+  url?: string;
 }
 
 export interface DateFilters {
