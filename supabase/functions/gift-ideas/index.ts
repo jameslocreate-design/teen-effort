@@ -31,6 +31,7 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
     "description": "2-3 sentences describing the gift, why it's special, and how it connects to their interests",
     "estimated_cost": "e.g. $15-25, $50+, Under $10",
     "where_to_buy": "specific store or website name",
+    "where_to_buy_url": "direct URL to the store or product page (e.g. https://www.etsy.com, https://www.amazon.com). Must be a real, valid URL.",
     "personalization_tip": "how to make it even more personal",
     "vibe": "one word like Sentimental, Playful, Luxurious, Creative, Practical"
   }
