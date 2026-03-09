@@ -137,8 +137,8 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
         ))}
 
         {days.map((day) => {
-          const hasEntries = entries.some((e) => isSameDay(new Date(e.date), day));
-          const isSelected = selectedDate && isSameDay(day, selectedDate);
+          const hasEntries = entries.some((e) => isSameDayAsEntry(day, e.date));
+          const isSelected = selectedDate && format(day, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd");
 
           return (
             <button
