@@ -73,7 +73,7 @@ serve(async (req) => {
   }
 
   try {
-    const { cost, location, activity, distance, timeRange, cuisine, latitude, longitude } = await req.json();
+    const { cost, location, activity, distance, timeRange, cuisine, latitude, longitude, funActivity } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -101,10 +101,11 @@ serve(async (req) => {
       };
 
       const categories = cuisine ? categoryMap[cuisine] : undefined;
-      const searchTerm = activity?.includes("Romantic") ? "romantic date" : 
+      const searchTerm = funActivity || 
+                         (activity?.includes("Romantic") ? "romantic date" : 
                          activity?.includes("Adventure") ? "activities" :
                          activity?.includes("Creative") ? "art entertainment" :
-                         cuisine || "restaurants";
+                         cuisine || "restaurants");
 
       yelpVenues = await searchYelp(searchTerm, latitude, longitude, categories, radius);
       console.log(`Found ${yelpVenues.length} Yelp venues`);
@@ -125,6 +126,7 @@ serve(async (req) => {
 - Budget: ${cost || "any"}
 - Setting: ${location || "any"}
 - Activity Style: ${activity || "any"}
+${funActivity ? `- Specific Activity: ${funActivity}` : ""}
 - Cuisine: ${cuisine || "any"}
 - Distance willing to travel: ${distance || "any"}
 - Time available: ${timeRange || "any"}
