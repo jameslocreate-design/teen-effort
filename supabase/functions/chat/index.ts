@@ -126,6 +126,7 @@ serve(async (req) => {
 - Budget: ${cost || "any"}
 - Setting: ${location || "any"}
 - Activity Style: ${activity || "any"}
+${funActivity ? `- Specific Activity: ${funActivity}` : ""}
 - Cuisine: ${cuisine || "any"}
 - Distance willing to travel: ${distance || "any"}
 - Time available: ${timeRange || "any"}
