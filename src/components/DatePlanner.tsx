@@ -77,6 +77,10 @@ const DatePlanner = () => {
   const [partnerLinkId, setPartnerLinkId] = useState<string | null>(null);
   const [savingIndex, setSavingIndex] = useState<number | null>(null);
   const [locationStatus, setLocationStatus] = useState<"idle" | "loading" | "granted" | "denied">("idle");
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [selectedIdea, setSelectedIdea] = useState<DateIdea | null>(null);
+  const [selectedIdeaIndex, setSelectedIdeaIndex] = useState<number | null>(null);
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(undefined);
 
   const fetchPartnerLink = useCallback(async () => {
     if (!user) return;
