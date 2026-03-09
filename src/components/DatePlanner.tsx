@@ -94,6 +94,7 @@ const DatePlanner = () => {
   const [selectedIdea, setSelectedIdea] = useState<DateIdea | null>(null);
   const [selectedIdeaIndex, setSelectedIdeaIndex] = useState<number | null>(null);
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(undefined);
+  const [selectedTime, setSelectedTime] = useState<string>("");
 
   const fetchPartnerLink = useCallback(async () => {
     if (!user) return;
