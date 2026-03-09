@@ -184,6 +184,9 @@ const DatePlanner = () => {
       estimated_cost: selectedIdea.estimated_cost,
       duration: selectedIdea.duration,
       vibe: selectedIdea.vibe,
+      yelp_url: selectedIdea.url || null,
+      yelp_rating: selectedIdea.rating || null,
+      yelp_review_count: selectedIdea.review_count || null,
     });
 
     if (error) {
