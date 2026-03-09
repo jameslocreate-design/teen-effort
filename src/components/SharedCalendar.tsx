@@ -10,6 +10,7 @@ import CalendarInsights from "@/components/CalendarInsights";
 interface CalendarEntry {
   id: string;
   date: string;
+  event_time: string | null;
   title: string;
   description: string | null;
   estimated_cost: string | null;
