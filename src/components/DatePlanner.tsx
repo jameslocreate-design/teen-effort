@@ -137,35 +137,48 @@ const DatePlanner = () => {
     }
   };
 
-  const handleSaveToCalendar = async (idea: DateIdea, index: number) => {
+  const handleOpenDatePicker = (idea: DateIdea, index: number) => {
     if (!user || !partnerLinkId) {
       toast.error("Link with a partner first to save dates!");
       return;
     }
-
+    setSelectedIdea(idea);
+    setSelectedIdeaIndex(index);
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const dateStr = prompt("Enter date (YYYY-MM-DD):", tomorrow.toISOString().split("T")[0]);
-    if (!dateStr) return;
+    setSelectedCalendarDate(tomorrow);
+    setDatePickerOpen(true);
+  };
 
-    setSavingIndex(index);
+  const handleConfirmDate = async () => {
+    if (!selectedCalendarDate || !selectedIdea || selectedIdeaIndex === null || !user || !partnerLinkId) return;
+
+    setSavingIndex(selectedIdeaIndex);
+    setDatePickerOpen(false);
+
+    // Format date in local timezone to avoid off-by-one errors
+    const localDateStr = format(selectedCalendarDate, "yyyy-MM-dd");
+
     const { error } = await supabase.from("calendar_entries").insert({
       partner_link_id: partnerLinkId,
       added_by: user.id,
-      date: dateStr,
-      title: idea.title,
-      description: idea.description,
-      estimated_cost: idea.estimated_cost,
-      duration: idea.duration,
-      vibe: idea.vibe,
+      date: localDateStr,
+      title: selectedIdea.title,
+      description: selectedIdea.description,
+      estimated_cost: selectedIdea.estimated_cost,
+      duration: selectedIdea.duration,
+      vibe: selectedIdea.vibe,
     });
 
     if (error) {
       toast.error("Failed to save to calendar");
     } else {
-      toast.success(`"${idea.title}" added to calendar!`);
+      toast.success(`"${selectedIdea.title}" added to calendar!`);
     }
     setSavingIndex(null);
+    setSelectedIdea(null);
+    setSelectedIdeaIndex(null);
+    setSelectedCalendarDate(undefined);
   };
 
   return (
