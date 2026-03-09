@@ -312,7 +312,16 @@ const DatePlanner = () => {
               onSelect={setSelectedCalendarDate}
               disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
               initialFocus
-              className="rounded-xl border border-border"
+              className="rounded-xl border border-border pointer-events-auto"
+            />
+          </div>
+          <div className="px-1">
+            <label className="text-sm font-medium text-foreground mb-1.5 block">Time (optional)</label>
+            <Input
+              type="time"
+              value={selectedTime}
+              onChange={(e) => setSelectedTime(e.target.value)}
+              className="w-full"
             />
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
