@@ -90,8 +90,15 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
 
   const days = eachDayOfInterval({ start: startOfMonth(currentMonth), end: endOfMonth(currentMonth) });
   const startDay = startOfMonth(currentMonth).getDay();
+  
+  // Helper to compare dates safely without timezone issues
+  const isSameDayAsEntry = (day: Date, entryDateStr: string) => {
+    const dayStr = format(day, "yyyy-MM-dd");
+    return dayStr === entryDateStr;
+  };
+  
   const selectedEntries = selectedDate
-    ? entries.filter((e) => isSameDay(new Date(e.date), selectedDate))
+    ? entries.filter((e) => isSameDayAsEntry(selectedDate, e.date))
     : [];
 
   if (!partnerLinkId) {
