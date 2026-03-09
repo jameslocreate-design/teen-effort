@@ -68,6 +68,9 @@ export type Database = {
           partner_link_id: string
           title: string
           vibe: string | null
+          yelp_rating: number | null
+          yelp_review_count: number | null
+          yelp_url: string | null
         }
         Insert: {
           added_by: string
@@ -81,6 +84,9 @@ export type Database = {
           partner_link_id: string
           title: string
           vibe?: string | null
+          yelp_rating?: number | null
+          yelp_review_count?: number | null
+          yelp_url?: string | null
         }
         Update: {
           added_by?: string
@@ -94,6 +100,9 @@ export type Database = {
           partner_link_id?: string
           title?: string
           vibe?: string | null
+          yelp_rating?: number | null
+          yelp_review_count?: number | null
+          yelp_url?: string | null
         }
         Relationships: [
           {
