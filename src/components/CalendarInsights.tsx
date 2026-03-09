@@ -16,6 +16,7 @@ interface SpecialEvent {
   recurring: boolean;
   event_type: string;
   added_by: string;
+  is_birthday?: boolean;
 }
 
 const SEASONAL_DATES = [
@@ -46,12 +47,49 @@ const CalendarInsights = ({ partnerLinkId, totalDates, onPlanDate }: Props) => {
   const [newType, setNewType] = useState("custom");
 
   const fetchEvents = useCallback(async () => {
-    const { data } = await supabase
+    if (!user) return;
+    
+    // Fetch manual special events
+    const { data: manualEvents } = await supabase
       .from("special_events")
       .select("*")
       .eq("partner_link_id", partnerLinkId);
-    if (data) setEvents(data as SpecialEvent[]);
-  }, [partnerLinkId]);
+    
+    // Fetch partner link to get both user IDs
+    const { data: linkData } = await supabase
+      .from("partner_links")
+      .select("user1_id, user2_id")
+      .eq("id", partnerLinkId)
+      .single();
+    
+    const allEvents: SpecialEvent[] = [...(manualEvents || [])];
+    
+    // Fetch birthdays for both users
+    if (linkData) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, name, birthday")
+        .in("user_id", [linkData.user1_id, linkData.user2_id]);
+      
+      if (profiles) {
+        profiles.forEach((profile) => {
+          if (profile.birthday) {
+            allEvents.push({
+              id: `birthday-${profile.user_id}`,
+              title: `${profile.name}'s Birthday`,
+              event_date: profile.birthday,
+              recurring: true,
+              event_type: "birthday",
+              added_by: profile.user_id,
+              is_birthday: true,
+            });
+          }
+        });
+      }
+    }
+    
+    setEvents(allEvents);
+  }, [partnerLinkId, user]);
 
   useEffect(() => { fetchEvents(); }, [fetchEvents]);
 
@@ -265,7 +303,7 @@ const CalendarInsights = ({ partnerLinkId, totalDates, onPlanDate }: Props) => {
                     <Calendar className="h-3.5 w-3.5" />
                     Plan
                   </Button>
-                  {event.added_by === user?.id && (
+                  {event.added_by === user?.id && !event.is_birthday && (
                     <Button
                       variant="ghost"
                       size="icon"
