@@ -256,7 +256,7 @@ const DatePlanner = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleSaveToCalendar(idea, i)}
+                  onClick={() => handleOpenDatePicker(idea, i)}
                   disabled={savingIndex === i}
                   className="absolute top-3 right-3 rounded-lg text-xs"
                 >
