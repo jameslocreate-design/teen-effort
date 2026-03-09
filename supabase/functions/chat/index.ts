@@ -101,10 +101,11 @@ serve(async (req) => {
       };
 
       const categories = cuisine ? categoryMap[cuisine] : undefined;
-      const searchTerm = activity?.includes("Romantic") ? "romantic date" : 
+      const searchTerm = funActivity || 
+                         (activity?.includes("Romantic") ? "romantic date" : 
                          activity?.includes("Adventure") ? "activities" :
                          activity?.includes("Creative") ? "art entertainment" :
-                         cuisine || "restaurants";
+                         cuisine || "restaurants");
 
       yelpVenues = await searchYelp(searchTerm, latitude, longitude, categories, radius);
       console.log(`Found ${yelpVenues.length} Yelp venues`);
