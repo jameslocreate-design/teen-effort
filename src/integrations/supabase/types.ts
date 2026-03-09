@@ -63,6 +63,7 @@ export type Database = {
           description: string | null
           duration: string | null
           estimated_cost: string | null
+          event_time: string | null
           id: string
           partner_link_id: string
           title: string
@@ -75,6 +76,7 @@ export type Database = {
           description?: string | null
           duration?: string | null
           estimated_cost?: string | null
+          event_time?: string | null
           id?: string
           partner_link_id: string
           title: string
@@ -87,6 +89,7 @@ export type Database = {
           description?: string | null
           duration?: string | null
           estimated_cost?: string | null
+          event_time?: string | null
           id?: string
           partner_link_id?: string
           title?: string

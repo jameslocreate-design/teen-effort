@@ -1,0 +1,1 @@
+ALTER TABLE public.calendar_entries ADD COLUMN event_time text NULL;
