@@ -126,7 +126,9 @@ const CalendarInsights = ({ partnerLinkId, totalDates, onPlanDate }: Props) => {
 
   const getNextOccurrence = (dateStr: string) => {
     const today = new Date();
-    const eventDate = new Date(dateStr);
+    // Parse date string as local date to avoid timezone shifts
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const eventDate = new Date(year, month - 1, day);
     let next = setYear(eventDate, today.getFullYear());
     if (isBefore(next, today)) next = addYears(next, 1);
     return next;
