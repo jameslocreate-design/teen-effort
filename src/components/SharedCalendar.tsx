@@ -183,6 +183,7 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
                 </div>
                 {entry.description && <p className="text-sm text-muted-foreground">{entry.description}</p>}
                 <div className="flex gap-3 text-xs text-muted-foreground">
+                  {entry.event_time && <span>🕐 {entry.event_time}</span>}
                   {entry.estimated_cost && <span>💰 {entry.estimated_cost}</span>}
                   {entry.duration && <span>⏱️ {entry.duration}</span>}
                   {entry.vibe && <span>✨ {entry.vibe}</span>}
