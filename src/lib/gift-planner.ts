@@ -3,6 +3,7 @@ export interface GiftIdea {
   description: string;
   estimated_cost: string;
   where_to_buy: string;
+  where_to_buy_url: string;
   personalization_tip: string;
   vibe: string;
 }

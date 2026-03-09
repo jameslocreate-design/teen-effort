@@ -45,10 +45,23 @@ const GiftIdeaCard = ({ idea, index }: GiftIdeaCardProps) => {
           <DollarSign className="h-3.5 w-3.5 text-primary/70" />
           {idea.estimated_cost}
         </span>
-        <span className="flex items-center gap-1.5">
-          <ShoppingBag className="h-3.5 w-3.5 text-primary/70" />
-          {idea.where_to_buy}
-        </span>
+        {idea.where_to_buy_url ? (
+          <a
+            href={idea.where_to_buy_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-primary hover:underline"
+          >
+            <ShoppingBag className="h-3.5 w-3.5" />
+            {idea.where_to_buy}
+            <ExternalLink className="h-3 w-3" />
+          </a>
+        ) : (
+          <span className="flex items-center gap-1.5">
+            <ShoppingBag className="h-3.5 w-3.5 text-primary/70" />
+            {idea.where_to_buy}
+          </span>
+        )}
         <span className="flex items-center gap-1.5">
           <Sparkles className="h-3.5 w-3.5 text-primary/70" />
           {idea.vibe}
