@@ -94,6 +94,7 @@ const DatePlanner = () => {
   const [selectedIdea, setSelectedIdea] = useState<DateIdea | null>(null);
   const [selectedIdeaIndex, setSelectedIdeaIndex] = useState<number | null>(null);
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(undefined);
+  const [selectedTime, setSelectedTime] = useState<string>("");
 
   const fetchPartnerLink = useCallback(async () => {
     if (!user) return;
@@ -176,6 +177,7 @@ const DatePlanner = () => {
       partner_link_id: partnerLinkId,
       added_by: user.id,
       date: localDateStr,
+      event_time: selectedTime || null,
       title: selectedIdea.title,
       description: selectedIdea.description,
       estimated_cost: selectedIdea.estimated_cost,
@@ -192,6 +194,7 @@ const DatePlanner = () => {
     setSelectedIdea(null);
     setSelectedIdeaIndex(null);
     setSelectedCalendarDate(undefined);
+    setSelectedTime("");
   };
 
   return (
@@ -309,7 +312,16 @@ const DatePlanner = () => {
               onSelect={setSelectedCalendarDate}
               disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
               initialFocus
-              className="rounded-xl border border-border"
+              className="rounded-xl border border-border pointer-events-auto"
+            />
+          </div>
+          <div className="px-1">
+            <label className="text-sm font-medium text-foreground mb-1.5 block">Time (optional)</label>
+            <Input
+              type="time"
+              value={selectedTime}
+              onChange={(e) => setSelectedTime(e.target.value)}
+              className="w-full"
             />
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
@@ -320,6 +332,7 @@ const DatePlanner = () => {
                 setSelectedIdea(null);
                 setSelectedIdeaIndex(null);
                 setSelectedCalendarDate(undefined);
+                setSelectedTime("");
               }}
             >
               Cancel
