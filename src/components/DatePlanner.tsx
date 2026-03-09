@@ -31,6 +31,18 @@ const activityOptions = [
   { value: "Romantic & intimate", label: "Romantic", icon: "💕" },
   { value: "Relaxed & laid-back", label: "Relaxed", icon: "☕" },
   { value: "Creative & artistic", label: "Creative", icon: "🎨" },
+  { value: "Fun activity", label: "Fun Activity", icon: "🎳" },
+];
+
+const funActivityOptions = [
+  { value: "Mini Golf", label: "Mini Golf", icon: "⛳" },
+  { value: "Bowling", label: "Bowling", icon: "🎳" },
+  { value: "Karaoke", label: "Karaoke", icon: "🎤" },
+  { value: "Arcade", label: "Arcade", icon: "🕹️" },
+  { value: "Go-Karts", label: "Go-Karts", icon: "🏎️" },
+  { value: "Escape Room", label: "Escape Room", icon: "🔐" },
+  { value: "Laser Tag", label: "Laser Tag", icon: "🔫" },
+  { value: "Ice Skating", label: "Ice Skating", icon: "⛸️" },
 ];
 
 const cuisineOptions = [
