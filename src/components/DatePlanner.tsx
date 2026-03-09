@@ -194,6 +194,7 @@ const DatePlanner = () => {
     setSelectedIdea(null);
     setSelectedIdeaIndex(null);
     setSelectedCalendarDate(undefined);
+    setSelectedTime("");
   };
 
   return (
