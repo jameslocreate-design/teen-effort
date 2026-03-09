@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Trash2, CalendarDays } from "lucide-react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isToday } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths, isToday, parseISO } from "date-fns";
 import { toast } from "sonner";
 import CalendarInsights from "@/components/CalendarInsights";
 
@@ -90,8 +90,15 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
 
   const days = eachDayOfInterval({ start: startOfMonth(currentMonth), end: endOfMonth(currentMonth) });
   const startDay = startOfMonth(currentMonth).getDay();
+  
+  // Helper to compare dates safely without timezone issues
+  const isSameDayAsEntry = (day: Date, entryDateStr: string) => {
+    const dayStr = format(day, "yyyy-MM-dd");
+    return dayStr === entryDateStr;
+  };
+  
   const selectedEntries = selectedDate
-    ? entries.filter((e) => isSameDay(new Date(e.date), selectedDate))
+    ? entries.filter((e) => isSameDayAsEntry(selectedDate, e.date))
     : [];
 
   if (!partnerLinkId) {
@@ -130,8 +137,8 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
         ))}
 
         {days.map((day) => {
-          const hasEntries = entries.some((e) => isSameDay(new Date(e.date), day));
-          const isSelected = selectedDate && isSameDay(day, selectedDate);
+          const hasEntries = entries.some((e) => isSameDayAsEntry(day, e.date));
+          const isSelected = selectedDate && format(day, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd");
 
           return (
             <button
@@ -158,7 +165,7 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
       {selectedDate && (
         <div className="space-y-3">
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">
-            {format(selectedDate, "EEEE, MMM d")}
+            {format(selectedDate, "EEEE, MMM d, yyyy")}
           </h3>
           {selectedEntries.length === 0 ? (
             <p className="text-sm text-muted-foreground">No dates planned. Add one from the Date Planner!</p>
