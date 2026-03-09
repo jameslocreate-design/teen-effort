@@ -165,7 +165,7 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
       {selectedDate && (
         <div className="space-y-3">
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">
-            {format(selectedDate, "EEEE, MMM d")}
+            {format(selectedDate, "EEEE, MMM d, yyyy")}
           </h3>
           {selectedEntries.length === 0 ? (
             <p className="text-sm text-muted-foreground">No dates planned. Add one from the Date Planner!</p>
