@@ -3,12 +3,15 @@ import { Loader2, Sparkles, CalendarPlus, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Calendar } from "@/components/ui/calendar";
 import FilterGroup from "@/components/FilterGroup";
 import DateIdeaCard from "@/components/DateIdeaCard";
 import { generateDateIdeas, type DateFilters, type DateIdea } from "@/lib/date-planner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { format } from "date-fns";
 
 const costOptions = [
   { value: "Free", label: "Free", icon: "🆓" },
