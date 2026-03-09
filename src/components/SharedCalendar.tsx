@@ -199,11 +199,29 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
                   )}
                 </div>
                 {entry.description && <p className="text-sm text-muted-foreground">{entry.description}</p>}
-                <div className="flex gap-3 text-xs text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                  {entry.yelp_rating && (
+                    <span className="flex items-center gap-1 text-yellow-500 font-medium">
+                      <Star className="h-3.5 w-3.5 fill-current" />
+                      {entry.yelp_rating}
+                      {entry.yelp_review_count && <span className="text-muted-foreground font-normal">({entry.yelp_review_count})</span>}
+                    </span>
+                  )}
                   {entry.estimated_cost && <span>💰 {entry.estimated_cost}</span>}
                   {entry.duration && <span>⏱️ {entry.duration}</span>}
                   {entry.vibe && <span>✨ {entry.vibe}</span>}
                 </div>
+                {entry.yelp_url && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 gap-1.5 text-xs px-2"
+                    onClick={() => window.open(entry.yelp_url!, "_blank")}
+                  >
+                    View on Yelp
+                    <ExternalLink className="h-3 w-3" />
+                  </Button>
+                )}
               </div>
             ))
           )}
