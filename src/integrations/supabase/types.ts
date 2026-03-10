@@ -123,6 +123,48 @@ export type Database = {
           },
         ]
       }
+      date_reviews: {
+        Row: {
+          cost_range: string | null
+          created_at: string
+          date_type: string | null
+          id: string
+          location: string | null
+          rating: number
+          review_text: string | null
+          user_id: string
+          venue_name: string
+          venue_type: string | null
+          would_recommend: boolean | null
+        }
+        Insert: {
+          cost_range?: string | null
+          created_at?: string
+          date_type?: string | null
+          id?: string
+          location?: string | null
+          rating: number
+          review_text?: string | null
+          user_id: string
+          venue_name: string
+          venue_type?: string | null
+          would_recommend?: boolean | null
+        }
+        Update: {
+          cost_range?: string | null
+          created_at?: string
+          date_type?: string | null
+          id?: string
+          location?: string | null
+          rating?: number
+          review_text?: string | null
+          user_id?: string
+          venue_name?: string
+          venue_type?: string | null
+          would_recommend?: boolean | null
+        }
+        Relationships: []
+      }
       expert_posts: {
         Row: {
           anonymous_name: string
@@ -222,6 +264,7 @@ export type Database = {
           love_language: string | null
           name: string
           partner_code: string | null
+          referral_code: string | null
           updated_at: string
           user_id: string
           zipcode: string | null
@@ -235,6 +278,7 @@ export type Database = {
           love_language?: string | null
           name?: string
           partner_code?: string | null
+          referral_code?: string | null
           updated_at?: string
           user_id: string
           zipcode?: string | null
@@ -248,6 +292,7 @@ export type Database = {
           love_language?: string | null
           name?: string
           partner_code?: string | null
+          referral_code?: string | null
           updated_at?: string
           user_id?: string
           zipcode?: string | null
@@ -288,6 +333,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      referrals: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          referral_code: string
+          referred_id: string | null
+          referrer_id: string
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          referral_code: string
+          referred_id?: string | null
+          referrer_id: string
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          referral_code?: string
+          referred_id?: string | null
+          referrer_id?: string
+          status?: string
+        }
+        Relationships: []
       }
       saved_gifts: {
         Row: {
