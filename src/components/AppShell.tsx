@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Heart, CalendarDays, Sparkles, User, Link2, LogOut, Users, Gift, ListChecks, HelpCircle, MoreHorizontal, Dices, Camera, BarChart3, Trophy } from "lucide-react";
+import { Heart, CalendarDays, Sparkles, User, Link2, LogOut, Users, Gift, ListChecks, HelpCircle, MoreHorizontal, Dices, Camera, BarChart3, Trophy, CloudSun, HeartHandshake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import DatePlanner from "@/components/DatePlanner";
@@ -17,10 +17,12 @@ import DateRoulette from "@/components/DateRoulette";
 import PhotoJournal from "@/components/PhotoJournal";
 import DateStats from "@/components/DateStats";
 import Achievements from "@/components/Achievements";
+import SharedWishlists from "@/components/SharedWishlists";
+import CompatibilityQuiz from "@/components/CompatibilityQuiz";
 import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
-type Tab = "planner" | "gifts" | "bucket" | "expert" | "calendar" | "partner" | "partner-view" | "profile" | "roulette" | "journal" | "stats" | "achievements";
+type Tab = "planner" | "gifts" | "bucket" | "expert" | "calendar" | "partner" | "partner-view" | "profile" | "roulette" | "journal" | "stats" | "achievements" | "wishlists" | "quiz";
 
 const primaryTabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "planner", label: "Dates", icon: <Sparkles className="h-5 w-5" /> },
@@ -30,6 +32,8 @@ const primaryTabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
 ];
 
 const secondaryTabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
+  { id: "wishlists", label: "Wishlists", icon: <Gift className="h-4 w-4" /> },
+  { id: "quiz", label: "Quiz", icon: <HeartHandshake className="h-4 w-4" /> },
   { id: "stats", label: "Stats", icon: <BarChart3 className="h-4 w-4" /> },
   { id: "achievements", label: "Badges", icon: <Trophy className="h-4 w-4" /> },
   { id: "journal", label: "Journal", icon: <Camera className="h-4 w-4" /> },
@@ -135,6 +139,8 @@ const AppShell = () => {
           {activeTab === "journal" && <PhotoJournal />}
           {activeTab === "stats" && <DateStats />}
           {activeTab === "achievements" && <Achievements />}
+          {activeTab === "wishlists" && <SharedWishlists />}
+          {activeTab === "quiz" && <CompatibilityQuiz />}
           {activeTab === "calendar" && (
             <SharedCalendar
               onPlanDate={(title, date) => {

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Loader2, Sparkles, MapPin } from "lucide-react";
+import WeatherWidget from "@/components/WeatherWidget";
 import { Button } from "@/components/ui/button";
 import DateFilters from "@/components/date-planner/DateFilters";
 import DateResults from "@/components/date-planner/DateResults";
@@ -113,6 +114,8 @@ const DatePlanner = () => {
         {locationStatus === "denied" && <span>Location unavailable — enable location for local suggestions</span>}
         {locationStatus === "idle" && "Waiting for location..."}
       </div>
+
+      <WeatherWidget />
 
       <DateFilters filters={filters} onFilterChange={updateFilter} />
 
