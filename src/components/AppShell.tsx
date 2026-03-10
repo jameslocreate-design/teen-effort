@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Heart, CalendarDays, Sparkles, User, Link2, LogOut, Users, Gift, ListChecks, HelpCircle, MoreHorizontal, Dices, Camera } from "lucide-react";
+import { Heart, CalendarDays, Sparkles, User, Link2, LogOut, Users, Gift, ListChecks, HelpCircle, MoreHorizontal, Dices, Camera, BarChart3, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import DatePlanner from "@/components/DatePlanner";
