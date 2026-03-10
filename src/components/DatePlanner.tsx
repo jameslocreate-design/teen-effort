@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Loader2, Sparkles, MapPin } from "lucide-react";
+import WeatherWidget from "@/components/WeatherWidget";
 import { Button } from "@/components/ui/button";
 import DateFilters from "@/components/date-planner/DateFilters";
 import DateResults from "@/components/date-planner/DateResults";
