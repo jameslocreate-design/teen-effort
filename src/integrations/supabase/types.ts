@@ -351,6 +351,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_export_table: { Args: { _table_name: string }; Returns: Json }
       get_accepted_partner_link_id: {
         Args: { _user_id: string }
         Returns: string

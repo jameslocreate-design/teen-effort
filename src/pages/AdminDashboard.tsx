@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Shield, LogOut, Users, Heart, CalendarDays, Gift, ListChecks, HelpCircle,
-  BarChart3, Megaphone, MessageSquare, TrendingUp, Activity
+  BarChart3, Megaphone, MessageSquare, TrendingUp, Activity, Star, Camera, Download, Bookmark
 } from "lucide-react";
 import AdminUserManagement from "@/components/admin/AdminUserManagement";
 import AdminContentModeration from "@/components/admin/AdminContentModeration";
 import AdminMarketing from "@/components/admin/AdminMarketing";
+import AdminDataExport from "@/components/admin/AdminDataExport";
 
-type AdminView = "dashboard" | "users" | "content" | "marketing";
+type AdminView = "dashboard" | "users" | "content" | "marketing" | "export";
 
 interface AdminStats {
   total_users: number;
@@ -21,6 +22,11 @@ interface AdminStats {
   total_saved_gifts: number;
   total_expert_posts: number;
   total_expert_replies: number;
+  total_favorites: number;
+  total_rated_dates: number;
+  avg_date_rating: number;
+  total_photos: number;
+  total_special_events: number;
   users_this_week: number;
   users_this_month: number;
   recent_signups: { name: string; created_at: string; zipcode: string | null; gender: string | null }[] | null;
@@ -70,6 +76,11 @@ const AdminDashboard = () => {
     { label: "Bucket List Items", value: stats.total_bucket_items, icon: ListChecks, color: "text-purple-500" },
     { label: "Saved Gifts", value: stats.total_saved_gifts, icon: Gift, color: "text-orange-500" },
     { label: "Expert Posts", value: stats.total_expert_posts, icon: HelpCircle, color: "text-cyan-500" },
+    { label: "Favorited Dates", value: stats.total_favorites, icon: Bookmark, color: "text-red-500" },
+    { label: "Rated Dates", value: stats.total_rated_dates, icon: Star, color: "text-yellow-500" },
+    { label: "Avg Rating", value: stats.avg_date_rating, icon: Star, color: "text-amber-500" },
+    { label: "Photos Uploaded", value: stats.total_photos, icon: Camera, color: "text-indigo-500" },
+    { label: "Special Events", value: stats.total_special_events, icon: CalendarDays, color: "text-rose-500" },
     { label: "New This Week", value: stats.users_this_week, icon: TrendingUp, color: "text-emerald-500" },
     { label: "New This Month", value: stats.users_this_month, icon: Activity, color: "text-amber-500" },
   ] : [];
@@ -78,7 +89,8 @@ const AdminDashboard = () => {
     { id: "dashboard", label: "Dashboard & Analytics", icon: <BarChart3 className="h-4 w-4" /> },
     { id: "users", label: "User Management", icon: <Users className="h-4 w-4" /> },
     { id: "content", label: "Content Moderation", icon: <MessageSquare className="h-4 w-4" /> },
-    { id: "marketing", label: "Marketing & Announcements", icon: <Megaphone className="h-4 w-4" /> },
+    { id: "marketing", label: "Marketing", icon: <Megaphone className="h-4 w-4" /> },
+    { id: "export", label: "Data Export", icon: <Download className="h-4 w-4" /> },
   ];
 
   return (
@@ -183,6 +195,7 @@ const AdminDashboard = () => {
           {activeView === "users" && <AdminUserManagement />}
           {activeView === "content" && <AdminContentModeration />}
           {activeView === "marketing" && <AdminMarketing />}
+          {activeView === "export" && <AdminDataExport />}
         </div>
       </main>
     </div>
