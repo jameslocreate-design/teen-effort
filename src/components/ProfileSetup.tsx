@@ -154,6 +154,27 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
             </div>
           </div>
 
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 block">
+              Love Language <span className="normal-case font-normal">(optional)</span>
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {loveLanguageOptions.map((ll) => (
+                <button
+                  key={ll.value}
+                  onClick={() => setLoveLanguage(loveLanguage === ll.value ? null : ll.value)}
+                  className={`rounded-xl border px-4 py-2.5 text-sm font-medium transition-all ${
+                    loveLanguage === ll.value
+                      ? "border-primary/50 bg-primary/15 text-primary glow-sm"
+                      : "border-border bg-secondary/40 text-secondary-foreground hover:border-primary/30"
+                  }`}
+                >
+                  {ll.emoji} {ll.value}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <Button onClick={handleSave} disabled={loading} className="w-full h-11 rounded-xl mt-2">
             <Save className="h-4 w-4" />
             {loading ? "Saving..." : "Save & Continue"}
