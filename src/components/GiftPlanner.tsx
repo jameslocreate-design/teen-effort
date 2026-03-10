@@ -22,7 +22,7 @@ const eventOptions = [
   { value: "Valentine's Day", label: "Valentine's", icon: "💝" },
   { value: "Christmas / Holidays", label: "Holidays", icon: "🎄" },
   { value: "Just Because", label: "Just Because", icon: "💕" },
-  { value: "Prom / Homecoming", label: "Prom", icon: "👗" },
+  { value: "Dances (Prom, Homecoming, Winter Formal)", label: "Dances", icon: "💃" },
 ];
 
 interface SavedGift {
