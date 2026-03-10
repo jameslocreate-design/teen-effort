@@ -39,7 +39,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
     if (!user) return;
     supabase
       .from("profiles")
-      .select("name, birthday, gender, descriptors")
+      .select("name, birthday, gender, descriptors, love_language")
       .eq("user_id", user.id)
       .single()
       .then(({ data }) => {
@@ -48,6 +48,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
           if (data.birthday) setBirthday(data.birthday);
           if (data.gender) setGender(data.gender);
           if ((data as any).descriptors) setDescriptors((data as any).descriptors);
+          if ((data as any).love_language) setLoveLanguage((data as any).love_language);
         }
       });
   }, [user]);
@@ -67,6 +68,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
         birthday: birthday || null,
         gender,
         descriptors,
+        love_language: loveLanguage,
       } as any)
       .eq("user_id", user.id);
 
