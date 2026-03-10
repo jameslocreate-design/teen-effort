@@ -133,6 +133,8 @@ const AppShell = () => {
           {activeTab === "bucket" && <BucketList />}
           {activeTab === "expert" && <AskTheExpert />}
           {activeTab === "journal" && <PhotoJournal />}
+          {activeTab === "stats" && <DateStats />}
+          {activeTab === "achievements" && <Achievements />}
           {activeTab === "calendar" && (
             <SharedCalendar
               onPlanDate={(title, date) => {
