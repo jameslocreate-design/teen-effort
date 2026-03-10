@@ -165,6 +165,21 @@ const PartnerLink = ({ onLinked }: PartnerLinkProps) => {
           </div>
         </div>
 
+        {/* Your code */}
+        <div className="space-y-2">
+          <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Your Code
+          </label>
+          <div className="flex gap-2">
+            <div className="flex-1 rounded-xl border border-border bg-secondary/50 px-4 py-3 text-sm font-mono text-foreground tracking-wider">
+              {myCode}
+            </div>
+            <Button variant="outline" size="icon" onClick={() => { navigator.clipboard.writeText(myCode); toast.success("Code copied!"); }} className="rounded-xl h-11 w-11">
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
         {/* Pending incoming */}
         {pendingLink && (
           <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-3">
