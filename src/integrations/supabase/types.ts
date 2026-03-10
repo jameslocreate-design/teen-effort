@@ -219,6 +219,7 @@ export type Database = {
           descriptors: string[] | null
           gender: string | null
           id: string
+          love_language: string | null
           name: string
           partner_code: string | null
           updated_at: string
@@ -231,6 +232,7 @@ export type Database = {
           descriptors?: string[] | null
           gender?: string | null
           id?: string
+          love_language?: string | null
           name?: string
           partner_code?: string | null
           updated_at?: string
@@ -243,6 +245,7 @@ export type Database = {
           descriptors?: string[] | null
           gender?: string | null
           id?: string
+          love_language?: string | null
           name?: string
           partner_code?: string | null
           updated_at?: string
