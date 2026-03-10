@@ -17,6 +17,8 @@ import DateRoulette from "@/components/DateRoulette";
 import PhotoJournal from "@/components/PhotoJournal";
 import DateStats from "@/components/DateStats";
 import Achievements from "@/components/Achievements";
+import SharedWishlists from "@/components/SharedWishlists";
+import CompatibilityQuiz from "@/components/CompatibilityQuiz";
 import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
