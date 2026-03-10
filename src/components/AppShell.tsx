@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Heart, CalendarDays, Sparkles, User, Link2, LogOut, Users, Gift, ListChecks, HelpCircle, MoreHorizontal, Dices, Camera } from "lucide-react";
+import { Heart, CalendarDays, Sparkles, User, Link2, LogOut, Users, Gift, ListChecks, HelpCircle, MoreHorizontal, Dices, Camera, BarChart3, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import DatePlanner from "@/components/DatePlanner";
@@ -15,10 +15,12 @@ import AskTheExpert from "@/components/AskTheExpert";
 import OnboardingTour from "@/components/OnboardingTour";
 import DateRoulette from "@/components/DateRoulette";
 import PhotoJournal from "@/components/PhotoJournal";
+import DateStats from "@/components/DateStats";
+import Achievements from "@/components/Achievements";
 import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
-type Tab = "planner" | "gifts" | "bucket" | "expert" | "calendar" | "partner" | "partner-view" | "profile" | "roulette" | "journal";
+type Tab = "planner" | "gifts" | "bucket" | "expert" | "calendar" | "partner" | "partner-view" | "profile" | "roulette" | "journal" | "stats" | "achievements";
 
 const primaryTabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "planner", label: "Dates", icon: <Sparkles className="h-5 w-5" /> },
@@ -28,6 +30,8 @@ const primaryTabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
 ];
 
 const secondaryTabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
+  { id: "stats", label: "Stats", icon: <BarChart3 className="h-4 w-4" /> },
+  { id: "achievements", label: "Badges", icon: <Trophy className="h-4 w-4" /> },
   { id: "journal", label: "Journal", icon: <Camera className="h-4 w-4" /> },
   { id: "bucket", label: "Bucket List", icon: <ListChecks className="h-4 w-4" /> },
   { id: "expert", label: "Expert", icon: <HelpCircle className="h-4 w-4" /> },
@@ -129,6 +133,8 @@ const AppShell = () => {
           {activeTab === "bucket" && <BucketList />}
           {activeTab === "expert" && <AskTheExpert />}
           {activeTab === "journal" && <PhotoJournal />}
+          {activeTab === "stats" && <DateStats />}
+          {activeTab === "achievements" && <Achievements />}
           {activeTab === "calendar" && (
             <SharedCalendar
               onPlanDate={(title, date) => {
