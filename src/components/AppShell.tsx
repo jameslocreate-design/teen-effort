@@ -32,6 +32,8 @@ const primaryTabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
 ];
 
 const secondaryTabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
+  { id: "wishlists", label: "Wishlists", icon: <Gift className="h-4 w-4" /> },
+  { id: "quiz", label: "Quiz", icon: <HeartHandshake className="h-4 w-4" /> },
   { id: "stats", label: "Stats", icon: <BarChart3 className="h-4 w-4" /> },
   { id: "achievements", label: "Badges", icon: <Trophy className="h-4 w-4" /> },
   { id: "journal", label: "Journal", icon: <Camera className="h-4 w-4" /> },
