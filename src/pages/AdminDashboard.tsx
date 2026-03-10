@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Shield, LogOut, Users, Heart, CalendarDays, Gift, ListChecks, HelpCircle,
-  BarChart3, Megaphone, MessageSquare, TrendingUp, Activity, Star, Camera, Download, Bookmark
+  BarChart3, Megaphone, MessageSquare, TrendingUp, Activity, Star, Camera, Download, Bookmark,
+  Share2, ClipboardList, MessageCircle, ScrollText
 } from "lucide-react";
 import AdminUserManagement from "@/components/admin/AdminUserManagement";
 import AdminContentModeration from "@/components/admin/AdminContentModeration";
@@ -27,6 +28,11 @@ interface AdminStats {
   avg_date_rating: number;
   total_photos: number;
   total_special_events: number;
+  total_wishlists: number;
+  total_referrals: number;
+  completed_referrals: number;
+  total_date_reviews: number;
+  total_quiz_answers: number;
   users_this_week: number;
   users_this_month: number;
   recent_signups: { name: string; created_at: string; zipcode: string | null; gender: string | null }[] | null;
@@ -81,6 +87,10 @@ const AdminDashboard = () => {
     { label: "Avg Rating", value: stats.avg_date_rating, icon: Star, color: "text-amber-500" },
     { label: "Photos Uploaded", value: stats.total_photos, icon: Camera, color: "text-indigo-500" },
     { label: "Special Events", value: stats.total_special_events, icon: CalendarDays, color: "text-rose-500" },
+    { label: "Wishlists", value: stats.total_wishlists, icon: ScrollText, color: "text-violet-500" },
+    { label: "Referrals", value: stats.total_referrals, icon: Share2, color: "text-teal-500" },
+    { label: "Date Reviews", value: stats.total_date_reviews, icon: MessageCircle, color: "text-sky-500" },
+    { label: "Quiz Answers", value: stats.total_quiz_answers, icon: ClipboardList, color: "text-lime-500" },
     { label: "New This Week", value: stats.users_this_week, icon: TrendingUp, color: "text-emerald-500" },
     { label: "New This Month", value: stats.users_this_month, icon: Activity, color: "text-amber-500" },
   ] : [];

@@ -15,6 +15,10 @@ const EXPORT_TABLES = [
   { name: "expert_replies", label: "Expert Replies", icon: "💭" },
   { name: "special_events", label: "Special Events", icon: "🎉" },
   { name: "user_roles", label: "User Roles", icon: "🛡️" },
+  { name: "wishlists", label: "Wishlists", icon: "📝" },
+  { name: "referrals", label: "Referrals", icon: "🔄" },
+  { name: "date_reviews", label: "Date Reviews", icon: "⭐" },
+  { name: "quiz_answers", label: "Quiz Answers", icon: "📋" },
 ];
 
 // Friendly column labels
@@ -28,6 +32,10 @@ const COLUMN_LABELS: Record<string, Record<string, string>> = {
   expert_replies: { content: "Reply", anonymous_name: "Author", is_ai: "AI Response", created_at: "Posted" },
   special_events: { title: "Event", event_type: "Type", event_date: "Date", recurring: "Recurring", created_at: "Added" },
   user_roles: { role: "Role" },
+  wishlists: { title: "Item", description: "Description", url: "URL", created_at: "Added" },
+  referrals: { referral_code: "Code", status: "Status", created_at: "Created", completed_at: "Completed" },
+  date_reviews: { venue_name: "Venue", rating: "Rating", review_text: "Review", venue_type: "Venue Type", date_type: "Date Type", cost_range: "Cost", location: "Location", would_recommend: "Recommended", created_at: "Posted" },
+  quiz_answers: { answers: "Answers", created_at: "Submitted", updated_at: "Updated" },
 };
 
 // Columns to hide (internal IDs)
