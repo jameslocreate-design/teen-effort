@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Shield, LogOut, Users, Heart, CalendarDays, Gift, ListChecks, HelpCircle,
-  BarChart3, Megaphone, MessageSquare, TrendingUp, Activity, Star, Camera, Download, Bookmark
+  BarChart3, Megaphone, MessageSquare, TrendingUp, Activity, Star, Camera, Download, Bookmark,
+  Share2, ClipboardList, MessageCircle, ScrollText
 } from "lucide-react";
 import AdminUserManagement from "@/components/admin/AdminUserManagement";
 import AdminContentModeration from "@/components/admin/AdminContentModeration";
