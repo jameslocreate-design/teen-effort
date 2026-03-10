@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Heart, CalendarDays, Sparkles, User, Link2, LogOut, Users, Gift, ListChecks, HelpCircle, MoreHorizontal } from "lucide-react";
+import { Heart, CalendarDays, Sparkles, User, Link2, LogOut, Users, Gift, ListChecks, HelpCircle, MoreHorizontal, Dices, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import DatePlanner from "@/components/DatePlanner";
@@ -13,19 +13,23 @@ import PartnerView from "@/components/PartnerView";
 import BucketList from "@/components/BucketList";
 import AskTheExpert from "@/components/AskTheExpert";
 import OnboardingTour from "@/components/OnboardingTour";
+import DateRoulette from "@/components/DateRoulette";
+import PhotoJournal from "@/components/PhotoJournal";
 import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
-type Tab = "planner" | "gifts" | "bucket" | "expert" | "calendar" | "partner" | "partner-view" | "profile";
+type Tab = "planner" | "gifts" | "bucket" | "expert" | "calendar" | "partner" | "partner-view" | "profile" | "roulette" | "journal";
 
 const primaryTabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "planner", label: "Dates", icon: <Sparkles className="h-5 w-5" /> },
+  { id: "roulette", label: "Roulette", icon: <Dices className="h-5 w-5" /> },
   { id: "gifts", label: "Gifts", icon: <Gift className="h-5 w-5" /> },
   { id: "calendar", label: "Calendar", icon: <CalendarDays className="h-5 w-5" /> },
-  { id: "bucket", label: "Bucket List", icon: <ListChecks className="h-5 w-5" /> },
 ];
 
 const secondaryTabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
+  { id: "journal", label: "Journal", icon: <Camera className="h-4 w-4" /> },
+  { id: "bucket", label: "Bucket List", icon: <ListChecks className="h-4 w-4" /> },
   { id: "expert", label: "Expert", icon: <HelpCircle className="h-4 w-4" /> },
   { id: "partner", label: "Link Partner", icon: <Link2 className="h-4 w-4" /> },
   { id: "partner-view", label: "Partner", icon: <Users className="h-4 w-4" /> },
