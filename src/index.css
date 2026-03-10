@@ -73,4 +73,13 @@
   .glow-md {
     box-shadow: 0 0 24px -4px hsl(var(--chat-glow) / 0.2);
   }
+
+  @keyframes slideInLeft {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+  }
+
+  [style*="slideInLeft"] {
+    animation: slideInLeft 0.25s ease-out;
+  }
 }
