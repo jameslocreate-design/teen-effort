@@ -20,7 +20,7 @@ import Achievements from "@/components/Achievements";
 import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
-type Tab = "planner" | "gifts" | "bucket" | "expert" | "calendar" | "partner" | "partner-view" | "profile" | "roulette" | "journal";
+type Tab = "planner" | "gifts" | "bucket" | "expert" | "calendar" | "partner" | "partner-view" | "profile" | "roulette" | "journal" | "stats" | "achievements";
 
 const primaryTabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "planner", label: "Dates", icon: <Sparkles className="h-5 w-5" /> },
