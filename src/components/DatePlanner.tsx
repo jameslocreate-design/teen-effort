@@ -115,6 +115,8 @@ const DatePlanner = () => {
         {locationStatus === "idle" && "Waiting for location..."}
       </div>
 
+      <WeatherWidget />
+
       <DateFilters filters={filters} onFilterChange={updateFilter} />
 
       <Button onClick={handleGenerate} disabled={isLoading} size="lg" className="w-full rounded-xl text-base font-semibold h-12">
