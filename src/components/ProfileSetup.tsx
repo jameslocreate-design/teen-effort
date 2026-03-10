@@ -6,12 +6,21 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { User, Save } from "lucide-react";
 
+const loveLanguageOptions = [
+  { value: "Words of Affirmation", emoji: "💬" },
+  { value: "Acts of Service", emoji: "🤝" },
+  { value: "Receiving Gifts", emoji: "🎁" },
+  { value: "Quality Time", emoji: "⏰" },
+  { value: "Physical Touch", emoji: "🫂" },
+];
+
 const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
   const { user } = useAuth();
   const [name, setName] = useState("");
   const [birthday, setBirthday] = useState("");
   const [gender, setGender] = useState<string | null>(null);
   const [descriptors, setDescriptors] = useState<string[]>([]);
+  const [loveLanguage, setLoveLanguage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const descriptorOptions = [
