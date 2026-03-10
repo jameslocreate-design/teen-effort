@@ -44,3 +44,24 @@ export const CalendarSkeleton = () => (
     </div>
   </div>
 );
+
+export const PhotoJournalSkeleton = () => (
+  <div className="space-y-6">
+    <div className="text-center space-y-2">
+      <Skeleton className="h-12 w-12 rounded-2xl mx-auto" />
+      <Skeleton className="h-6 w-32 mx-auto" />
+      <Skeleton className="h-4 w-48 mx-auto" />
+    </div>
+    {Array.from({ length: 2 }).map((_, i) => (
+      <div key={i} className="space-y-3">
+        <Skeleton className="h-5 w-40" />
+        <Skeleton className="h-3 w-28" />
+        <div className="grid grid-cols-3 gap-2">
+          {Array.from({ length: 3 }).map((_, j) => (
+            <Skeleton key={j} className="aspect-square rounded-xl" />
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+);

@@ -6,12 +6,21 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { User, Save } from "lucide-react";
 
+const loveLanguageOptions = [
+  { value: "Words of Affirmation", emoji: "💬" },
+  { value: "Acts of Service", emoji: "🤝" },
+  { value: "Receiving Gifts", emoji: "🎁" },
+  { value: "Quality Time", emoji: "⏰" },
+  { value: "Physical Touch", emoji: "🫂" },
+];
+
 const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
   const { user } = useAuth();
   const [name, setName] = useState("");
   const [birthday, setBirthday] = useState("");
   const [gender, setGender] = useState<string | null>(null);
   const [descriptors, setDescriptors] = useState<string[]>([]);
+  const [loveLanguage, setLoveLanguage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const descriptorOptions = [
@@ -30,7 +39,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
     if (!user) return;
     supabase
       .from("profiles")
-      .select("name, birthday, gender, descriptors")
+      .select("name, birthday, gender, descriptors, love_language")
       .eq("user_id", user.id)
       .single()
       .then(({ data }) => {
@@ -39,6 +48,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
           if (data.birthday) setBirthday(data.birthday);
           if (data.gender) setGender(data.gender);
           if ((data as any).descriptors) setDescriptors((data as any).descriptors);
+          if ((data as any).love_language) setLoveLanguage((data as any).love_language);
         }
       });
   }, [user]);
@@ -58,6 +68,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
         birthday: birthday || null,
         gender,
         descriptors,
+        love_language: loveLanguage,
       } as any)
       .eq("user_id", user.id);
 
@@ -138,6 +149,27 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
                   }`}
                 >
                   {d}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 block">
+              Love Language <span className="normal-case font-normal">(optional)</span>
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {loveLanguageOptions.map((ll) => (
+                <button
+                  key={ll.value}
+                  onClick={() => setLoveLanguage(loveLanguage === ll.value ? null : ll.value)}
+                  className={`rounded-xl border px-4 py-2.5 text-sm font-medium transition-all ${
+                    loveLanguage === ll.value
+                      ? "border-primary/50 bg-primary/15 text-primary glow-sm"
+                      : "border-border bg-secondary/40 text-secondary-foreground hover:border-primary/30"
+                  }`}
+                >
+                  {ll.emoji} {ll.value}
                 </button>
               ))}
             </div>
