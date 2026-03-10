@@ -22,7 +22,7 @@ import CompatibilityQuiz from "@/components/CompatibilityQuiz";
 import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
-type Tab = "planner" | "gifts" | "bucket" | "expert" | "calendar" | "partner" | "partner-view" | "profile" | "roulette" | "journal" | "stats" | "achievements";
+type Tab = "planner" | "gifts" | "bucket" | "expert" | "calendar" | "partner" | "partner-view" | "profile" | "roulette" | "journal" | "stats" | "achievements" | "wishlists" | "quiz";
 
 const primaryTabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "planner", label: "Dates", icon: <Sparkles className="h-5 w-5" /> },
