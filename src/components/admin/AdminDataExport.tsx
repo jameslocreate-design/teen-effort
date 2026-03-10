@@ -15,6 +15,10 @@ const EXPORT_TABLES = [
   { name: "expert_replies", label: "Expert Replies", icon: "💭" },
   { name: "special_events", label: "Special Events", icon: "🎉" },
   { name: "user_roles", label: "User Roles", icon: "🛡️" },
+  { name: "wishlists", label: "Wishlists", icon: "📝" },
+  { name: "referrals", label: "Referrals", icon: "🔄" },
+  { name: "date_reviews", label: "Date Reviews", icon: "⭐" },
+  { name: "quiz_answers", label: "Quiz Answers", icon: "📋" },
 ];
 
 // Friendly column labels

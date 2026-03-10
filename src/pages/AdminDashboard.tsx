@@ -87,6 +87,10 @@ const AdminDashboard = () => {
     { label: "Avg Rating", value: stats.avg_date_rating, icon: Star, color: "text-amber-500" },
     { label: "Photos Uploaded", value: stats.total_photos, icon: Camera, color: "text-indigo-500" },
     { label: "Special Events", value: stats.total_special_events, icon: CalendarDays, color: "text-rose-500" },
+    { label: "Wishlists", value: stats.total_wishlists, icon: ScrollText, color: "text-violet-500" },
+    { label: "Referrals", value: stats.total_referrals, icon: Share2, color: "text-teal-500" },
+    { label: "Date Reviews", value: stats.total_date_reviews, icon: MessageCircle, color: "text-sky-500" },
+    { label: "Quiz Answers", value: stats.total_quiz_answers, icon: ClipboardList, color: "text-lime-500" },
     { label: "New This Week", value: stats.users_this_week, icon: TrendingUp, color: "text-emerald-500" },
     { label: "New This Month", value: stats.users_this_month, icon: Activity, color: "text-amber-500" },
   ] : [];
