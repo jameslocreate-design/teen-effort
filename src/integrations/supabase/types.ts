@@ -65,8 +65,11 @@ export type Database = {
           estimated_cost: string | null
           event_time: string | null
           id: string
+          is_favorite: boolean
           partner_link_id: string
+          photo_urls: string[] | null
           title: string
+          user_rating: number | null
           vibe: string | null
           yelp_rating: number | null
           yelp_review_count: number | null
@@ -81,8 +84,11 @@ export type Database = {
           estimated_cost?: string | null
           event_time?: string | null
           id?: string
+          is_favorite?: boolean
           partner_link_id: string
+          photo_urls?: string[] | null
           title: string
+          user_rating?: number | null
           vibe?: string | null
           yelp_rating?: number | null
           yelp_review_count?: number | null
@@ -97,8 +103,11 @@ export type Database = {
           estimated_cost?: string | null
           event_time?: string | null
           id?: string
+          is_favorite?: boolean
           partner_link_id?: string
+          photo_urls?: string[] | null
           title?: string
+          user_rating?: number | null
           vibe?: string | null
           yelp_rating?: number | null
           yelp_review_count?: number | null
