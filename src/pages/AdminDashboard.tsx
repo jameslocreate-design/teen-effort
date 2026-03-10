@@ -27,6 +27,11 @@ interface AdminStats {
   avg_date_rating: number;
   total_photos: number;
   total_special_events: number;
+  total_wishlists: number;
+  total_referrals: number;
+  completed_referrals: number;
+  total_date_reviews: number;
+  total_quiz_answers: number;
   users_this_week: number;
   users_this_month: number;
   recent_signups: { name: string; created_at: string; zipcode: string | null; gender: string | null }[] | null;
