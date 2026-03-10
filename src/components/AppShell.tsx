@@ -15,6 +15,8 @@ import AskTheExpert from "@/components/AskTheExpert";
 import OnboardingTour from "@/components/OnboardingTour";
 import DateRoulette from "@/components/DateRoulette";
 import PhotoJournal from "@/components/PhotoJournal";
+import DateStats from "@/components/DateStats";
+import Achievements from "@/components/Achievements";
 import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
