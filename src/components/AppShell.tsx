@@ -61,6 +61,7 @@ const navSections: NavSection[] = [
   {
     title: "Discover",
     items: [
+      { id: "date-log", label: "Date Log", icon: <Clock className="h-4 w-4" /> },
       { id: "reviews", label: "Date Reviews", icon: <MessageSquare className="h-4 w-4" /> },
       { id: "stats", label: "Date Stats", icon: <BarChart3 className="h-4 w-4" /> },
       { id: "achievements", label: "Badges", icon: <Trophy className="h-4 w-4" /> },
