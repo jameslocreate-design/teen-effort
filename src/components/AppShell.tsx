@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 import {
   Heart, CalendarDays, Sparkles, User, Link2, LogOut, Users, Gift,
   ListChecks, HelpCircle, Dices, Camera, BarChart3, Trophy,
-  HeartHandshake, Share2, MessageSquare, Menu, X, ChevronRight,
+  HeartHandshake, Share2, MessageSquare, Menu, X, ChevronRight, Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DatePlanner from "@/components/DatePlanner";
@@ -31,7 +32,8 @@ type Tab =
   | "planner" | "roulette" | "gifts" | "calendar"
   | "wishlists" | "quiz" | "stats" | "achievements"
   | "journal" | "bucket" | "reviews" | "expert"
-  | "referral" | "partner" | "partner-view" | "profile";
+  | "referral" | "partner" | "partner-view" | "profile"
+  | "date-log";
 
 interface NavSection {
   title: string;
@@ -60,6 +62,7 @@ const navSections: NavSection[] = [
   {
     title: "Discover",
     items: [
+      { id: "date-log", label: "Date Log", icon: <Clock className="h-4 w-4" /> },
       { id: "reviews", label: "Date Reviews", icon: <MessageSquare className="h-4 w-4" /> },
       { id: "stats", label: "Date Stats", icon: <BarChart3 className="h-4 w-4" /> },
       { id: "achievements", label: "Badges", icon: <Trophy className="h-4 w-4" /> },
@@ -86,6 +89,7 @@ const mobileQuickTabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
 
 const AppShell = () => {
   const { user, loading, signOut } = useAuth();
+  const navigate = useNavigate();
   const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("planner");
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -127,6 +131,11 @@ const AppShell = () => {
   };
 
   const handleTabChange = (tab: Tab) => {
+    if (tab === "date-log") {
+      navigate("/date-log");
+      setSidebarOpen(false);
+      return;
+    }
     setActiveTab(tab);
     setSidebarOpen(false);
   };
