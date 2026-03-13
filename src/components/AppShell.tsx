@@ -89,6 +89,7 @@ const mobileQuickTabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
 
 const AppShell = () => {
   const { user, loading, signOut } = useAuth();
+  const navigate = useNavigate();
   const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("planner");
   const [showOnboarding, setShowOnboarding] = useState(false);
