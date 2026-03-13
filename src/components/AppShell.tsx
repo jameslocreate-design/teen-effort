@@ -130,6 +130,11 @@ const AppShell = () => {
   };
 
   const handleTabChange = (tab: Tab) => {
+    if (tab === "date-log") {
+      navigate("/date-log");
+      setSidebarOpen(false);
+      return;
+    }
     setActiveTab(tab);
     setSidebarOpen(false);
   };
