@@ -32,7 +32,8 @@ type Tab =
   | "planner" | "roulette" | "gifts" | "calendar"
   | "wishlists" | "quiz" | "stats" | "achievements"
   | "journal" | "bucket" | "reviews" | "expert"
-  | "referral" | "partner" | "partner-view" | "profile";
+  | "referral" | "partner" | "partner-view" | "profile"
+  | "date-log";
 
 interface NavSection {
   title: string;
