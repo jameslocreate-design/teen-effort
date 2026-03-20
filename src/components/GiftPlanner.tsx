@@ -39,9 +39,7 @@ interface SavedGift {
 const GiftPlanner = () => {
   const { user } = useAuth();
   const [filters, setFilters] = useState<GiftFilters>({
-    cost: null,
-    personalization: null,
-    event: null,
+    cost: null, personalization: null, event: null,
   });
 
   const [ideas, setIdeas] = useState<GiftIdea[]>([]);
@@ -54,9 +52,7 @@ const GiftPlanner = () => {
   const fetchSavedGifts = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
-      .from("saved_gifts")
-      .select("*")
-      .eq("user_id", user.id)
+      .from("saved_gifts").select("*").eq("user_id", user.id)
       .order("created_at", { ascending: false });
     if (data) setSavedGifts(data);
   }, [user]);
@@ -73,8 +69,7 @@ const GiftPlanner = () => {
     setIsLoading(true);
     setHasGenerated(true);
     try {
-      const result = await generateGiftIdeas(filters);
-      setIdeas(result);
+      setIdeas(await generateGiftIdeas(filters));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to generate ideas");
     } finally {
@@ -86,84 +81,72 @@ const GiftPlanner = () => {
     if (!user) return;
     setSavingIndex(index);
     const { error } = await supabase.from("saved_gifts").insert({
-      user_id: user.id,
-      title: idea.title,
-      description: idea.description,
-      estimated_cost: idea.estimated_cost,
-      where_to_buy: idea.where_to_buy,
-      personalization_tip: idea.personalization_tip,
-      vibe: idea.vibe,
+      user_id: user.id, title: idea.title, description: idea.description,
+      estimated_cost: idea.estimated_cost, where_to_buy: idea.where_to_buy,
+      personalization_tip: idea.personalization_tip, vibe: idea.vibe,
     });
-    if (error) {
-      toast.error("Failed to save gift");
-    } else {
-      toast.success(`"${idea.title}" saved!`);
-      fetchSavedGifts();
-    }
+    if (error) toast.error("Failed to save gift");
+    else { toast.success(`"${idea.title}" saved!`); fetchSavedGifts(); }
     setSavingIndex(null);
   };
 
   const handleDeleteGift = async (id: string) => {
     setDeletingId(id);
     const { error } = await supabase.from("saved_gifts").delete().eq("id", id);
-    if (error) {
-      toast.error("Failed to delete gift");
-    } else {
-      setSavedGifts((prev) => prev.filter((g) => g.id !== id));
-      toast.success("Gift removed");
-    }
+    if (error) toast.error("Failed to delete gift");
+    else { setSavedGifts((prev) => prev.filter((g) => g.id !== id)); toast.success("Gift removed"); }
     setDeletingId(null);
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center gap-3">
-        <div className="h-9 w-9 rounded-xl bg-primary/15 flex items-center justify-center">
-          <Gift className="h-4 w-4 text-primary" />
-        </div>
-        <div>
-          <h2 className="text-lg font-bold text-foreground">Gift Planner</h2>
-          <p className="text-xs text-muted-foreground">Find the perfect gift for your partner</p>
-        </div>
+    <div className="space-y-10">
+      {/* Hero */}
+      <div className="space-y-3 animate-fade-in-up">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/70 font-sans">Curated Experiences</p>
+        <h1 className="text-4xl sm:text-5xl font-display font-semibold text-foreground leading-[1.1]">
+          The Art of Giving
+        </h1>
+        <p className="text-sm text-muted-foreground leading-relaxed max-w-md font-sans">
+          Transform a gesture into a memory with our bespoke gift concierge.
+        </p>
       </div>
 
-      <div className="space-y-6">
-        <FilterGroup label="Budget" options={costOptions} selected={filters.cost} onSelect={updateFilter("cost")} />
-        <FilterGroup label="Event / Season" options={eventOptions} selected={filters.event} onSelect={updateFilter("event")} />
+      <div className="space-y-8">
+        <FilterGroup label="01. The Occasion" options={eventOptions} selected={filters.event} onSelect={updateFilter("event")} />
+        <FilterGroup label="02. Investment Range" options={costOptions} selected={filters.cost} onSelect={updateFilter("cost")} />
 
-        <div className="space-y-2.5">
-          <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Personalization
+        <div className="space-y-3">
+          <h3 className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground font-sans">
+            03. Personal Touch
           </h3>
           <Textarea
-            placeholder="Tell us about your partner's interests — favorite band, movie, hobby, sport, inside jokes, etc. The more detail the better!"
+            placeholder="Tell us about your partner's interests — favorite band, movie, hobby, sport, inside jokes…"
             value={filters.personalization || ""}
             onChange={(e) => updateFilter("personalization")(e.target.value || null)}
-            className="rounded-xl border-border bg-secondary/40 text-sm min-h-[80px] resize-none"
+            className="rounded-2xl border-border bg-card text-sm min-h-[80px] resize-none font-sans"
           />
-          <p className="text-xs text-muted-foreground">
-            e.g. "She loves Taylor Swift, hiking, and watercolor painting" or "He's obsessed with the Lakers and cooking Italian food"
+          <p className="text-xs text-muted-foreground font-sans">
+            e.g. "She loves Taylor Swift, hiking, and watercolor painting"
           </p>
         </div>
       </div>
 
-      <Button onClick={handleGenerate} disabled={isLoading} size="lg" className="w-full rounded-xl text-base font-semibold h-12">
+      <Button
+        onClick={handleGenerate}
+        disabled={isLoading}
+        size="lg"
+        className="w-full rounded-2xl text-base font-semibold h-14 bg-primary hover:bg-primary/90 text-primary-foreground font-sans transition-all duration-200 active:scale-[0.98]"
+      >
         {isLoading ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Finding gifts...
-          </>
+          <><Loader2 className="h-4 w-4 animate-spin" />Finding gifts...</>
         ) : (
-          <>
-            <Gift className="h-4 w-4" />
-            {hasAnyFilter ? "Generate Gift Ideas" : "Surprise Me"}
-          </>
+          <><Gift className="h-4 w-4" />{hasAnyFilter ? "Discover Gifts" : "Surprise Me"}</>
         )}
       </Button>
 
       {hasGenerated && !isLoading && ideas.length > 0 && (
         <div className="space-y-4 pb-4">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground font-sans">
             Gift Ideas
           </h2>
           {ideas.map((idea, i) => (
@@ -174,45 +157,41 @@ const GiftPlanner = () => {
                 size="sm"
                 onClick={() => handleSaveGift(idea, i)}
                 disabled={savingIndex === i}
-                className="absolute top-3 right-3 rounded-lg text-xs"
+                className="absolute top-3 right-3 rounded-xl text-xs font-sans"
               >
                 <Bookmark className="h-3.5 w-3.5" />
                 {savingIndex === i ? "Saving..." : "Save"}
               </Button>
             </div>
           ))}
-          <Button variant="outline" onClick={handleGenerate} className="w-full rounded-xl">
-            <Sparkles className="h-4 w-4" />
-            Generate More
+          <Button variant="outline" onClick={handleGenerate} className="w-full rounded-2xl font-sans">
+            <Sparkles className="h-4 w-4" /> Generate More
           </Button>
         </div>
       )}
 
       {hasGenerated && !isLoading && ideas.length === 0 && (
-        <p className="text-center py-8 text-muted-foreground">No ideas generated. Try different filters.</p>
+        <p className="text-center py-8 text-muted-foreground font-sans">No ideas generated. Try different filters.</p>
       )}
 
-      {/* Saved Gifts Section */}
       {savedGifts.length > 0 && (
         <div className="space-y-4 pt-4 border-t border-border">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-            <Bookmark className="h-3.5 w-3.5" />
-            Saved Gifts ({savedGifts.length})
+          <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground flex items-center gap-2 font-sans">
+            <Bookmark className="h-3.5 w-3.5" /> Saved Gifts ({savedGifts.length})
           </h2>
-          <p className="text-xs text-muted-foreground">Only you can see these — keep the surprise!</p>
+          <p className="text-xs text-muted-foreground font-sans">Only you can see these — keep the surprise!</p>
           {savedGifts.map((gift) => (
-            <div key={gift.id} className="group rounded-2xl border border-border bg-card p-5 space-y-3 transition-all duration-300 hover:border-primary/30">
+            <div key={gift.id} className="group rounded-2xl border border-border bg-card p-5 space-y-3 transition-all duration-200 hover:border-primary/30">
               <div className="flex items-start justify-between gap-3">
-                <h3 className="text-lg font-semibold text-foreground leading-snug">{gift.title}</h3>
+                <h3 className="text-lg font-display font-semibold text-foreground leading-snug">{gift.title}</h3>
                 <div className="flex items-center gap-2 shrink-0">
                   {gift.vibe && (
-                    <span className="rounded-full bg-primary/15 text-primary px-2.5 py-1 text-xs font-medium">
+                    <span className="rounded-full bg-primary/10 text-primary px-2.5 py-1 text-xs font-medium font-sans">
                       {gift.vibe}
                     </span>
                   )}
                   <Button
-                    variant="ghost"
-                    size="icon"
+                    variant="ghost" size="icon"
                     className="h-7 w-7 text-muted-foreground hover:text-destructive"
                     onClick={() => handleDeleteGift(gift.id)}
                     disabled={deletingId === gift.id}
@@ -221,10 +200,8 @@ const GiftPlanner = () => {
                   </Button>
                 </div>
               </div>
-              {gift.description && (
-                <p className="text-sm text-muted-foreground leading-relaxed">{gift.description}</p>
-              )}
-              <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
+              {gift.description && <p className="text-sm text-muted-foreground leading-relaxed font-sans">{gift.description}</p>}
+              <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap font-sans">
                 {gift.estimated_cost && <span>💰 {gift.estimated_cost}</span>}
                 {gift.where_to_buy && <span>🛒 {gift.where_to_buy}</span>}
               </div>

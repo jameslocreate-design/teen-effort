@@ -106,8 +106,19 @@ const DatePlanner = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+    <div className="space-y-10">
+      {/* Hero section */}
+      <div className="space-y-3 animate-fade-in-up">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/70 font-sans">Curated Planning</p>
+        <h1 className="text-4xl sm:text-5xl font-display font-semibold text-foreground leading-[1.1]">
+          The Perfect Date
+        </h1>
+        <p className="text-sm text-muted-foreground leading-relaxed max-w-md font-sans">
+          Refine the atmosphere of your evening to let us uncover the ideal destination.
+        </p>
+      </div>
+
+      <div className="flex items-center gap-2 text-xs text-muted-foreground font-sans">
         <MapPin className="h-3.5 w-3.5" />
         {locationStatus === "loading" && "Detecting location..."}
         {locationStatus === "granted" && <span className="text-primary">Location detected — dates will be nearby</span>}
@@ -119,11 +130,16 @@ const DatePlanner = () => {
 
       <DateFilters filters={filters} onFilterChange={updateFilter} />
 
-      <Button onClick={handleGenerate} disabled={isLoading} size="lg" className="w-full rounded-xl text-base font-semibold h-12">
+      <Button
+        onClick={handleGenerate}
+        disabled={isLoading}
+        size="lg"
+        className="w-full rounded-2xl text-base font-semibold h-14 bg-primary hover:bg-primary/90 text-primary-foreground font-sans transition-all duration-200 active:scale-[0.98]"
+      >
         {isLoading ? (
-          <><Loader2 className="h-4 w-4 animate-spin" />Generating ideas...</>
+          <><Loader2 className="h-4 w-4 animate-spin" />Curating your evening...</>
         ) : (
-          <><Sparkles className="h-4 w-4" />{hasAnyFilter ? "Generate Date Ideas" : "Surprise Me"}</>
+          <><Sparkles className="h-4 w-4" />{hasAnyFilter ? "Discover Dates" : "Surprise Me"}</>
         )}
       </Button>
 
