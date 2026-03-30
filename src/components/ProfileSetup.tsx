@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { User, Save } from "lucide-react";
+import { User, Save, Camera } from "lucide-react";
 
 const loveLanguageOptions = [
   { value: "Words of Affirmation", emoji: "💬" },
@@ -21,7 +21,10 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
   const [gender, setGender] = useState<string | null>(null);
   const [descriptors, setDescriptors] = useState<string[]>([]);
   const [loveLanguage, setLoveLanguage] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const descriptorOptions = [
     "🎮 Gamer", "🏋️ Jock", "🛍️ Shopper", "📱 Influencer",
@@ -39,7 +42,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
     if (!user) return;
     supabase
       .from("profiles")
-      .select("name, birthday, gender, descriptors, love_language")
+      .select("name, birthday, gender, descriptors, love_language, avatar_url")
       .eq("user_id", user.id)
       .single()
       .then(({ data }) => {
@@ -49,9 +52,54 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
           if (data.gender) setGender(data.gender);
           if ((data as any).descriptors) setDescriptors((data as any).descriptors);
           if ((data as any).love_language) setLoveLanguage((data as any).love_language);
+          if ((data as any).avatar_url) setAvatarUrl((data as any).avatar_url);
         }
       });
   }, [user]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
+      return;
+    }
+
+    setUploading(true);
+    const ext = file.name.split(".").pop();
+    const filePath = `${user.id}/avatar.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      toast.error("Failed to upload photo");
+      setUploading(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
+    const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({ avatar_url: publicUrl } as any)
+      .eq("user_id", user.id);
+
+    if (updateError) {
+      toast.error("Failed to save avatar");
+    } else {
+      setAvatarUrl(publicUrl);
+      toast.success("Profile photo updated!");
+    }
+    setUploading(false);
+  };
 
   const genderOptions = ["Male", "Female", "Non-binary", "Prefer not to say"];
 
@@ -85,8 +133,35 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center space-y-3">
-          <div className="mx-auto h-14 w-14 rounded-2xl bg-primary/15 flex items-center justify-center glow-md">
-            <User className="h-7 w-7 text-primary" />
+          {/* Avatar upload */}
+          <div className="relative mx-auto w-fit">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="relative h-20 w-20 rounded-full bg-secondary flex items-center justify-center overflow-hidden ring-2 ring-primary/20 hover:ring-primary/40 transition-all group"
+            >
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Profile" className="h-full w-full object-cover" />
+              ) : (
+                <User className="h-8 w-8 text-muted-foreground" />
+              )}
+              <div className="absolute inset-0 bg-background/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Camera className="h-5 w-5 text-foreground" />
+              </div>
+              {uploading && (
+                <div className="absolute inset-0 bg-background/70 flex items-center justify-center">
+                  <div className="h-5 w-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarUpload}
+              className="hidden"
+            />
+            <p className="text-[10px] text-muted-foreground mt-2">Tap to add photo</p>
           </div>
           <h1 className="text-2xl font-bold text-foreground">Set Up Your Profile</h1>
           <p className="text-sm text-muted-foreground">Tell us a bit about yourself</p>
