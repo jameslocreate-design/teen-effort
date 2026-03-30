@@ -10,6 +10,7 @@ interface PartnerProfile {
   name: string;
   birthday: string | null;
   gender: string | null;
+  avatar_url: string | null;
 }
 
 interface PartnerViewProps {
