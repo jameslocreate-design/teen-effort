@@ -97,6 +97,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
     } else {
       setAvatarUrl(publicUrl);
       toast.success("Profile photo updated!");
+      window.dispatchEvent(new Event("profile-updated"));
     }
     setUploading(false);
   };
