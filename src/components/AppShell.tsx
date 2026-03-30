@@ -93,6 +93,7 @@ const AppShell = () => {
   const navigate = useNavigate();
   const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
   const [profileName, setProfileName] = useState<string>("");
+  const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("planner");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
