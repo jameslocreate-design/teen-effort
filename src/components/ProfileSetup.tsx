@@ -97,6 +97,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
     } else {
       setAvatarUrl(publicUrl);
       toast.success("Profile photo updated!");
+      window.dispatchEvent(new Event("profile-updated"));
     }
     setUploading(false);
   };
@@ -124,6 +125,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
       toast.error("Failed to save profile");
     } else {
       toast.success("Profile saved!");
+      window.dispatchEvent(new Event("profile-updated"));
       if (onComplete) onComplete();
     }
     setLoading(false);
