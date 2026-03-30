@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Loader2, Sparkles, Gift, Bookmark, Trash2 } from "lucide-react";
+import { Loader2, Sparkles, Gift, Bookmark, Trash2, Coins, Banknote, Wallet, Gem, Cake, Diamond, Heart, TreePine, HeartHandshake, Music } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import FilterGroup from "@/components/FilterGroup";
@@ -10,19 +10,19 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 const costOptions = [
-  { value: "Under $15", label: "Under $15", icon: "🪙" },
-  { value: "$15-50", label: "$15-50", icon: "💵" },
-  { value: "$50-100", label: "$50-100", icon: "💰" },
-  { value: "$100+", label: "$100+", icon: "💎" },
+  { value: "Under $15", label: "Under $15", icon: Coins },
+  { value: "$15-50", label: "$15-50", icon: Banknote },
+  { value: "$50-100", label: "$50-100", icon: Wallet },
+  { value: "$100+", label: "$100+", icon: Gem },
 ];
 
 const eventOptions = [
-  { value: "Birthday", label: "Birthday", icon: "🎂" },
-  { value: "Anniversary", label: "Anniversary", icon: "💍" },
-  { value: "Valentine's Day", label: "Valentine's", icon: "💝" },
-  { value: "Christmas / Holidays", label: "Holidays", icon: "🎄" },
-  { value: "Just Because", label: "Just Because", icon: "💕" },
-  { value: "Dances (Prom, Homecoming, Winter Formal)", label: "Dances", icon: "💃" },
+  { value: "Birthday", label: "Birthday", icon: Cake },
+  { value: "Anniversary", label: "Anniversary", icon: Diamond },
+  { value: "Valentine's Day", label: "Valentine's", icon: Heart },
+  { value: "Christmas / Holidays", label: "Holidays", icon: TreePine },
+  { value: "Just Because", label: "Just Because", icon: HeartHandshake },
+  { value: "Dances (Prom, Homecoming, Winter Formal)", label: "Dances", icon: Music },
 ];
 
 interface SavedGift {
