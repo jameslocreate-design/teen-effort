@@ -125,6 +125,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
       toast.error("Failed to save profile");
     } else {
       toast.success("Profile saved!");
+      window.dispatchEvent(new Event("profile-updated"));
       if (onComplete) onComplete();
     }
     setLoading(false);

@@ -98,7 +98,7 @@ const AppShell = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  useEffect(() => {
+  const fetchProfile = () => {
     if (!user) return;
     supabase
       .from("profiles")
@@ -114,6 +114,16 @@ const AppShell = () => {
           setShowOnboarding(true);
         }
       });
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, [user]);
+
+  useEffect(() => {
+    const handler = () => fetchProfile();
+    window.addEventListener("profile-updated", handler);
+    return () => window.removeEventListener("profile-updated", handler);
   }, [user]);
 
   if (loading) {
