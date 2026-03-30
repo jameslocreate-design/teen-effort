@@ -102,13 +102,14 @@ const AppShell = () => {
     if (!user) return;
     supabase
       .from("profiles")
-      .select("name")
+      .select("name, avatar_url")
       .eq("user_id", user.id)
       .single()
       .then(({ data }) => {
         const isComplete = !!data?.name;
         setProfileComplete(isComplete);
         if (data?.name) setProfileName(data.name);
+        if ((data as any)?.avatar_url) setProfileAvatar((data as any).avatar_url);
         if (isComplete && !localStorage.getItem("onboarding-done")) {
           setShowOnboarding(true);
         }
