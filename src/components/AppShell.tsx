@@ -93,6 +93,7 @@ const AppShell = () => {
   const navigate = useNavigate();
   const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
   const [profileName, setProfileName] = useState<string>("");
+  const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("planner");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -101,13 +102,14 @@ const AppShell = () => {
     if (!user) return;
     supabase
       .from("profiles")
-      .select("name")
+      .select("name, avatar_url")
       .eq("user_id", user.id)
       .single()
       .then(({ data }) => {
         const isComplete = !!data?.name;
         setProfileComplete(isComplete);
         if (data?.name) setProfileName(data.name);
+        if ((data as any)?.avatar_url) setProfileAvatar((data as any).avatar_url);
         if (isComplete && !localStorage.getItem("onboarding-done")) {
           setShowOnboarding(true);
         }
@@ -175,8 +177,12 @@ const AppShell = () => {
   const SidebarProfile = () => (
     <div className="px-5 py-6 border-b border-border">
       <div className="flex items-center gap-3">
-        <div className="h-11 w-11 rounded-full bg-secondary flex items-center justify-center text-sm font-semibold text-foreground ring-2 ring-primary/20">
-          {profileName ? profileName.charAt(0).toUpperCase() : "?"}
+        <div className="h-11 w-11 rounded-full bg-secondary flex items-center justify-center text-sm font-semibold text-foreground ring-2 ring-primary/20 overflow-hidden">
+          {profileAvatar ? (
+            <img src={profileAvatar} alt="Profile" className="h-full w-full object-cover" />
+          ) : (
+            profileName ? profileName.charAt(0).toUpperCase() : "?"
+          )}
         </div>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-foreground truncate">{profileName || "Your Name"}</p>

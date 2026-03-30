@@ -10,6 +10,7 @@ interface PartnerProfile {
   name: string;
   birthday: string | null;
   gender: string | null;
+  avatar_url: string | null;
 }
 
 interface PartnerViewProps {
@@ -48,7 +49,7 @@ const PartnerView = ({ onUnlinked }: PartnerViewProps) => {
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("name, birthday, gender")
+      .select("name, birthday, gender, avatar_url")
       .eq("user_id", partnerId)
       .single();
 
@@ -109,8 +110,12 @@ const PartnerView = ({ onUnlinked }: PartnerViewProps) => {
         {/* Partner info card */}
         <div className="rounded-xl border border-border bg-card p-6 space-y-4">
           <div className="text-center space-y-1">
-            <div className="mx-auto h-16 w-16 rounded-full bg-secondary flex items-center justify-center mb-3">
-              <User className="h-8 w-8 text-muted-foreground" />
+            <div className="mx-auto h-16 w-16 rounded-full bg-secondary flex items-center justify-center mb-3 overflow-hidden ring-2 ring-primary/20">
+              {partner.avatar_url ? (
+                <img src={partner.avatar_url} alt={partner.name} className="h-full w-full object-cover" />
+              ) : (
+                <User className="h-8 w-8 text-muted-foreground" />
+              )}
             </div>
             <h2 className="text-xl font-bold text-foreground">{partner.name}</h2>
             <div className="flex items-center justify-center gap-3 text-sm text-muted-foreground">

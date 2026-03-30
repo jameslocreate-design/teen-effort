@@ -343,6 +343,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           birthday: string | null
           created_at: string
           descriptors: string[] | null
@@ -357,6 +358,7 @@ export type Database = {
           zipcode: string | null
         }
         Insert: {
+          avatar_url?: string | null
           birthday?: string | null
           created_at?: string
           descriptors?: string[] | null
@@ -371,6 +373,7 @@ export type Database = {
           zipcode?: string | null
         }
         Update: {
+          avatar_url?: string | null
           birthday?: string | null
           created_at?: string
           descriptors?: string[] | null
