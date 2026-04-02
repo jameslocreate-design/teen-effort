@@ -17,7 +17,7 @@ const DatePlanner = () => {
   const { user } = useAuth();
   const [filters, setFilters] = useState<DateFiltersType>({
     cost: null, location: null, activity: null, distance: null,
-    timeRange: null, cuisine: null, latitude: null, longitude: null, funActivity: null,
+    timeRange: null, cuisine: null, latitude: null, longitude: null, funActivity: null, mood: null,
   });
 
   const [ideas, setIdeas] = useState<DateIdea[]>([]);
