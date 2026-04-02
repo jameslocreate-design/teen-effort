@@ -6,6 +6,51 @@
 
 @layer base {
   :root {
+    --background: 30 20% 96%;
+    --foreground: 20 10% 15%;
+
+    --card: 30 15% 98%;
+    --card-foreground: 20 10% 15%;
+
+    --popover: 30 15% 98%;
+    --popover-foreground: 20 10% 15%;
+
+    --primary: 18 45% 55%;
+    --primary-foreground: 30 20% 96%;
+
+    --secondary: 25 12% 90%;
+    --secondary-foreground: 20 8% 35%;
+
+    --muted: 25 10% 92%;
+    --muted-foreground: 20 6% 45%;
+
+    --accent: 18 35% 40%;
+    --accent-foreground: 30 20% 96%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 25 10% 88%;
+    --input: 25 10% 88%;
+    --ring: 18 45% 55%;
+
+    --radius: 1rem;
+
+    --chat-user: 25 12% 90%;
+    --chat-ai: 30 15% 98%;
+    --chat-glow: 18 45% 55%;
+
+    --sidebar-background: 30 18% 97%;
+    --sidebar-foreground: 20 8% 35%;
+    --sidebar-primary: 18 45% 55%;
+    --sidebar-primary-foreground: 30 20% 96%;
+    --sidebar-accent: 25 12% 92%;
+    --sidebar-accent-foreground: 20 10% 15%;
+    --sidebar-border: 25 10% 88%;
+    --sidebar-ring: 18 45% 55%;
+  }
+
+  .dark {
     --background: 20 8% 5%;
     --foreground: 30 15% 88%;
 

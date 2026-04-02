@@ -6,7 +6,7 @@ import {
   Heart, CalendarDays, Sparkles, User, Link2, LogOut, Users, Gift,
   ListChecks, HelpCircle, Dices, Camera, BarChart3, Trophy,
   HeartHandshake, Share2, MessageSquare, Menu, X, ChevronRight, Clock,
-  Bell,
+  Bell, PenLine,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DatePlanner from "@/components/DatePlanner";
@@ -26,6 +26,8 @@ import SharedWishlists from "@/components/SharedWishlists";
 import CompatibilityQuiz from "@/components/CompatibilityQuiz";
 import ReferralSystem from "@/components/ReferralSystem";
 import DateReviews from "@/components/DateReviews";
+import LoveLetters from "@/components/LoveLetters";
+import ThemeToggle from "@/components/ThemeToggle";
 import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
@@ -34,7 +36,7 @@ type Tab =
   | "wishlists" | "quiz" | "stats" | "achievements"
   | "journal" | "bucket" | "reviews" | "expert"
   | "referral" | "partner" | "partner-view" | "profile"
-  | "date-log";
+  | "date-log" | "letters";
 
 interface NavSection {
   title: string;
@@ -58,6 +60,7 @@ const navSections: NavSection[] = [
       { id: "quiz", label: "Compatibility Quiz", icon: <HeartHandshake className="h-4 w-4" /> },
       { id: "bucket", label: "Bucket List", icon: <ListChecks className="h-4 w-4" /> },
       { id: "journal", label: "Photo Journal", icon: <Camera className="h-4 w-4" /> },
+      { id: "letters", label: "Love Letters", icon: <PenLine className="h-4 w-4" /> },
     ],
   },
   {
@@ -217,10 +220,11 @@ const AppShell = () => {
         <div className="flex-1 overflow-y-auto px-2">
           {renderNav()}
         </div>
-        <div className="border-t border-border p-3">
-          <Button variant="ghost" size="sm" onClick={signOut} className="w-full justify-start gap-2 text-muted-foreground font-sans text-xs">
+        <div className="border-t border-border p-3 flex items-center justify-between">
+          <Button variant="ghost" size="sm" onClick={signOut} className="justify-start gap-2 text-muted-foreground font-sans text-xs">
             <LogOut className="h-4 w-4" /> Sign Out
           </Button>
+          <ThemeToggle />
         </div>
       </aside>
 
@@ -242,10 +246,11 @@ const AppShell = () => {
             <div className="flex-1 overflow-y-auto px-2">
               {renderNav()}
             </div>
-            <div className="border-t border-border p-3">
-              <Button variant="ghost" size="sm" onClick={signOut} className="w-full justify-start gap-2 text-muted-foreground font-sans text-xs">
+            <div className="border-t border-border p-3 flex items-center justify-between">
+              <Button variant="ghost" size="sm" onClick={signOut} className="justify-start gap-2 text-muted-foreground font-sans text-xs">
                 <LogOut className="h-4 w-4" /> Sign Out
               </Button>
+              <ThemeToggle />
             </div>
           </aside>
         </div>
@@ -262,6 +267,7 @@ const AppShell = () => {
             <h1 className="text-base font-display italic text-primary">Midnight & Rose</h1>
           </div>
           <div className="flex items-center gap-1">
+            <ThemeToggle />
             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
               <Bell className="h-4 w-4" />
             </Button>
@@ -282,6 +288,7 @@ const AppShell = () => {
             {activeTab === "wishlists" && <SharedWishlists />}
             {activeTab === "quiz" && <CompatibilityQuiz />}
             {activeTab === "reviews" && <DateReviews />}
+            {activeTab === "letters" && <LoveLetters />}
             {activeTab === "referral" && <ReferralSystem />}
             {activeTab === "calendar" && (
               <SharedCalendar
