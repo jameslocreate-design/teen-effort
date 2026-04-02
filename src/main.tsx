@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import { registerSW } from "virtual:pwa-register";
 import App from "./App.tsx";
 import "./index.css";
 
@@ -13,6 +14,10 @@ const isInIframe = (() => {
 const isPreviewHost =
   window.location.hostname.includes("id-preview--") ||
   window.location.hostname.includes("lovableproject.com");
+
+if (!isInIframe && !isPreviewHost) {
+  registerSW({ immediate: true });
+}
 
 if (isInIframe || isPreviewHost) {
   navigator.serviceWorker?.getRegistrations().then((registrations) => {
