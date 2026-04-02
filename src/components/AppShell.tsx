@@ -266,6 +266,7 @@ const AppShell = () => {
             <h1 className="text-base font-display italic text-primary">Midnight & Rose</h1>
           </div>
           <div className="flex items-center gap-1">
+            <ThemeToggle />
             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
               <Bell className="h-4 w-4" />
             </Button>
