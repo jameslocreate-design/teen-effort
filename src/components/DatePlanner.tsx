@@ -130,6 +130,10 @@ const DatePlanner = () => {
 
       <WeatherWidget />
 
+      <DateCountdown />
+
+      <MoodSelector selected={filters.mood} onSelect={(mood) => setFilters(prev => ({ ...prev, mood }))} />
+
       <DateFilters filters={filters} onFilterChange={updateFilter} />
 
       <Button
