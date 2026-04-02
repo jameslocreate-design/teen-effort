@@ -26,6 +26,8 @@ import SharedWishlists from "@/components/SharedWishlists";
 import CompatibilityQuiz from "@/components/CompatibilityQuiz";
 import ReferralSystem from "@/components/ReferralSystem";
 import DateReviews from "@/components/DateReviews";
+import LoveLetters from "@/components/LoveLetters";
+import ThemeToggle from "@/components/ThemeToggle";
 import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
