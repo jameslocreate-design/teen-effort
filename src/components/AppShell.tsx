@@ -36,7 +36,7 @@ type Tab =
   | "wishlists" | "quiz" | "stats" | "achievements"
   | "journal" | "bucket" | "reviews" | "expert"
   | "referral" | "partner" | "partner-view" | "profile"
-  | "date-log";
+  | "date-log" | "letters";
 
 interface NavSection {
   title: string;
