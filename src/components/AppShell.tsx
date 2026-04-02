@@ -287,6 +287,7 @@ const AppShell = () => {
             {activeTab === "wishlists" && <SharedWishlists />}
             {activeTab === "quiz" && <CompatibilityQuiz />}
             {activeTab === "reviews" && <DateReviews />}
+            {activeTab === "letters" && <LoveLetters />}
             {activeTab === "referral" && <ReferralSystem />}
             {activeTab === "calendar" && (
               <SharedCalendar
