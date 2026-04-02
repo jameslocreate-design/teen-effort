@@ -220,10 +220,11 @@ const AppShell = () => {
         <div className="flex-1 overflow-y-auto px-2">
           {renderNav()}
         </div>
-        <div className="border-t border-border p-3">
-          <Button variant="ghost" size="sm" onClick={signOut} className="w-full justify-start gap-2 text-muted-foreground font-sans text-xs">
+        <div className="border-t border-border p-3 flex items-center justify-between">
+          <Button variant="ghost" size="sm" onClick={signOut} className="justify-start gap-2 text-muted-foreground font-sans text-xs">
             <LogOut className="h-4 w-4" /> Sign Out
           </Button>
+          <ThemeToggle />
         </div>
       </aside>
 
