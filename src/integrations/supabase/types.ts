@@ -314,6 +314,41 @@ export type Database = {
           },
         ]
       }
+      love_letters: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean
+          partner_link_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          partner_link_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          partner_link_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "love_letters_partner_link_id_fkey"
+            columns: ["partner_link_id"]
+            isOneToOne: false
+            referencedRelation: "partner_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partner_links: {
         Row: {
           created_at: string
