@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import DateFilters from "@/components/date-planner/DateFilters";
 import DateResults from "@/components/date-planner/DateResults";
 import DatePickerDialog from "@/components/date-planner/DatePickerDialog";
+import MoodSelector from "@/components/MoodSelector";
+import DateCountdown from "@/components/DateCountdown";
 import { generateDateIdeas, type DateFilters as DateFiltersType, type DateIdea } from "@/lib/date-planner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,7 +17,7 @@ const DatePlanner = () => {
   const { user } = useAuth();
   const [filters, setFilters] = useState<DateFiltersType>({
     cost: null, location: null, activity: null, distance: null,
-    timeRange: null, cuisine: null, latitude: null, longitude: null, funActivity: null,
+    timeRange: null, cuisine: null, latitude: null, longitude: null, funActivity: null, mood: null,
   });
 
   const [ideas, setIdeas] = useState<DateIdea[]>([]);
@@ -127,6 +129,10 @@ const DatePlanner = () => {
       </div>
 
       <WeatherWidget />
+
+      <DateCountdown />
+
+      <MoodSelector selected={filters.mood} onSelect={(mood) => setFilters(prev => ({ ...prev, mood }))} />
 
       <DateFilters filters={filters} onFilterChange={updateFilter} />
 

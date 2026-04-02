@@ -41,7 +41,7 @@ const DateRoulette = () => {
       try {
         const generated = await generateDateIdeas({
           cost: null, location: null, activity: null, distance: null,
-          timeRange: null, cuisine: null, latitude: null, longitude: null, funActivity: null,
+          timeRange: null, cuisine: null, latitude: null, longitude: null, funActivity: null, mood: null,
         });
         if (generated.length === 0) {
           toast.error("No ideas generated. Try again!");
