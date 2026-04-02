@@ -60,6 +60,7 @@ const navSections: NavSection[] = [
       { id: "quiz", label: "Compatibility Quiz", icon: <HeartHandshake className="h-4 w-4" /> },
       { id: "bucket", label: "Bucket List", icon: <ListChecks className="h-4 w-4" /> },
       { id: "journal", label: "Photo Journal", icon: <Camera className="h-4 w-4" /> },
+      { id: "letters", label: "Love Letters", icon: <PenLine className="h-4 w-4" /> },
     ],
   },
   {
