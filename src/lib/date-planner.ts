@@ -20,6 +20,7 @@ export interface DateFilters {
   latitude: number | null;
   longitude: number | null;
   funActivity: string | null;
+  mood: string | null;
 }
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
