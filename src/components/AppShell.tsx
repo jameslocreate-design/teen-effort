@@ -88,6 +88,7 @@ const mobileQuickTabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "planner", label: "Dates", icon: <Sparkles className="h-5 w-5" /> },
   { id: "roulette", label: "Roulette", icon: <Dices className="h-5 w-5" /> },
   { id: "calendar", label: "Calendar", icon: <CalendarDays className="h-5 w-5" /> },
+  { id: "letters", label: "Letters", icon: <PenLine className="h-5 w-5" /> },
   { id: "gifts", label: "Gifts", icon: <Gift className="h-5 w-5" /> },
 ];
 
