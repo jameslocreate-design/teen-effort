@@ -149,9 +149,9 @@ const DateRoulette = () => {
           onChange={(e) => setNewTitle(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleAddManual()}
           placeholder="Type a date idea to add..."
-          className="flex-1 rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 font-sans"
+          className="flex-1 rounded-xl border border-border bg-card px-4 py-3 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 font-sans"
         />
-        <Button onClick={handleAddManual} disabled={!newTitle.trim()} size="sm" className="rounded-xl h-10 px-4 gap-1.5">
+        <Button onClick={handleAddManual} disabled={!newTitle.trim()} className="rounded-xl h-12 px-5 gap-1.5">
           <Plus className="h-4 w-4" /> Add
         </Button>
       </div>
