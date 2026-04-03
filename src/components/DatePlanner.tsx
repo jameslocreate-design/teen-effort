@@ -7,6 +7,7 @@ import DateResults from "@/components/date-planner/DateResults";
 import DatePickerDialog from "@/components/date-planner/DatePickerDialog";
 import MoodSelector from "@/components/MoodSelector";
 import DateCountdown from "@/components/DateCountdown";
+import SavedDateIdeas from "@/components/SavedDateIdeas";
 import { generateDateIdeas, type DateFilters as DateFiltersType, type DateIdea } from "@/lib/date-planner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,6 +32,8 @@ const DatePlanner = () => {
   const [selectedIdeaIndex, setSelectedIdeaIndex] = useState<number | null>(null);
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string>("");
+  const [savingForLaterIndex, setSavingForLaterIndex] = useState<number | null>(null);
+  const [savedRefreshKey, setSavedRefreshKey] = useState(0);
 
   const fetchPartnerLink = useCallback(async () => {
     if (!user) return;
@@ -107,6 +110,33 @@ const DatePlanner = () => {
     setSelectedCalendarDate(undefined); setSelectedTime("");
   };
 
+  const handleSaveForLater = async (idea: DateIdea, index: number) => {
+    if (!user) { toast.error("You must be logged in"); return; }
+    setSavingForLaterIndex(index);
+    const { error } = await supabase.from("saved_date_ideas").insert({
+      user_id: user.id,
+      title: idea.title,
+      description: idea.description,
+      estimated_cost: idea.estimated_cost,
+      duration: idea.duration,
+      vibe: idea.vibe,
+      distance_miles: idea.distance_miles,
+      yelp_rating: idea.rating || null,
+      yelp_review_count: idea.review_count || null,
+      yelp_url: idea.url || null,
+    });
+    if (error) toast.error("Failed to save idea");
+    else {
+      toast.success(`"${idea.title}" saved for later!`);
+      setSavedRefreshKey(k => k + 1);
+    }
+    setSavingForLaterIndex(null);
+  };
+
+  const handleAddToRouletteFromSaved = (idea: DateIdea) => {
+    toast.info(`"${idea.title}" — head to Roulette and spin to include it!`);
+  };
+
   return (
     <div className="space-y-10">
       {/* Hero section */}
@@ -151,10 +181,16 @@ const DatePlanner = () => {
 
       {hasGenerated && !isLoading && (
         <DateResults
-          ideas={ideas} partnerLinkId={partnerLinkId} savingIndex={savingIndex}
-          onAddToCalendar={handleOpenDatePicker} onGenerateMore={handleGenerate}
+          ideas={ideas} partnerLinkId={partnerLinkId} savingIndex={savingIndex} savingForLaterIndex={savingForLaterIndex}
+          onAddToCalendar={handleOpenDatePicker} onSaveForLater={handleSaveForLater} onGenerateMore={handleGenerate}
         />
       )}
+
+      <SavedDateIdeas
+        onAddToCalendar={handleOpenDatePicker}
+        onAddToRoulette={handleAddToRouletteFromSaved}
+        refreshKey={savedRefreshKey}
+      />
 
       <DatePickerDialog
         open={datePickerOpen} onOpenChange={setDatePickerOpen}
