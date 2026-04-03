@@ -489,6 +489,51 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_date_ideas: {
+        Row: {
+          created_at: string
+          description: string | null
+          distance_miles: string | null
+          duration: string | null
+          estimated_cost: string | null
+          id: string
+          title: string
+          user_id: string
+          vibe: string | null
+          yelp_rating: number | null
+          yelp_review_count: number | null
+          yelp_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          distance_miles?: string | null
+          duration?: string | null
+          estimated_cost?: string | null
+          id?: string
+          title: string
+          user_id: string
+          vibe?: string | null
+          yelp_rating?: number | null
+          yelp_review_count?: number | null
+          yelp_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          distance_miles?: string | null
+          duration?: string | null
+          estimated_cost?: string | null
+          id?: string
+          title?: string
+          user_id?: string
+          vibe?: string | null
+          yelp_rating?: number | null
+          yelp_review_count?: number | null
+          yelp_url?: string | null
+        }
+        Relationships: []
+      }
       saved_gifts: {
         Row: {
           created_at: string
