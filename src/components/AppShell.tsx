@@ -306,28 +306,28 @@ const AppShell = () => {
         </main>
 
         {/* Mobile Bottom Navigation */}
-        <nav className="fixed bottom-0 inset-x-0 border-t border-border bg-background/95 backdrop-blur-md lg:hidden z-40">
-          <div className="flex items-center justify-around px-2 py-1.5">
+        <nav className="fixed bottom-0 inset-x-0 border-t border-border bg-background/95 backdrop-blur-md lg:hidden z-40 safe-area-bottom">
+          <div className="flex items-center justify-around px-1 py-1">
             {mobileQuickTabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all min-w-0 ${
+                className={`flex flex-col items-center justify-center gap-0.5 min-w-[44px] min-h-[44px] px-1.5 py-1 rounded-xl transition-all ${
                   activeTab === tab.id ? "text-primary" : "text-muted-foreground"
                 }`}
               >
                 {tab.icon}
-                <span className="text-[10px] font-medium truncate font-sans">{tab.label}</span>
+                <span className="text-[9px] font-medium truncate font-sans max-w-[48px]">{tab.label}</span>
               </button>
             ))}
             <button
               onClick={() => setSidebarOpen(true)}
-              className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all ${
+              className={`flex flex-col items-center justify-center gap-0.5 min-w-[44px] min-h-[44px] px-1.5 py-1 rounded-xl transition-all ${
                 !mobileQuickTabs.some(t => t.id === activeTab) ? "text-primary" : "text-muted-foreground"
               }`}
             >
               <Menu className="h-5 w-5" />
-              <span className="text-[10px] font-medium font-sans">More</span>
+              <span className="text-[9px] font-medium font-sans">More</span>
             </button>
           </div>
         </nav>
