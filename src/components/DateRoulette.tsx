@@ -149,9 +149,9 @@ const DateRoulette = () => {
           onChange={(e) => setNewTitle(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleAddManual()}
           placeholder="Type a date idea to add..."
-          className="flex-1 rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 font-sans"
+          className="flex-1 rounded-xl border border-border bg-card px-4 py-3 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 font-sans"
         />
-        <Button onClick={handleAddManual} disabled={!newTitle.trim()} size="sm" className="rounded-xl h-10 px-4 gap-1.5">
+        <Button onClick={handleAddManual} disabled={!newTitle.trim()} className="rounded-xl h-12 px-5 gap-1.5">
           <Plus className="h-4 w-4" /> Add
         </Button>
       </div>
@@ -166,11 +166,11 @@ const DateRoulette = () => {
             {ideas.map((idea) => (
               <span
                 key={idea.id}
-                className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary font-sans"
+                className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary font-sans"
               >
                 {idea.title}
-                <button onClick={() => handleRemove(idea.id)} className="text-primary/50 hover:text-destructive transition-colors">
-                  <Trash2 className="h-3 w-3" />
+                <button onClick={() => handleRemove(idea.id)} className="min-w-[28px] min-h-[28px] flex items-center justify-center text-primary/50 hover:text-destructive transition-colors">
+                  <Trash2 className="h-3.5 w-3.5" />
                 </button>
               </span>
             ))}
@@ -262,11 +262,11 @@ const DateRoulette = () => {
             {ideas[selectedIndex].vibe && <span>✨ {ideas[selectedIndex].vibe}</span>}
           </div>
           <div className="flex gap-2">
-            <Button onClick={handleAddToCalendar} size="sm" className="gap-1.5 rounded-xl">
-              <CalendarPlus className="h-3.5 w-3.5" /> Add to Calendar
+            <Button onClick={handleAddToCalendar} className="gap-1.5 rounded-xl h-12 text-base flex-1">
+              <CalendarPlus className="h-4 w-4" /> Add to Calendar
             </Button>
-            <Button variant="outline" size="sm" onClick={handleSpin} className="rounded-xl">
-              <Dices className="h-3.5 w-3.5" /> Spin Again
+            <Button variant="outline" onClick={handleSpin} className="rounded-xl h-12 text-base">
+              <Dices className="h-4 w-4" /> Spin Again
             </Button>
           </div>
         </div>
