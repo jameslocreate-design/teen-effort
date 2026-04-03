@@ -166,11 +166,11 @@ const DateRoulette = () => {
             {ideas.map((idea) => (
               <span
                 key={idea.id}
-                className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary font-sans"
+                className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary font-sans"
               >
                 {idea.title}
-                <button onClick={() => handleRemove(idea.id)} className="text-primary/50 hover:text-destructive transition-colors">
-                  <Trash2 className="h-3 w-3" />
+                <button onClick={() => handleRemove(idea.id)} className="min-w-[28px] min-h-[28px] flex items-center justify-center text-primary/50 hover:text-destructive transition-colors">
+                  <Trash2 className="h-3.5 w-3.5" />
                 </button>
               </span>
             ))}
