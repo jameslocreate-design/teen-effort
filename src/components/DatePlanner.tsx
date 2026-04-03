@@ -162,18 +162,21 @@ const DatePlanner = () => {
 
       <DateFilters filters={filters} onFilterChange={updateFilter} />
 
-      <Button
-        onClick={handleGenerate}
-        disabled={isLoading}
-        size="lg"
-        className="w-full rounded-2xl text-base font-semibold h-14 bg-primary hover:bg-primary/90 text-primary-foreground font-sans transition-all duration-200 active:scale-[0.98]"
-      >
-        {isLoading ? (
-          <><Loader2 className="h-4 w-4 animate-spin" />Curating your evening...</>
-        ) : (
-          <><Sparkles className="h-4 w-4" />{hasAnyFilter ? "Discover Dates" : "Surprise Me"}</>
-        )}
-      </Button>
+      {/* Sticky generate button on mobile */}
+      <div className="sticky bottom-20 lg:bottom-0 z-30">
+        <Button
+          onClick={handleGenerate}
+          disabled={isLoading}
+          size="lg"
+          className="w-full rounded-2xl text-base font-semibold h-14 bg-primary hover:bg-primary/90 text-primary-foreground font-sans transition-all duration-200 active:scale-[0.98] shadow-lg"
+        >
+          {isLoading ? (
+            <><Loader2 className="h-4 w-4 animate-spin" />Curating your evening...</>
+          ) : (
+            <><Sparkles className="h-4 w-4" />{hasAnyFilter ? "Discover Dates" : "Surprise Me"}</>
+          )}
+        </Button>
+      </div>
 
       {hasGenerated && !isLoading && (
         <DateResults
