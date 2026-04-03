@@ -1,66 +1,97 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Dices, Loader2, Sparkles, CalendarPlus } from "lucide-react";
-import { generateDateIdeas, type DateIdea } from "@/lib/date-planner";
+import { Dices, Loader2, Sparkles, CalendarPlus, Trash2, Plus } from "lucide-react";
+import type { DateIdea } from "@/lib/date-planner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
 const WHEEL_COLORS = [
-  "hsl(160, 84%, 44%)",
-  "hsl(220, 16%, 14%)",
-  "hsl(160, 60%, 30%)",
-  "hsl(220, 18%, 8%)",
-  "hsl(160, 84%, 34%)",
-  "hsl(220, 14%, 18%)",
+  "hsl(18, 45%, 55%)",
+  "hsl(20, 8%, 12%)",
+  "hsl(18, 35%, 40%)",
+  "hsl(25, 12%, 18%)",
+  "hsl(18, 45%, 48%)",
+  "hsl(20, 6%, 15%)",
 ];
+
+interface RouletteIdea {
+  id: string;
+  title: string;
+  description: string | null;
+  estimated_cost: string | null;
+  duration: string | null;
+  vibe: string | null;
+  yelp_url: string | null;
+  yelp_rating: number | null;
+  yelp_review_count: number | null;
+}
 
 const DateRoulette = () => {
   const { user } = useAuth();
   const [spinning, setSpinning] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [ideas, setIdeas] = useState<DateIdea[]>([]);
+  const [ideas, setIdeas] = useState<RouletteIdea[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [rotation, setRotation] = useState(0);
   const [partnerLinkId, setPartnerLinkId] = useState<string | null>(null);
   const wheelRef = useRef<SVGSVGElement>(null);
+  const [newTitle, setNewTitle] = useState("");
 
-  const fetchPartnerLink = async () => {
+  const fetchIdeas = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("roulette_date_ideas")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+    setIdeas(data || []);
+  }, [user]);
+
+  const fetchPartnerLink = useCallback(async () => {
     if (!user) return null;
     const { data } = await supabase
       .from("partner_links").select("id").eq("status", "accepted")
       .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`).maybeSingle();
     if (data) setPartnerLinkId(data.id);
     return data?.id || null;
-  };
+  }, [user]);
 
-  const handleSpin = async () => {
-    if (ideas.length === 0) {
-      setLoading(true);
-      try {
-        const generated = await generateDateIdeas({
-          cost: null, location: null, activity: null, distance: null,
-          timeRange: null, cuisine: null, latitude: null, longitude: null, funActivity: null, mood: null,
-        });
-        if (generated.length === 0) {
-          toast.error("No ideas generated. Try again!");
-          setLoading(false);
-          return;
-        }
-        setIdeas(generated.slice(0, 6));
-        setLoading(false);
-        spinWheel(generated.slice(0, 6));
-      } catch {
-        toast.error("Failed to generate ideas");
-        setLoading(false);
-      }
-    } else {
-      spinWheel(ideas);
+  useEffect(() => { fetchIdeas(); fetchPartnerLink(); }, [fetchIdeas, fetchPartnerLink]);
+
+  // Listen for external additions (from SavedDateIdeas)
+  useEffect(() => {
+    const handler = () => fetchIdeas();
+    window.addEventListener("roulette-updated", handler);
+    return () => window.removeEventListener("roulette-updated", handler);
+  }, [fetchIdeas]);
+
+  const handleAddManual = async () => {
+    if (!newTitle.trim() || !user) return;
+    const { error } = await supabase.from("roulette_date_ideas").insert({
+      user_id: user.id, title: newTitle.trim(),
+    });
+    if (error) toast.error("Failed to add");
+    else {
+      setNewTitle("");
+      fetchIdeas();
+      toast.success("Added to the wheel!");
     }
   };
 
-  const spinWheel = (currentIdeas: DateIdea[]) => {
+  const handleRemove = async (id: string) => {
+    await supabase.from("roulette_date_ideas").delete().eq("id", id);
+    setIdeas(prev => prev.filter(i => i.id !== id));
+    setSelectedIndex(null);
+    setRotation(0);
+  };
+
+  const handleSpin = () => {
+    if (ideas.length < 2) { toast.error("Add at least 2 ideas to spin!"); return; }
+    spinWheel(ideas);
+  };
+
+  const spinWheel = (currentIdeas: RouletteIdea[]) => {
     setSpinning(true);
     setSelectedIndex(null);
     const spins = 5 + Math.random() * 5;
@@ -89,19 +120,13 @@ const DateRoulette = () => {
     const { error } = await supabase.from("calendar_entries").insert({
       partner_link_id: linkId, added_by: user.id,
       date: format(tomorrow, "yyyy-MM-dd"), title: idea.title,
-      description: idea.description, estimated_cost: idea.estimated_cost,
-      duration: idea.duration, vibe: idea.vibe,
-      yelp_url: idea.url || null, yelp_rating: idea.rating || null,
-      yelp_review_count: idea.review_count || null,
+      description: idea.description || null, estimated_cost: idea.estimated_cost || null,
+      duration: idea.duration || null, vibe: idea.vibe || null,
+      yelp_url: idea.yelp_url || null, yelp_rating: idea.yelp_rating || null,
+      yelp_review_count: idea.yelp_review_count || null,
     });
     if (error) toast.error("Failed to save");
     else toast.success(`"${idea.title}" added to calendar for tomorrow!`);
-  };
-
-  const handleRespin = () => {
-    setIdeas([]);
-    setSelectedIndex(null);
-    setRotation(0);
   };
 
   const count = ideas.length || 6;
@@ -110,17 +135,60 @@ const DateRoulette = () => {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <div className="mx-auto h-12 w-12 rounded-2xl bg-primary/15 flex items-center justify-center glow-md">
+        <div className="mx-auto h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center glow-md">
           <Dices className="h-6 w-6 text-primary" />
         </div>
-        <h2 className="text-xl font-bold text-foreground">Date Roulette</h2>
-        <p className="text-sm text-muted-foreground">Can't decide? Let fate choose your next date!</p>
+        <h2 className="text-xl font-display font-semibold text-foreground">Date Roulette</h2>
+        <p className="text-sm text-muted-foreground font-sans">Add your date ideas, then let fate decide!</p>
       </div>
 
+      {/* Add idea input */}
+      <div className="flex gap-2">
+        <input
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleAddManual()}
+          placeholder="Type a date idea to add..."
+          className="flex-1 rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 font-sans"
+        />
+        <Button onClick={handleAddManual} disabled={!newTitle.trim()} size="sm" className="rounded-xl h-10 px-4 gap-1.5">
+          <Plus className="h-4 w-4" /> Add
+        </Button>
+      </div>
+
+      {/* Idea list */}
+      {ideas.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70 font-sans">
+            On the Wheel ({ideas.length})
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {ideas.map((idea) => (
+              <span
+                key={idea.id}
+                className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary font-sans"
+              >
+                {idea.title}
+                <button onClick={() => handleRemove(idea.id)} className="text-primary/50 hover:text-destructive transition-colors">
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {ideas.length < 2 && (
+        <p className="text-center text-sm text-muted-foreground font-sans py-4">
+          Add at least 2 date ideas to spin the wheel!
+        </p>
+      )}
+
       {/* Wheel */}
-      <div className="relative flex items-center justify-center">
+      {ideas.length >= 2 && (
+      <div className="relative flex items-center justify-center py-2">
         {/* Pointer */}
-        <div className="absolute top-0 z-10 w-0 h-0 border-l-[12px] border-r-[12px] border-t-[20px] border-l-transparent border-r-transparent border-t-primary" />
+        <div className="absolute top-2 z-10 w-0 h-0 border-l-[12px] border-r-[12px] border-t-[20px] border-l-transparent border-r-transparent border-t-primary" />
 
         <svg
           ref={wheelRef}
@@ -170,33 +238,34 @@ const DateRoulette = () => {
               </g>
             );
           })}
-          <circle cx="150" cy="150" r="20" fill="hsl(220, 20%, 4%)" stroke="hsl(160, 84%, 44%)" strokeWidth="3" />
-          <text x="150" y="150" textAnchor="middle" dominantBaseline="middle" fill="hsl(160, 84%, 44%)" fontSize="10" fontWeight="bold">
+          <circle cx="150" cy="150" r="20" fill="hsl(20, 8%, 5%)" stroke="hsl(18, 45%, 55%)" strokeWidth="3" />
+          <text x="150" y="150" textAnchor="middle" dominantBaseline="middle" fill="hsl(18, 45%, 55%)" fontSize="10" fontWeight="bold">
             {spinning ? "🎰" : "GO"}
           </text>
         </svg>
       </div>
+      )}
 
       {/* Result card */}
       {selectedIndex !== null && !spinning && ideas[selectedIndex] && (
-        <div className="rounded-xl border border-primary/30 bg-card p-5 space-y-3 animate-fade-in">
+        <div className="rounded-2xl border border-primary/30 bg-card p-5 space-y-3 animate-fade-in-up glow-sm">
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
-            <h3 className="font-semibold text-foreground">{ideas[selectedIndex].title}</h3>
+            <h3 className="font-display font-semibold text-foreground">{ideas[selectedIndex].title}</h3>
           </div>
           {ideas[selectedIndex].description && (
-            <p className="text-sm text-muted-foreground">{ideas[selectedIndex].description}</p>
+            <p className="text-sm text-muted-foreground font-sans">{ideas[selectedIndex].description}</p>
           )}
-          <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+          <div className="flex flex-wrap gap-3 text-xs text-muted-foreground font-sans">
             {ideas[selectedIndex].estimated_cost && <span>💰 {ideas[selectedIndex].estimated_cost}</span>}
             {ideas[selectedIndex].duration && <span>⏱️ {ideas[selectedIndex].duration}</span>}
             {ideas[selectedIndex].vibe && <span>✨ {ideas[selectedIndex].vibe}</span>}
           </div>
           <div className="flex gap-2">
-            <Button onClick={handleAddToCalendar} size="sm" className="gap-1.5">
+            <Button onClick={handleAddToCalendar} size="sm" className="gap-1.5 rounded-xl">
               <CalendarPlus className="h-3.5 w-3.5" /> Add to Calendar
             </Button>
-            <Button variant="outline" size="sm" onClick={handleRespin}>
+            <Button variant="outline" size="sm" onClick={handleSpin} className="rounded-xl">
               <Dices className="h-3.5 w-3.5" /> Spin Again
             </Button>
           </div>
@@ -204,22 +273,20 @@ const DateRoulette = () => {
       )}
 
       {/* Spin button */}
+      {ideas.length >= 2 && (
       <Button
         onClick={handleSpin}
-        disabled={spinning || loading}
+        disabled={spinning}
         size="lg"
-        className="w-full rounded-xl text-base font-semibold h-12"
+        className="w-full rounded-2xl text-base font-semibold h-14 font-sans"
       >
-        {loading ? (
-          <><Loader2 className="h-4 w-4 animate-spin" /> Generating ideas...</>
-        ) : spinning ? (
+        {spinning ? (
           <><Loader2 className="h-4 w-4 animate-spin" /> Spinning...</>
-        ) : ideas.length > 0 ? (
-          <><Dices className="h-4 w-4" /> Spin Again</>
         ) : (
           <><Dices className="h-4 w-4" /> Spin the Wheel!</>
         )}
       </Button>
+      )}
     </div>
   );
 };

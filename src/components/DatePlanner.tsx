@@ -133,10 +133,6 @@ const DatePlanner = () => {
     setSavingForLaterIndex(null);
   };
 
-  const handleAddToRouletteFromSaved = (idea: DateIdea) => {
-    toast.info(`"${idea.title}" — head to Roulette and spin to include it!`);
-  };
-
   return (
     <div className="space-y-10">
       {/* Hero section */}
@@ -188,7 +184,6 @@ const DatePlanner = () => {
 
       <SavedDateIdeas
         onAddToCalendar={handleOpenDatePicker}
-        onAddToRoulette={handleAddToRouletteFromSaved}
         refreshKey={savedRefreshKey}
       />
 
