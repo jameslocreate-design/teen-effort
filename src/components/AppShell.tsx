@@ -170,7 +170,7 @@ const AppShell = () => {
             <button
               key={item.id}
               onClick={() => handleTabChange(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+              className={`w-full flex items-center gap-3 px-4 py-3 min-h-[44px] rounded-xl text-sm font-medium transition-all duration-200 ${
                 activeTab === item.id
                   ? "bg-primary/12 text-primary glow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
