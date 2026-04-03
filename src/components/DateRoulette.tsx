@@ -182,7 +182,7 @@ const DateRoulette = () => {
         <p className="text-center text-sm text-muted-foreground font-sans py-4">
           Add at least 2 date ideas to spin the wheel!
         </p>
-      </div>
+      )}
 
       {/* Wheel */}
       {ideas.length >= 2 && (
