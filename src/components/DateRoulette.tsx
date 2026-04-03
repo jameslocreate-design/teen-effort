@@ -262,11 +262,11 @@ const DateRoulette = () => {
             {ideas[selectedIndex].vibe && <span>✨ {ideas[selectedIndex].vibe}</span>}
           </div>
           <div className="flex gap-2">
-            <Button onClick={handleAddToCalendar} size="sm" className="gap-1.5 rounded-xl">
-              <CalendarPlus className="h-3.5 w-3.5" /> Add to Calendar
+            <Button onClick={handleAddToCalendar} className="gap-1.5 rounded-xl h-12 text-base flex-1">
+              <CalendarPlus className="h-4 w-4" /> Add to Calendar
             </Button>
-            <Button variant="outline" size="sm" onClick={handleSpin} className="rounded-xl">
-              <Dices className="h-3.5 w-3.5" /> Spin Again
+            <Button variant="outline" onClick={handleSpin} className="rounded-xl h-12 text-base">
+              <Dices className="h-4 w-4" /> Spin Again
             </Button>
           </div>
         </div>
