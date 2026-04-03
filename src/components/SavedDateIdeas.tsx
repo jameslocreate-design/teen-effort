@@ -22,7 +22,6 @@ interface SavedIdea {
 
 interface SavedDateIdeasProps {
   onAddToCalendar: (idea: DateIdea, index: number) => void;
-  onAddToRoulette: (idea: DateIdea) => void;
   refreshKey: number;
 }
 
@@ -35,7 +34,7 @@ const vibeColors: Record<string, string> = {
   Fun: "bg-emerald-500/15 text-emerald-400",
 };
 
-const SavedDateIdeas = ({ onAddToCalendar, onAddToRoulette, refreshKey }: SavedDateIdeasProps) => {
+const SavedDateIdeas = ({ onAddToCalendar, refreshKey }: SavedDateIdeasProps) => {
   const { user } = useAuth();
   const [ideas, setIdeas] = useState<SavedIdea[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,6 +72,26 @@ const SavedDateIdeas = ({ onAddToCalendar, onAddToRoulette, refreshKey }: SavedD
     review_count: saved.yelp_review_count ?? undefined,
     url: saved.yelp_url ?? undefined,
   });
+
+  const handleAddToRoulette = async (saved: SavedIdea) => {
+    if (!user) return;
+    const { error } = await supabase.from("roulette_date_ideas").insert({
+      user_id: user.id,
+      title: saved.title,
+      description: saved.description,
+      estimated_cost: saved.estimated_cost,
+      duration: saved.duration,
+      vibe: saved.vibe,
+      yelp_url: saved.yelp_url,
+      yelp_rating: saved.yelp_rating,
+      yelp_review_count: saved.yelp_review_count,
+    });
+    if (error) toast.error("Failed to add to roulette");
+    else {
+      toast.success(`"${saved.title}" added to the roulette wheel!`);
+      window.dispatchEvent(new Event("roulette-updated"));
+    }
+  };
 
   if (loading || ideas.length === 0) return null;
 
@@ -148,7 +167,7 @@ const SavedDateIdeas = ({ onAddToCalendar, onAddToRoulette, refreshKey }: SavedD
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => onAddToRoulette(toDateIdea(saved))}
+                onClick={() => handleAddToRoulette(saved)}
                 className="rounded-lg text-xs gap-1.5"
               >
                 <Dices className="h-3.5 w-3.5" /> Add to Roulette
