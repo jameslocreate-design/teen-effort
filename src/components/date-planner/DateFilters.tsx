@@ -10,7 +10,7 @@ import {
   Target, Disc3, Mic, Gamepad2, Flag, Lock, Crosshair, Snowflake,
   UtensilsCrossed, Beef, Soup, Fish, Salad, CookingPot, Croissant, Flame,
   Footprints, Car, Map, Route,
-  Zap, Clock, Sun, SunMedium
+  Zap, Clock, Sun, SunMedium, Plus, X
 } from "lucide-react";
 
 const costOptions = [
