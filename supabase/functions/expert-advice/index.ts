@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,7 +13,15 @@ serve(async (req) => {
   }
 
   try {
-    const { question } = await req.json();
+    const { question, postId } = await req.json();
+
+    if (!question || typeof question !== "string" || question.length > 5000) {
+      return new Response(
+        JSON.stringify({ error: "Invalid question" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -62,13 +71,32 @@ serve(async (req) => {
     const data = await response.json();
     const advice = data.choices?.[0]?.message?.content || "I couldn't generate advice right now. Please try again.";
 
+    // If postId provided, insert AI reply server-side using service role
+    if (postId && typeof postId === "string") {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+      const { error: insertError } = await supabase.from("expert_replies").insert({
+        post_id: postId,
+        user_id: null,
+        content: advice,
+        is_ai: true,
+        anonymous_name: "AI Expert 🤖",
+      });
+
+      if (insertError) {
+        console.error("Failed to insert AI reply:", insertError);
+      }
+    }
+
     return new Response(JSON.stringify({ advice }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
     console.error("expert-advice error:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
+      JSON.stringify({ error: "An error occurred" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
