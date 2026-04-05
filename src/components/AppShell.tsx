@@ -6,7 +6,7 @@ import {
   Heart, CalendarDays, Sparkles, User, Link2, LogOut, Users, Gift,
   ListChecks, HelpCircle, Dices, Camera, BarChart3, Trophy,
   HeartHandshake, Share2, MessageSquare, Menu, X, ChevronRight, Clock,
-  Bell, PenLine,
+  Bell, PenLine, Map, Repeat2, ScrollText, Brain,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DatePlanner from "@/components/DatePlanner";
@@ -28,6 +28,11 @@ import ReferralSystem from "@/components/ReferralSystem";
 import DateReviews from "@/components/DateReviews";
 import LoveLetters from "@/components/LoveLetters";
 import ThemeToggle from "@/components/ThemeToggle";
+import DateStreak from "@/components/DateStreak";
+import DateMap from "@/components/DateMap";
+import SwipeDates from "@/components/SwipeDates";
+import RelationshipTimeline from "@/components/RelationshipTimeline";
+import SmartRecommendations from "@/components/SmartRecommendations";
 import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
@@ -36,7 +41,7 @@ type Tab =
   | "wishlists" | "quiz" | "stats" | "achievements"
   | "journal" | "bucket" | "reviews" | "expert"
   | "referral" | "partner" | "partner-view" | "profile"
-  | "date-log" | "letters";
+  | "date-log" | "letters" | "map" | "swipe" | "timeline" | "smart";
 
 interface NavSection {
   title: string;
@@ -48,6 +53,8 @@ const navSections: NavSection[] = [
     title: "Plan",
     items: [
       { id: "planner", label: "Date Ideas", icon: <Sparkles className="h-4 w-4" /> },
+      { id: "smart", label: "For You", icon: <Brain className="h-4 w-4" /> },
+      { id: "swipe", label: "This or That", icon: <Repeat2 className="h-4 w-4" /> },
       { id: "roulette", label: "Roulette", icon: <Dices className="h-4 w-4" /> },
       { id: "gifts", label: "Gift Ideas", icon: <Gift className="h-4 w-4" /> },
       { id: "calendar", label: "Calendar", icon: <CalendarDays className="h-4 w-4" /> },
@@ -66,6 +73,8 @@ const navSections: NavSection[] = [
   {
     title: "Discover",
     items: [
+      { id: "timeline", label: "Timeline", icon: <ScrollText className="h-4 w-4" /> },
+      { id: "map", label: "Date Map", icon: <Map className="h-4 w-4" /> },
       { id: "date-log", label: "Date Log", icon: <Clock className="h-4 w-4" /> },
       { id: "reviews", label: "Date Reviews", icon: <MessageSquare className="h-4 w-4" /> },
       { id: "stats", label: "Date Stats", icon: <BarChart3 className="h-4 w-4" /> },
@@ -278,7 +287,9 @@ const AppShell = () => {
         {/* Content */}
         <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
           <div className="mx-auto max-w-3xl px-4 sm:px-6 py-6 sm:py-8">
-            {activeTab === "planner" && <DatePlanner />}
+            {activeTab === "planner" && <><DateStreak /><DatePlanner /></>}
+            {activeTab === "smart" && <SmartRecommendations />}
+            {activeTab === "swipe" && <SwipeDates />}
             {activeTab === "roulette" && <DateRoulette />}
             {activeTab === "gifts" && <GiftPlanner />}
             {activeTab === "bucket" && <BucketList />}
@@ -290,6 +301,8 @@ const AppShell = () => {
             {activeTab === "quiz" && <CompatibilityQuiz />}
             {activeTab === "reviews" && <DateReviews />}
             {activeTab === "letters" && <LoveLetters />}
+            {activeTab === "timeline" && <RelationshipTimeline />}
+            {activeTab === "map" && <DateMap />}
             {activeTab === "referral" && <ReferralSystem />}
             {activeTab === "calendar" && (
               <SharedCalendar

@@ -165,6 +165,36 @@ export type Database = {
         }
         Relationships: []
       }
+      date_votes: {
+        Row: {
+          created_at: string
+          id: string
+          idea_data: Json
+          idea_hash: string
+          partner_link_id: string
+          user_id: string
+          vote: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          idea_data: Json
+          idea_hash: string
+          partner_link_id: string
+          user_id: string
+          vote: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          idea_data?: Json
+          idea_hash?: string
+          partner_link_id?: string
+          user_id?: string
+          vote?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
