@@ -312,6 +312,13 @@ export type Database = {
             referencedRelation: "expert_posts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "expert_replies_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "expert_posts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       love_letters: {
@@ -735,7 +742,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      expert_posts_public: {
+        Row: {
+          anonymous_name: string | null
+          content: string | null
+          created_at: string | null
+          id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          anonymous_name?: string | null
+          content?: string | null
+          created_at?: string | null
+          id?: string | null
+          user_id?: never
+        }
+        Update: {
+          anonymous_name?: string | null
+          content?: string | null
+          created_at?: string | null
+          id?: string | null
+          user_id?: never
+        }
+        Relationships: []
+      }
     }
     Functions: {
       admin_export_table: { Args: { _table_name: string }; Returns: Json }
