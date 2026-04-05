@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { MapPin, Star, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -14,14 +13,6 @@ const vibeColors: Record<string, string> = {
   Relaxed: "#22c55e",
   Fun: "#eab308",
 };
-
-const createIcon = (color: string) =>
-  L.divIcon({
-    className: "custom-marker",
-    html: `<div style="background:${color};width:24px;height:24px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>`,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
-  });
 
 interface DateEntry {
   id: string;
@@ -40,17 +31,19 @@ const DateMap = () => {
   const [entries, setEntries] = useState<DateEntry[]>([]);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [loading, setLoading] = useState(true);
+  const mapRef = useRef<L.Map | null>(null);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     navigator.geolocation?.getCurrentPosition(
       (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
-      () => setUserLocation([39.8283, -98.5795]) // US center fallback
+      () => setUserLocation([39.8283, -98.5795])
     );
   }, []);
 
   useEffect(() => {
     if (!user) return;
-    const fetch = async () => {
+    const fetchData = async () => {
       const { data: link } = await supabase
         .from("partner_links").select("id").eq("status", "accepted")
         .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`).maybeSingle();
@@ -65,8 +58,27 @@ const DateMap = () => {
       setEntries(data || []);
       setLoading(false);
     };
-    fetch();
+    fetchData();
   }, [user]);
+
+  // Initialize map
+  useEffect(() => {
+    if (!userLocation || !mapContainerRef.current || mapRef.current) return;
+
+    const map = L.map(mapContainerRef.current).setView(userLocation, 12);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+    }).addTo(map);
+
+    // User location marker
+    L.circleMarker(userLocation, {
+      radius: 8, fillColor: "#e11d48", fillOpacity: 1, color: "#fff", weight: 3,
+    }).addTo(map).bindPopup("You are here");
+
+    mapRef.current = map;
+
+    return () => { map.remove(); mapRef.current = null; };
+  }, [userLocation]);
 
   if (!userLocation) {
     return (
@@ -85,7 +97,6 @@ const DateMap = () => {
         <p className="text-sm text-muted-foreground font-sans">Your date history, visualized geographically.</p>
       </div>
 
-      {/* Legend */}
       <div className="flex flex-wrap gap-2">
         {Object.entries(vibeColors).map(([vibe, color]) => (
           <div key={vibe} className="flex items-center gap-1.5">
@@ -96,32 +107,9 @@ const DateMap = () => {
       </div>
 
       <div className="rounded-2xl overflow-hidden border border-border" style={{ height: 400 }}>
-        <MapContainer
-          center={userLocation}
-          zoom={12}
-          style={{ height: "100%", width: "100%" }}
-          scrollWheelZoom={true}
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          {/* Show user location */}
-          <Marker
-            position={userLocation}
-            icon={L.divIcon({
-              className: "custom-marker",
-              html: `<div style="background:hsl(var(--primary));width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 0 0 3px hsl(var(--primary)/0.3);"></div>`,
-              iconSize: [16, 16],
-              iconAnchor: [8, 8],
-            })}
-          >
-            <Popup><span className="text-xs font-sans">You are here</span></Popup>
-          </Marker>
-        </MapContainer>
+        <div ref={mapContainerRef} style={{ height: "100%", width: "100%" }} />
       </div>
 
-      {/* Date list under map */}
       {entries.length > 0 && (
         <div className="space-y-2">
           <h3 className="text-sm font-semibold text-foreground font-sans">{entries.length} dates logged</h3>
