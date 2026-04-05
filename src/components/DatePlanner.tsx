@@ -21,6 +21,8 @@ const DatePlanner = () => {
     timeRange: null, cuisine: null, latitude: null, longitude: null, funActivity: null, mood: null,
   });
 
+  type FilterValue = string | string[] | null;
+
   const [ideas, setIdeas] = useState<DateIdea[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
