@@ -71,20 +71,23 @@ const timePresets = [
 
 interface DateFiltersProps {
   filters: DateFiltersType;
-  onFilterChange: (key: keyof DateFiltersType) => (value: string | null) => void;
+  onFilterChange: (key: keyof DateFiltersType) => (value: string | string[] | null) => void;
 }
 
 const DateFilters = ({ filters, onFilterChange }: DateFiltersProps) => {
+  const activityArr = filters.activity || [];
+  const showFunActivities = activityArr.includes("Fun activity");
+
   return (
     <div className="space-y-8">
-      <FilterGroup label="Budget Range" options={costOptions} selected={filters.cost} onSelect={onFilterChange("cost")} />
-      <FilterGroup label="Environment" options={locationOptions} selected={filters.location} onSelect={onFilterChange("location")} variant="card" />
-      <FilterGroup label="The Vibe" options={activityOptions} selected={filters.activity} onSelect={onFilterChange("activity")} />
-      {filters.activity === "Fun activity" && (
-        <FilterGroup label="Specific Activity" options={funActivityOptions} selected={filters.funActivity} onSelect={onFilterChange("funActivity")} />
+      <FilterGroup label="Budget Range" options={costOptions} selected={filters.cost} onSelect={onFilterChange("cost")} multi />
+      <FilterGroup label="Environment" options={locationOptions} selected={filters.location} onSelect={onFilterChange("location")} variant="card" multi />
+      <FilterGroup label="The Vibe" options={activityOptions} selected={filters.activity} onSelect={onFilterChange("activity")} multi />
+      {showFunActivities && (
+        <FilterGroup label="Specific Activity" options={funActivityOptions} selected={filters.funActivity} onSelect={onFilterChange("funActivity")} multi />
       )}
-      <FilterGroup label="Cuisine Palette" options={cuisineOptions} selected={filters.cuisine} onSelect={onFilterChange("cuisine")} variant="cuisine" />
-      <FilterGroup label="Distance" options={distanceOptions} selected={filters.distance} onSelect={onFilterChange("distance")} />
+      <FilterGroup label="Cuisine Palette" options={cuisineOptions} selected={filters.cuisine} onSelect={onFilterChange("cuisine")} variant="cuisine" multi />
+      <FilterGroup label="Distance" options={distanceOptions} selected={filters.distance} onSelect={onFilterChange("distance")} multi />
       <div className="space-y-3">
         <h3 className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground font-sans">Time Available</h3>
         <div className="flex flex-wrap gap-2.5">

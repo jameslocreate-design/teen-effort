@@ -21,6 +21,8 @@ const DatePlanner = () => {
     timeRange: null, cuisine: null, latitude: null, longitude: null, funActivity: null, mood: null,
   });
 
+  type FilterValue = string | string[] | null;
+
   const [ideas, setIdeas] = useState<DateIdea[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
@@ -58,11 +60,11 @@ const DatePlanner = () => {
     );
   }, []);
 
-  const updateFilter = (key: keyof DateFiltersType) => (value: string | null) => {
+  const updateFilter = (key: keyof DateFiltersType) => (value: FilterValue) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  const hasAnyFilter = filters.cost || filters.location || filters.activity || filters.distance || filters.timeRange || filters.cuisine;
+  const hasAnyFilter = filters.cost?.length || filters.location?.length || filters.activity?.length || filters.distance?.length || filters.timeRange || filters.cuisine?.length;
 
   const handleGenerate = async () => {
     setIsLoading(true);

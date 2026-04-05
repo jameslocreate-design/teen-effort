@@ -11,16 +11,16 @@ export interface DateIdea {
 }
 
 export interface DateFilters {
-  cost: string | null;
-  location: string | null;
-  activity: string | null;
-  distance: string | null;
+  cost: string[] | null;
+  location: string[] | null;
+  activity: string[] | null;
+  distance: string[] | null;
   timeRange: string | null;
-  cuisine: string | null;
+  cuisine: string[] | null;
   latitude: number | null;
   longitude: number | null;
-  funActivity: string | null;
-  mood: string | null;
+  funActivity: string[] | null;
+  mood: string[] | null;
 }
 
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
