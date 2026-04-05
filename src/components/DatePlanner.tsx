@@ -60,11 +60,11 @@ const DatePlanner = () => {
     );
   }, []);
 
-  const updateFilter = (key: keyof DateFiltersType) => (value: string | null) => {
+  const updateFilter = (key: keyof DateFiltersType) => (value: FilterValue) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  const hasAnyFilter = filters.cost || filters.location || filters.activity || filters.distance || filters.timeRange || filters.cuisine;
+  const hasAnyFilter = filters.cost?.length || filters.location?.length || filters.activity?.length || filters.distance?.length || filters.timeRange || filters.cuisine?.length;
 
   const handleGenerate = async () => {
     setIsLoading(true);
