@@ -71,6 +71,71 @@ const timePresets = [
   { value: "Full day", label: "Full Day", icon: Sun },
 ];
 
+const presetActivityValues = funActivityOptions.map(o => o.value);
+
+const CustomActivityInput = ({
+  funActivity,
+  onUpdate,
+}: {
+  funActivity: string[] | null;
+  onUpdate: (value: string | string[] | null) => void;
+}) => {
+  const [inputValue, setInputValue] = useState("");
+  const customActivities = (funActivity || []).filter(v => !presetActivityValues.includes(v));
+
+  const addCustom = () => {
+    const trimmed = inputValue.trim();
+    if (!trimmed) return;
+    const current = funActivity || [];
+    if (!current.includes(trimmed)) {
+      onUpdate([...current, trimmed]);
+    }
+    setInputValue("");
+  };
+
+  const removeCustom = (value: string) => {
+    const current = funActivity || [];
+    const updated = current.filter(v => v !== value);
+    onUpdate(updated.length > 0 ? updated : null);
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <Input
+          placeholder="Add your own activity..."
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustom(); } }}
+          className="rounded-2xl border-border bg-card text-sm font-sans flex-1"
+        />
+        <button
+          onClick={addCustom}
+          disabled={!inputValue.trim()}
+          className="flex items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 text-primary px-3 py-2 text-sm font-medium transition-all hover:bg-primary/20 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+      </div>
+      {customActivities.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {customActivities.map((activity) => (
+            <span
+              key={activity}
+              className="flex items-center gap-1.5 rounded-2xl border border-primary/40 bg-primary/10 text-primary px-3 py-1.5 text-xs font-medium font-sans"
+            >
+              {activity}
+              <button onClick={() => removeCustom(activity)} className="hover:text-destructive transition-colors">
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 interface DateFiltersProps {
   filters: DateFiltersType;
   onFilterChange: (key: keyof DateFiltersType) => (value: string | string[] | null) => void;
