@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import FilterGroup from "@/components/FilterGroup";
@@ -86,7 +87,13 @@ const DateFilters = ({ filters, onFilterChange }: DateFiltersProps) => {
       <FilterGroup label="Environment" options={locationOptions} selected={filters.location} onSelect={onFilterChange("location")} variant="card" multi />
       <FilterGroup label="The Vibe" options={activityOptions} selected={filters.activity} onSelect={onFilterChange("activity")} multi />
       {showFunActivities && (
-        <FilterGroup label="Specific Activity" options={funActivityOptions} selected={filters.funActivity} onSelect={onFilterChange("funActivity")} multi />
+        <div className="space-y-3">
+          <FilterGroup label="Specific Activity" options={funActivityOptions} selected={filters.funActivity} onSelect={onFilterChange("funActivity")} multi />
+          <CustomActivityInput
+            funActivity={filters.funActivity}
+            onUpdate={onFilterChange("funActivity")}
+          />
+        </div>
       )}
       {showCuisine && (
         <FilterGroup label="Cuisine Palette" options={cuisineOptions} selected={filters.cuisine} onSelect={onFilterChange("cuisine")} variant="cuisine" multi />
