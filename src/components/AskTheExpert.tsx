@@ -120,17 +120,11 @@ const AskTheExpert = () => {
     setLoadingAI((p) => ({ ...p, [post.id]: true }));
     try {
       const { data, error } = await supabase.functions.invoke("expert-advice", {
-        body: { question: post.content },
+        body: { question: post.content, postId: post.id },
       });
       if (error) throw error;
-      if (data?.advice) {
-        await supabase.from("expert_replies").insert({
-          post_id: post.id,
-          user_id: user!.id,
-          content: data.advice,
-          is_ai: true,
-          anonymous_name: "AI Expert 🤖",
-        });
+      if (!data?.advice) {
+        toast.error("Failed to get AI advice");
       }
     } catch (e: any) {
       toast.error(e.message || "Failed to get AI advice");
