@@ -20,7 +20,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
   const [birthday, setBirthday] = useState("");
   const [gender, setGender] = useState<string | null>(null);
   const [descriptors, setDescriptors] = useState<string[]>([]);
-  const [loveLanguage, setLoveLanguage] = useState<string | null>(null);
+  const [loveLanguages, setLoveLanguages] = useState<string[]>([]);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -51,7 +51,10 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
           if (data.birthday) setBirthday(data.birthday);
           if (data.gender) setGender(data.gender);
           if ((data as any).descriptors) setDescriptors((data as any).descriptors);
-          if ((data as any).love_language) setLoveLanguage((data as any).love_language);
+          if ((data as any).love_language) {
+            const ll = (data as any).love_language;
+            setLoveLanguages(Array.isArray(ll) ? ll : ll ? [ll] : []);
+          }
           if ((data as any).avatar_url) setAvatarUrl((data as any).avatar_url);
         }
       });
@@ -117,7 +120,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
         birthday: birthday || null,
         gender,
         descriptors,
-        love_language: loveLanguage,
+        love_language: loveLanguages.length > 0 ? loveLanguages.join(", ") : null,
       } as any)
       .eq("user_id", user.id);
 
@@ -233,22 +236,27 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
 
           <div>
             <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 block">
-              Love Language <span className="normal-case font-normal">(optional)</span>
+              Love Languages <span className="normal-case font-normal">(select all that apply)</span>
             </label>
             <div className="flex flex-wrap gap-2">
-              {loveLanguageOptions.map((ll) => (
-                <button
-                  key={ll.value}
-                  onClick={() => setLoveLanguage(loveLanguage === ll.value ? null : ll.value)}
-                  className={`rounded-xl border px-4 py-2.5 text-sm font-medium transition-all ${
-                    loveLanguage === ll.value
-                      ? "border-primary/50 bg-primary/15 text-primary glow-sm"
-                      : "border-border bg-secondary/40 text-secondary-foreground hover:border-primary/30"
-                  }`}
-                >
-                  {ll.emoji} {ll.value}
-                </button>
-              ))}
+              {loveLanguageOptions.map((ll) => {
+                const isSelected = loveLanguages.includes(ll.value);
+                return (
+                  <button
+                    key={ll.value}
+                    onClick={() => setLoveLanguages(prev => 
+                      prev.includes(ll.value) ? prev.filter(v => v !== ll.value) : [...prev, ll.value]
+                    )}
+                    className={`rounded-xl border px-4 py-2.5 text-sm font-medium transition-all ${
+                      isSelected
+                        ? "border-primary/50 bg-primary/15 text-primary glow-sm"
+                        : "border-border bg-secondary/40 text-secondary-foreground hover:border-primary/30"
+                    }`}
+                  >
+                    {ll.emoji} {ll.value}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
