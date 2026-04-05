@@ -31,6 +31,7 @@ const activityOptions = [
   { value: "Relaxed & laid-back", label: "Relaxed", icon: Coffee },
   { value: "Creative & artistic", label: "Creative", icon: Palette },
   { value: "Fun activity", label: "Fun Activity", icon: PartyPopper },
+  { value: "Eating out", label: "Eating Out", icon: UtensilsCrossed },
 ];
 
 const funActivityOptions = [
@@ -77,6 +78,7 @@ interface DateFiltersProps {
 const DateFilters = ({ filters, onFilterChange }: DateFiltersProps) => {
   const activityArr = filters.activity || [];
   const showFunActivities = activityArr.includes("Fun activity");
+  const showCuisine = activityArr.includes("Eating out");
 
   return (
     <div className="space-y-8">
@@ -86,7 +88,9 @@ const DateFilters = ({ filters, onFilterChange }: DateFiltersProps) => {
       {showFunActivities && (
         <FilterGroup label="Specific Activity" options={funActivityOptions} selected={filters.funActivity} onSelect={onFilterChange("funActivity")} multi />
       )}
-      <FilterGroup label="Cuisine Palette" options={cuisineOptions} selected={filters.cuisine} onSelect={onFilterChange("cuisine")} variant="cuisine" multi />
+      {showCuisine && (
+        <FilterGroup label="Cuisine Palette" options={cuisineOptions} selected={filters.cuisine} onSelect={onFilterChange("cuisine")} variant="cuisine" multi />
+      )}
       <FilterGroup label="Distance" options={distanceOptions} selected={filters.distance} onSelect={onFilterChange("distance")} multi />
       <div className="space-y-3">
         <h3 className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground font-sans">Time Available</h3>

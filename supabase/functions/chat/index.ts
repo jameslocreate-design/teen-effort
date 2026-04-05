@@ -73,7 +73,7 @@ serve(async (req) => {
   }
 
   try {
-    const { cost, location, activity, distance, timeRange, cuisine, latitude, longitude, funActivity } = await req.json();
+    const { cost, location, activity, distance, timeRange, cuisine, latitude, longitude, funActivity, includeEating } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -104,7 +104,7 @@ serve(async (req) => {
       if (funActivity) {
         searches.push({ term: funActivity });
       }
-      if (cuisine) {
+      if (includeEating && cuisine) {
         searches.push({ term: cuisine, categories: categoryMap[cuisine] });
       }
       if (activity?.includes("Romantic")) {
@@ -120,7 +120,7 @@ serve(async (req) => {
       // Always add a general "things to do" search as fallback
       if (searches.length === 0) {
         searches.push({ term: "fun things to do date" });
-        searches.push({ term: "restaurants" });
+        if (includeEating) searches.push({ term: "restaurants" });
       }
 
       // Run all searches in parallel and combine results
@@ -157,8 +157,9 @@ serve(async (req) => {
 - Setting: ${location || "any"}
 - Activity Style: ${activity || "any"}
 ${funActivity ? `- Specific Activity: ${funActivity}` : ""}
-- Cuisine: ${cuisine || "any"}
+- Cuisine: ${includeEating && cuisine ? cuisine : "N/A - do NOT suggest restaurants"}
 - Distance willing to travel: ${distance || "any"}
+${!includeEating ? "IMPORTANT: The user does NOT want restaurant or dining suggestions. Focus on activities and experiences only." : ""}
 - Time available: ${timeRange || "any"}
 ${yelpContext}
 
