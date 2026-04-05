@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   Smile, Heart, Zap, Coffee, Sparkles, CloudRain, PartyPopper, Flame,
@@ -16,11 +15,20 @@ const moods = [
 ];
 
 interface MoodSelectorProps {
-  selected: string | null;
-  onSelect: (mood: string | null) => void;
+  selected: string[] | null;
+  onSelect: (mood: string[] | null) => void;
 }
 
 const MoodSelector = ({ selected, onSelect }: MoodSelectorProps) => {
+  const selectedArr = selected || [];
+
+  const toggle = (value: string) => {
+    const newArr = selectedArr.includes(value)
+      ? selectedArr.filter((v) => v !== value)
+      : [...selectedArr, value];
+    onSelect(newArr.length > 0 ? newArr : null);
+  };
+
   return (
     <div className="space-y-4">
       <div className="space-y-1">
@@ -28,17 +36,17 @@ const MoodSelector = ({ selected, onSelect }: MoodSelectorProps) => {
           How Are You Feeling?
         </h3>
         <p className="text-xs text-muted-foreground/70 font-sans">
-          Pick your mood and we'll tailor your date ideas
+          Pick your moods and we'll tailor your date ideas
         </p>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         {moods.map((mood) => {
           const Icon = mood.icon;
-          const isSelected = selected === mood.value;
+          const isSelected = selectedArr.includes(mood.value);
           return (
             <button
               key={mood.value}
-              onClick={() => onSelect(isSelected ? null : mood.value)}
+              onClick={() => toggle(mood.value)}
               className={cn(
                 "flex flex-col items-center gap-2 rounded-2xl border p-4 transition-all duration-200 text-center",
                 isSelected
