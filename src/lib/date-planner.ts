@@ -26,13 +26,14 @@ export interface DateFilters {
 const API_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
 
 export async function generateDateIdeas(filters: DateFilters): Promise<DateIdea[]> {
+  const includeEating = (filters.activity || []).includes("Eating out");
   const resp = await fetch(API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
     },
-    body: JSON.stringify(filters),
+    body: JSON.stringify({ ...filters, includeEating }),
   });
 
   if (!resp.ok) {

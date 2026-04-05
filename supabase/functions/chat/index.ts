@@ -158,6 +158,7 @@ serve(async (req) => {
 - Activity Style: ${activity || "any"}
 ${funActivity ? `- Specific Activity: ${funActivity}` : ""}
 - Cuisine: ${includeEating && cuisine ? cuisine : "N/A - do NOT suggest restaurants"}
+- Distance willing to travel: ${distance || "any"}
 ${!includeEating ? "IMPORTANT: The user does NOT want restaurant or dining suggestions. Focus on activities and experiences only." : ""}
 - Time available: ${timeRange || "any"}
 ${yelpContext}
