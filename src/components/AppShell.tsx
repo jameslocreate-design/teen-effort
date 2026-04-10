@@ -6,7 +6,7 @@ import {
   Heart, CalendarDays, Sparkles, User, Link2, LogOut, Users, Gift,
   ListChecks, HelpCircle, Dices, Camera, BarChart3, Trophy,
   HeartHandshake, Share2, MessageSquare, Menu, X, ChevronRight, Clock,
-  Bell, PenLine, Map, Repeat2, ScrollText, Brain,
+  Bell, PenLine, Map, Repeat2, ScrollText, Brain, Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DatePlanner from "@/components/DatePlanner";
