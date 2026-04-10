@@ -33,6 +33,8 @@ import DateMap from "@/components/DateMap";
 import SwipeDates from "@/components/SwipeDates";
 import RelationshipTimeline from "@/components/RelationshipTimeline";
 import SmartRecommendations from "@/components/SmartRecommendations";
+import VisionBoard from "@/components/VisionBoard";
+import AppreciationPrompts from "@/components/AppreciationPrompts";
 import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
@@ -41,7 +43,7 @@ type Tab =
   | "wishlists" | "quiz" | "stats" | "achievements"
   | "journal" | "bucket" | "reviews" | "expert"
   | "referral" | "partner" | "partner-view" | "profile"
-  | "date-log" | "letters" | "map" | "swipe" | "timeline" | "smart";
+  | "date-log" | "letters" | "map" | "swipe" | "timeline" | "smart" | "vision" | "appreciate";
 
 interface NavSection {
   title: string;
@@ -68,6 +70,8 @@ const navSections: NavSection[] = [
       { id: "bucket", label: "Bucket List", icon: <ListChecks className="h-4 w-4" /> },
       { id: "journal", label: "Photo Journal", icon: <Camera className="h-4 w-4" /> },
       { id: "letters", label: "Love Letters", icon: <PenLine className="h-4 w-4" /> },
+      { id: "appreciate", label: "Appreciation", icon: <Heart className="h-4 w-4" /> },
+      { id: "vision", label: "Vision Board", icon: <Star className="h-4 w-4" /> },
     ],
   },
   {
@@ -303,6 +307,8 @@ const AppShell = () => {
             {activeTab === "letters" && <LoveLetters />}
             {activeTab === "timeline" && <RelationshipTimeline />}
             {activeTab === "map" && <DateMap />}
+            {activeTab === "vision" && <VisionBoard />}
+            {activeTab === "appreciate" && <AppreciationPrompts />}
             {activeTab === "referral" && <ReferralSystem />}
             {activeTab === "calendar" && (
               <SharedCalendar
