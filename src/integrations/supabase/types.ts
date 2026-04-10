@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      appreciation_prompts: {
+        Row: {
+          created_at: string
+          id: string
+          partner_link_id: string
+          prompt_text: string
+          response_text: string
+          sender_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          partner_link_id: string
+          prompt_text: string
+          response_text: string
+          sender_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          partner_link_id?: string
+          prompt_text?: string
+          response_text?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
       bucket_list: {
         Row: {
           added_by: string
@@ -729,6 +756,39 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      vision_board_pins: {
+        Row: {
+          added_by: string
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          partner_link_id: string
+          title: string
+        }
+        Insert: {
+          added_by: string
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          partner_link_id: string
+          title: string
+        }
+        Update: {
+          added_by?: string
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          partner_link_id?: string
+          title?: string
         }
         Relationships: []
       }
