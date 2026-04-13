@@ -100,6 +100,7 @@ const DatePlanner = () => {
       duration: selectedIdea.duration, vibe: selectedIdea.vibe,
       yelp_url: selectedIdea.url || null, yelp_rating: selectedIdea.rating || null,
       yelp_review_count: selectedIdea.review_count || null,
+      latitude: filters.latitude, longitude: filters.longitude,
     });
     if (error) toast.error("Failed to save to calendar");
     else toast.success(`"${selectedIdea.title}" added to calendar!`);
