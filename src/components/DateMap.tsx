@@ -24,6 +24,8 @@ interface DateEntry {
   yelp_rating: number | null;
   description: string | null;
   estimated_cost: string | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 const DateMap = () => {
@@ -33,6 +35,7 @@ const DateMap = () => {
   const [loading, setLoading] = useState(true);
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const markersRef = useRef<L.LayerGroup | null>(null);
 
   useEffect(() => {
     navigator.geolocation?.getCurrentPosition(
@@ -51,11 +54,11 @@ const DateMap = () => {
 
       const { data } = await supabase
         .from("calendar_entries")
-        .select("id, title, date, vibe, user_rating, yelp_url, yelp_rating, description, estimated_cost")
+        .select("id, title, date, vibe, user_rating, yelp_url, yelp_rating, description, estimated_cost, latitude, longitude")
         .eq("partner_link_id", link.id)
         .order("date", { ascending: false });
 
-      setEntries(data || []);
+      setEntries((data as DateEntry[]) || []);
       setLoading(false);
     };
     fetchData();
@@ -75,10 +78,57 @@ const DateMap = () => {
       radius: 8, fillColor: "#e11d48", fillOpacity: 1, color: "#fff", weight: 3,
     }).addTo(map).bindPopup("You are here");
 
+    markersRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
 
-    return () => { map.remove(); mapRef.current = null; };
+    return () => { map.remove(); mapRef.current = null; markersRef.current = null; };
   }, [userLocation]);
+
+  // Add markers for entries with coordinates
+  useEffect(() => {
+    if (!mapRef.current || !markersRef.current) return;
+    markersRef.current.clearLayers();
+
+    const geoEntries = entries.filter(e => e.latitude && e.longitude);
+
+    geoEntries.forEach((entry) => {
+      const color = vibeColors[entry.vibe || ""] || "#6b7280";
+      const icon = L.divIcon({
+        className: "custom-date-marker",
+        html: `<div style="
+          width: 28px; height: 28px; border-radius: 50%; 
+          background: ${color}; border: 3px solid white;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          display: flex; align-items: center; justify-content: center;
+          color: white; font-size: 12px; font-weight: bold;
+        ">${entry.user_rating || "♥"}</div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+      });
+
+      const popupContent = `
+        <div style="min-width: 160px;">
+          <strong>${entry.title}</strong><br/>
+          <span style="color: #666; font-size: 12px;">${entry.date}</span>
+          ${entry.vibe ? `<br/><span style="font-size: 11px;">✨ ${entry.vibe}</span>` : ""}
+          ${entry.estimated_cost ? `<br/><span style="font-size: 11px;">💰 ${entry.estimated_cost}</span>` : ""}
+          ${entry.yelp_url ? `<br/><a href="${entry.yelp_url}" target="_blank" style="font-size: 11px; color: #3b82f6;">View on Yelp →</a>` : ""}
+        </div>
+      `;
+
+      L.marker([entry.latitude!, entry.longitude!], { icon })
+        .addTo(markersRef.current!)
+        .bindPopup(popupContent);
+    });
+
+    // Fit bounds if there are geo entries
+    if (geoEntries.length > 0 && mapRef.current) {
+      const allPoints: [number, number][] = geoEntries.map(e => [e.latitude!, e.longitude!]);
+      if (userLocation) allPoints.push(userLocation);
+      const bounds = L.latLngBounds(allPoints.map(p => L.latLng(p[0], p[1])));
+      mapRef.current.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+    }
+  }, [entries, userLocation]);
 
   if (!userLocation) {
     return (
@@ -89,12 +139,17 @@ const DateMap = () => {
     );
   }
 
+  const geoCount = entries.filter(e => e.latitude && e.longitude).length;
+
   return (
     <div className="space-y-4">
       <div className="space-y-1">
         <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/70 font-sans">Explore</p>
         <h2 className="text-2xl font-display font-semibold text-foreground">Date Map</h2>
-        <p className="text-sm text-muted-foreground font-sans">Your date history, visualized geographically.</p>
+        <p className="text-sm text-muted-foreground font-sans">
+          Your date history, visualized geographically.
+          {geoCount > 0 && ` ${geoCount} date${geoCount !== 1 ? "s" : ""} pinned.`}
+        </p>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -122,7 +177,10 @@ const DateMap = () => {
                 />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-foreground truncate font-sans">{entry.title}</p>
-                  <p className="text-xs text-muted-foreground font-sans">{entry.date}</p>
+                  <p className="text-xs text-muted-foreground font-sans">
+                    {entry.date}
+                    {!entry.latitude && <span className="ml-1 text-muted-foreground/50">(no pin)</span>}
+                  </p>
                 </div>
                 {entry.user_rating && (
                   <div className="flex items-center gap-0.5">

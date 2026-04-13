@@ -1,0 +1,1 @@
+ALTER TABLE public.calendar_entries ADD COLUMN latitude double precision, ADD COLUMN longitude double precision;
