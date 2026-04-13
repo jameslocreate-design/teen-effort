@@ -93,6 +93,8 @@ export type Database = {
           event_time: string | null
           id: string
           is_favorite: boolean
+          latitude: number | null
+          longitude: number | null
           partner_link_id: string
           photo_urls: string[] | null
           title: string
@@ -112,6 +114,8 @@ export type Database = {
           event_time?: string | null
           id?: string
           is_favorite?: boolean
+          latitude?: number | null
+          longitude?: number | null
           partner_link_id: string
           photo_urls?: string[] | null
           title: string
@@ -131,6 +135,8 @@ export type Database = {
           event_time?: string | null
           id?: string
           is_favorite?: boolean
+          latitude?: number | null
+          longitude?: number | null
           partner_link_id?: string
           photo_urls?: string[] | null
           title?: string
