@@ -4,7 +4,18 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { User, Save, Camera } from "lucide-react";
+import { User, Save, Camera, PauseCircle, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const loveLanguageOptions = [
   { value: "Words of Affirmation", emoji: "💬" },
@@ -264,6 +275,90 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
             <Save className="h-4 w-4" />
             {loading ? "Saving..." : "Save & Continue"}
           </Button>
+
+          {/* Danger Zone */}
+          <div className="mt-10 pt-6 border-t border-border space-y-3">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Account
+            </h3>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="w-full h-11 rounded-xl justify-start gap-2">
+                  <PauseCircle className="h-4 w-4" />
+                  Deactivate Account
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Deactivate your account?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Your account will be paused and you'll be signed out. Your data is preserved
+                    and your account will automatically reactivate the next time you sign in.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={async () => {
+                      if (!user) return;
+                      const { error } = await supabase
+                        .from("profiles")
+                        .update({ deactivated_at: new Date().toISOString() } as any)
+                        .eq("user_id", user.id);
+                      if (error) {
+                        toast.error("Failed to deactivate");
+                      } else {
+                        toast.success("Account deactivated. Signing you out...");
+                        setTimeout(() => supabase.auth.signOut(), 800);
+                      }
+                    }}
+                  >
+                    Deactivate
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full h-11 rounded-xl justify-start gap-2 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete Account Permanently
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Permanently delete your account?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This cannot be undone. All your data — profile, dates, photos, letters,
+                    bucket list, partner link, and everything else — will be permanently erased.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={async () => {
+                      try {
+                        const { error } = await supabase.functions.invoke("delete-account");
+                        if (error) throw error;
+                        toast.success("Your account has been deleted.");
+                        await supabase.auth.signOut();
+                      } catch (e: any) {
+                        toast.error(e?.message || "Failed to delete account");
+                      }
+                    }}
+                  >
+                    Delete forever
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
       </div>
     </div>

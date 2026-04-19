@@ -122,7 +122,11 @@ const AppShell = () => {
       .select("name, avatar_url")
       .eq("user_id", user.id)
       .single()
-      .then(({ data }) => {
+      .then(async ({ data }) => {
+        if ((data as any)?.deactivated_at) {
+          await supabase.from("profiles").update({ deactivated_at: null } as any).eq("user_id", user.id);
+          toast.success("Welcome back! Your account has been reactivated.");
+        }
         const isComplete = !!data?.name;
         setProfileComplete(isComplete);
         if (data?.name) setProfileName(data.name);
