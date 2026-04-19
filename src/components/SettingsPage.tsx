@@ -7,8 +7,12 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import {
   ArrowLeft, Shield, Lock, Download, PauseCircle, Trash2,
-  EyeOff, MapPin, Eye, KeyRound, Loader2, FileText,
+  EyeOff, MapPin, Eye, KeyRound, Loader2, FileText, ScrollText,
 } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
