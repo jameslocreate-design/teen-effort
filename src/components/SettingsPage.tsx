@@ -277,6 +277,113 @@ const SettingsPage = ({ onBack }: { onBack: () => void }) => {
           </div>
         </Section>
 
+        {/* Privacy Policy */}
+        <Section icon={<ScrollText className="h-4 w-4" />} title="Privacy Policy" desc="What we collect, why, and how to delete your data">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="w-full h-11 rounded-xl justify-start gap-2">
+                <Eye className="h-4 w-4" />
+                Read Privacy Policy
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[85vh] p-0">
+              <DialogHeader className="px-6 pt-6 pb-2">
+                <DialogTitle className="font-display italic text-primary text-2xl">Privacy Policy</DialogTitle>
+                <p className="text-xs text-muted-foreground">Last updated: {new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}</p>
+              </DialogHeader>
+              <ScrollArea className="max-h-[70vh] px-6 pb-6">
+                <div className="space-y-5 text-sm text-foreground/90 leading-relaxed">
+                  <section>
+                    <h3 className="font-semibold text-foreground mb-1.5">The short version</h3>
+                    <p>We built this app to help you and your partner plan dates and remember them. We collect only what we need, share as little as possible, and you can delete everything at any time from this Settings page.</p>
+                  </section>
+
+                  <section>
+                    <h3 className="font-semibold text-foreground mb-1.5">What we collect</h3>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li><strong>Account info:</strong> your email, name, optional birthday, gender, love language, and zip code.</li>
+                      <li><strong>Relationship data:</strong> partner link, dates you've planned or logged, photos you upload, love letters, bucket list items, wishlists, vision board pins, calendar entries, and quiz answers.</li>
+                      <li><strong>Location:</strong> your zip code (always) and precise GPS coordinates (only if you turn on Precise Location above) so we can recommend nearby spots.</li>
+                      <li><strong>Usage data:</strong> basic logs (errors, page loads) so we can fix bugs.</li>
+                    </ul>
+                  </section>
+
+                  <section>
+                    <h3 className="font-semibold text-foreground mb-1.5">Why we collect it</h3>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li>To make the app actually work — generating date ideas near you, syncing with your partner, sending reminders.</li>
+                      <li>To personalize suggestions (vibes you like, budget, dietary needs).</li>
+                      <li>To keep your account secure (password resets, sign-in).</li>
+                    </ul>
+                    <p className="mt-2">We do <strong>not</strong> sell your data. We do not show ads.</p>
+                  </section>
+
+                  <section>
+                    <h3 className="font-semibold text-foreground mb-1.5">Who we share it with</h3>
+                    <ul className="list-disc pl-5 space-y-2">
+                      <li><strong>OpenAI &amp; Google (AI providers):</strong> When you ask for date ideas, gift ideas, or post in the Expert forum, we send your prompt (and relevant filters like vibe, budget, location preferences) to OpenAI and/or Google's Gemini to generate a response. We do not send your name, email, or partner's identity. Per their policies, they do not train their models on this data.</li>
+                      <li><strong>Yelp:</strong> When generating local date ideas, we query the Yelp API with your location and search terms to find real venues. Yelp receives the search query and approximate location.</li>
+                      <li><strong>Resend (email provider):</strong> Sends transactional emails (password resets, partner invites, date reminders) to your email address.</li>
+                      <li><strong>Twilio (SMS, optional):</strong> If you use SMS sign-in, your phone number is sent to Twilio to deliver the verification code.</li>
+                      <li><strong>Supabase (hosting):</strong> All your data is stored in a secure Postgres database hosted in the US.</li>
+                    </ul>
+                    <p className="mt-2">We never share your data with advertisers, data brokers, or third-party marketers.</p>
+                  </section>
+
+                  <section>
+                    <h3 className="font-semibold text-foreground mb-1.5">How long we keep it</h3>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li><strong>Active accounts:</strong> indefinitely, until you deactivate or delete.</li>
+                      <li><strong>Deactivated accounts:</strong> kept paused; reactivates on next sign-in. You can delete at any time.</li>
+                      <li><strong>Deleted accounts:</strong> erased immediately (see below). Backups are purged within 30 days.</li>
+                      <li><strong>Email logs:</strong> kept for 90 days for delivery troubleshooting, then deleted.</li>
+                    </ul>
+                  </section>
+
+                  <section>
+                    <h3 className="font-semibold text-foreground mb-1.5">How to delete your data</h3>
+                    <p>You have two options in the <strong>Danger Zone</strong> below:</p>
+                    <ol className="list-decimal pl-5 space-y-1 mt-2">
+                      <li><strong>Deactivate Account</strong> — pauses your account and signs you out. Your data is preserved. Sign in again to reactivate.</li>
+                      <li><strong>Delete Account Permanently</strong> — immediately and permanently erases:
+                        <ul className="list-disc pl-5 mt-1 space-y-0.5 text-muted-foreground">
+                          <li>Your profile, name, email, and login credentials</li>
+                          <li>Every date, photo, love letter, bucket list item, wishlist, vision board pin, and calendar entry you created</li>
+                          <li>Your partner link (your partner keeps their own data)</li>
+                          <li>Your saved date ideas, gifts, quiz answers, and forum posts</li>
+                          <li>All authentication records</li>
+                        </ul>
+                      </li>
+                    </ol>
+                    <p className="mt-2">Deletion is processed instantly by a secure server function. Backup snapshots containing your data are overwritten within 30 days. After that, no copy of your data remains anywhere in our systems.</p>
+                    <p className="mt-2 text-muted-foreground text-xs">Want to take your data with you first? Use <strong>Export Your Data</strong> above to download a PDF Date Diary of your memories.</p>
+                  </section>
+
+                  <section>
+                    <h3 className="font-semibold text-foreground mb-1.5">Your rights</h3>
+                    <p>You can: access your data (Export), correct it (edit your profile), delete it (Danger Zone), and control who sees what (Privacy toggles above). If you live in the EU, UK, or California, you have additional rights under GDPR/CCPA — contact us to exercise them.</p>
+                  </section>
+
+                  <section>
+                    <h3 className="font-semibold text-foreground mb-1.5">Children</h3>
+                    <p>This app is not intended for users under 13. If you're under 18, please use it with a parent's awareness.</p>
+                  </section>
+
+                  <section>
+                    <h3 className="font-semibold text-foreground mb-1.5">Changes to this policy</h3>
+                    <p>If we change anything material, we'll notify you in-app before it takes effect.</p>
+                  </section>
+
+                  <section className="pt-2 border-t border-border">
+                    <h3 className="font-semibold text-foreground mb-1.5">Contact</h3>
+                    <p>Questions or requests? Reach out through the Expert forum or your app store listing.</p>
+                  </section>
+                </div>
+              </ScrollArea>
+            </DialogContent>
+          </Dialog>
+        </Section>
+
         {/* Danger Zone */}
         <Section icon={<Trash2 className="h-4 w-4" />} title="Danger Zone" desc="Pause or permanently delete your account">
           <AlertDialog>
