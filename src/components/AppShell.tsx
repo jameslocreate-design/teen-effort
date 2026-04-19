@@ -241,9 +241,12 @@ const AppShell = () => {
         <div className="flex-1 overflow-y-auto px-2">
           {renderNav()}
         </div>
-        <div className="border-t border-border p-3 flex items-center justify-between">
-          <Button variant="ghost" size="sm" onClick={signOut} className="justify-start gap-2 text-muted-foreground font-sans text-xs">
+        <div className="border-t border-border p-3 flex items-center justify-between gap-1">
+          <Button variant="ghost" size="sm" onClick={signOut} className="justify-start gap-2 text-muted-foreground font-sans text-xs flex-1">
             <LogOut className="h-4 w-4" /> Sign Out
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => setShowSettings(true)} className="h-8 w-8 text-muted-foreground" title="Settings">
+            <Settings className="h-4 w-4" />
           </Button>
           <ThemeToggle />
         </div>
