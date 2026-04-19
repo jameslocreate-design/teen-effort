@@ -6,7 +6,7 @@ import {
   Heart, CalendarDays, Sparkles, User, Link2, LogOut, Users, Gift,
   ListChecks, HelpCircle, Dices, Camera, BarChart3, Trophy,
   HeartHandshake, Share2, MessageSquare, Menu, X, ChevronRight, Clock,
-  Bell, PenLine, Map, Repeat2, ScrollText, Brain, Star,
+  Bell, PenLine, Map, Repeat2, ScrollText, Brain, Star, Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DatePlanner from "@/components/DatePlanner";
@@ -35,6 +35,7 @@ import RelationshipTimeline from "@/components/RelationshipTimeline";
 import SmartRecommendations from "@/components/SmartRecommendations";
 import VisionBoard from "@/components/VisionBoard";
 import AppreciationPrompts from "@/components/AppreciationPrompts";
+import SettingsPage from "@/components/SettingsPage";
 import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
@@ -114,6 +115,7 @@ const AppShell = () => {
   const [activeTab, setActiveTab] = useState<Tab>("planner");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const fetchProfile = () => {
     if (!user) return;
@@ -160,6 +162,7 @@ const AppShell = () => {
   if (!user) return <AuthPage />;
   if (profileComplete === null) return null;
   if (!profileComplete) return <ProfileSetup onComplete={() => setProfileComplete(true)} />;
+  if (showSettings) return <SettingsPage onBack={() => setShowSettings(false)} />;
 
   const handleOnboardingComplete = () => {
     localStorage.setItem("onboarding-done", "true");
@@ -286,8 +289,8 @@ const AppShell = () => {
           </div>
           <div className="flex items-center gap-1">
             <ThemeToggle />
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-              <Bell className="h-4 w-4" />
+            <Button variant="ghost" size="icon" onClick={() => setShowSettings(true)} className="h-8 w-8 text-muted-foreground">
+              <Settings className="h-4 w-4" />
             </Button>
           </div>
         </header>
