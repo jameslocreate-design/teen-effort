@@ -458,6 +458,7 @@ export type Database = {
           love_language: string | null
           name: string
           partner_code: string | null
+          privacy_settings: Json
           referral_code: string | null
           updated_at: string
           user_id: string
@@ -474,6 +475,7 @@ export type Database = {
           love_language?: string | null
           name?: string
           partner_code?: string | null
+          privacy_settings?: Json
           referral_code?: string | null
           updated_at?: string
           user_id: string
@@ -490,6 +492,7 @@ export type Database = {
           love_language?: string | null
           name?: string
           partner_code?: string | null
+          privacy_settings?: Json
           referral_code?: string | null
           updated_at?: string
           user_id?: string

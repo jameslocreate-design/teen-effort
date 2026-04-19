@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS privacy_settings jsonb NOT NULL DEFAULT '{"date_ideas_visibility":"partner","wishlists_visibility":"partner","location_precision":"precise","ghost_mode":false}'::jsonb;
