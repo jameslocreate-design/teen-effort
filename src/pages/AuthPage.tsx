@@ -237,6 +237,21 @@ const AuthPage = () => {
                 required
               />
             </div>
+            <div className="space-y-1">
+              <div className="relative">
+                <Cake className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="date"
+                  placeholder="Date of birth"
+                  value={dob}
+                  onChange={(e) => setDob(e.target.value)}
+                  max={new Date().toISOString().split("T")[0]}
+                  className="pl-10 bg-secondary/50 border-border"
+                  required
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground px-1">You must be 13 or older to use this app.</p>
+            </div>
             <p className="text-xs text-muted-foreground">US numbers auto-add +1. For other countries, include your country code (e.g. +44).</p>
             <Button type="submit" disabled={loading} className="w-full h-11 rounded-xl">
               {loading ? "Sending..." : "Send Verification Code"}
