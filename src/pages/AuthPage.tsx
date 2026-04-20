@@ -89,7 +89,8 @@ const AuthPage = () => {
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSignUp && !verifyAge(dob)) return;
+    // Phone OTP creates an account on first verification, so always age-gate.
+    if (!verifyAge(dob)) return;
     const formatted = formatPhone(phone);
     if (formatted.length < 10) {
       toast.error("Please enter a valid phone number");
