@@ -49,6 +49,10 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
         if (data) {
           if (data.name) setName(data.name);
           if (data.birthday) setBirthday(data.birthday);
+          else if ((user as any).user_metadata?.birthday) {
+            // Prefill from signup age-gate DOB if profile hasn't set one yet
+            setBirthday((user as any).user_metadata.birthday);
+          }
           if (data.gender) setGender(data.gender);
           if ((data as any).descriptors) setDescriptors((data as any).descriptors);
           if ((data as any).love_language) {
