@@ -89,6 +89,7 @@ const AuthPage = () => {
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSignUp && !verifyAge(dob)) return;
     const formatted = formatPhone(phone);
     if (formatted.length < 10) {
       toast.error("Please enter a valid phone number");
@@ -96,7 +97,10 @@ const AuthPage = () => {
     }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOtp({ phone: formatted });
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: formatted,
+        options: isSignUp ? { data: { birthday: dob } } : undefined,
+      });
       if (error) throw error;
       setOtpSent(true);
       toast.success("Verification code sent to your phone!");
