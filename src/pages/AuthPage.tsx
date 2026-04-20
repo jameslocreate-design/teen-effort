@@ -100,7 +100,7 @@ const AuthPage = () => {
     try {
       const { error } = await supabase.auth.signInWithOtp({
         phone: formatted,
-        options: isSignUp ? { data: { birthday: dob } } : undefined,
+        options: { data: { birthday: dob } },
       });
       if (error) throw error;
       setOtpSent(true);
