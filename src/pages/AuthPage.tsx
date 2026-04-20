@@ -2,31 +2,67 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Heart, Mail, Lock, ArrowRight, Phone, Hash } from "lucide-react";
+import { Heart, Mail, Lock, ArrowRight, Phone, Hash, Cake } from "lucide-react";
 import { toast } from "sonner";
 
 type AuthMethod = "email" | "phone";
+
+// Returns age in full years given a yyyy-mm-dd string. Returns -1 if invalid.
+const calcAge = (dob: string): number => {
+  if (!dob) return -1;
+  const d = new Date(dob);
+  if (isNaN(d.getTime())) return -1;
+  const today = new Date();
+  let age = today.getFullYear() - d.getFullYear();
+  const m = today.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < d.getDate())) age--;
+  return age;
+};
 
 const AuthPage = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [authMethod, setAuthMethod] = useState<AuthMethod>("email");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [dob, setDob] = useState("");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Compliance: COPPA requires we do not collect data from children under 13.
+  // We gate BEFORE calling supabase.auth.signUp so no account or profile row is created.
+  const verifyAge = (dobValue: string): boolean => {
+    const age = calcAge(dobValue);
+    if (age < 0) {
+      toast.error("Please enter a valid date of birth");
+      return false;
+    }
+    if (age < 13) {
+      toast.error("You must be at least 13 years old to use this app.");
+      return false;
+    }
+    if (age > 120) {
+      toast.error("Please enter a valid date of birth");
+      return false;
+    }
+    return true;
+  };
+
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
+    if (isSignUp && !verifyAge(dob)) return;
     setLoading(true);
     try {
       if (isSignUp) {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin },
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: { birthday: dob },
+          },
         });
         if (error) throw error;
         toast.success("Check your email to confirm your account!");
