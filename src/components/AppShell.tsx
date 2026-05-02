@@ -143,6 +143,15 @@ const AppShell = () => {
     fetchProfile();
   }, [user]);
 
+  // If user signed in via /link/:code flow, finish linking now
+  useEffect(() => {
+    if (!user) return;
+    const pendingCode = localStorage.getItem("pending-partner-code");
+    if (pendingCode) {
+      navigate(`/link/${pendingCode}`, { replace: true });
+    }
+  }, [user, navigate]);
+
   useEffect(() => {
     const handler = () => fetchProfile();
     window.addEventListener("profile-updated", handler);
