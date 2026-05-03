@@ -205,7 +205,7 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
     "duration": "e.g. 2-3 hours",
     "vibe": "one word mood like Romantic, Adventurous, Cozy",
     "venue_name": "Exact venue name (or null if generic)",
-    "website_url": "Best-guess official website URL of the venue (e.g. https://fullthrottleadrenalinepark.com). If you don't know the exact URL, return null — DO NOT make up a URL.",
+    "website_url": "The official website URL of THIS specific venue (e.g. https://fullthrottleadrenalinepark.com). Must be the venue's own homepage — NOT a Google search, NOT Yelp, NOT TripAdvisor, NOT a directory listing. If you are not confident of the exact official URL, return null.",
     "distance_miles": "N/A"
   }
 ]`;
@@ -276,13 +276,15 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
             };
           }
         }
-        // No Yelp match — use the AI's suggested website, or generate a Google search fallback
+        // No Yelp match — prefer the AI's suggested official website; otherwise link to the
+        // venue's Google Maps place page (which resolves directly to the specific business,
+        // not a generic search results page).
         let url: string | undefined = typeof idea.website_url === "string" && idea.website_url.startsWith("http")
           ? idea.website_url
           : undefined;
         if (!url && venueName) {
           const q = encodeURIComponent(`${venueName}${cityLabel ? " " + cityLabel : ""}`);
-          url = `https://www.google.com/search?q=${q}`;
+          url = `https://www.google.com/maps/search/?api=1&query=${q}`;
         }
         return { ...idea, url };
       });
