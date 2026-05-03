@@ -54,9 +54,13 @@ const DatePlanner = () => {
       (pos) => {
         setFilters(prev => ({ ...prev, latitude: pos.coords.latitude, longitude: pos.coords.longitude }));
         setLocationStatus("granted");
+        console.log("Location detected:", pos.coords.latitude, pos.coords.longitude, "accuracy:", pos.coords.accuracy, "m");
       },
-      () => setLocationStatus("denied"),
-      { timeout: 10000 }
+      (err) => {
+        console.warn("Geolocation error:", err);
+        setLocationStatus("denied");
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   }, []);
 
