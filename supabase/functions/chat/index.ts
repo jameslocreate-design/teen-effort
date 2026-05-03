@@ -205,7 +205,8 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
     "duration": "e.g. 2-3 hours",
     "vibe": "one word mood like Romantic, Adventurous, Cozy",
     "venue_name": "Exact venue name (or null if generic)",
-    "distance_miles": "distance from Yelp (or N/A)"
+    "website_url": "Best-guess official website URL of the venue (e.g. https://fullthrottleadrenalinepark.com). If you don't know the exact URL, return null — DO NOT make up a URL.",
+    "distance_miles": "N/A"
   }
 ]`;
 
@@ -257,11 +258,11 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
     try {
       ideas = JSON.parse(cleaned);
       
-      // Enhance with Yelp data
+      // Enhance with Yelp data when available; otherwise fall back to AI's website_url or a Google search link
       ideas = ideas.map((idea: any) => {
         const venueName = idea.venue_name;
         if (venueName && yelpVenues.length > 0) {
-          const match = yelpVenues.find(v => 
+          const match = yelpVenues.find(v =>
             v.name.toLowerCase().includes(venueName.toLowerCase()) ||
             venueName.toLowerCase().includes(v.name.toLowerCase())
           );
@@ -275,7 +276,15 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
             };
           }
         }
-        return idea;
+        // No Yelp match — use the AI's suggested website, or generate a Google search fallback
+        let url: string | undefined = typeof idea.website_url === "string" && idea.website_url.startsWith("http")
+          ? idea.website_url
+          : undefined;
+        if (!url && venueName) {
+          const q = encodeURIComponent(`${venueName}${cityLabel ? " " + cityLabel : ""}`);
+          url = `https://www.google.com/search?q=${q}`;
+        }
+        return { ...idea, url };
       });
     } catch {
       console.error("Failed to parse AI response:", raw);
