@@ -1,15 +1,11 @@
 import { cn } from "@/lib/utils";
 import {
-  Smile, Heart, Zap, Coffee, Sparkles, CloudRain, PartyPopper, Flame,
+  Smile, Sparkles, PartyPopper, Flame,
 } from "lucide-react";
 
 const moods = [
-  { value: "romantic", label: "Romantic", icon: Heart, description: "Candles, whispers, closeness" },
-  { value: "adventurous", label: "Adventurous", icon: Zap, description: "Thrill-seeking & spontaneous" },
-  { value: "relaxed", label: "Relaxed", icon: Coffee, description: "Cozy, low-key vibes" },
   { value: "playful", label: "Playful", icon: Smile, description: "Laughs & lighthearted fun" },
   { value: "fancy", label: "Fancy", icon: Sparkles, description: "Dress up & go all out" },
-  { value: "cozy", label: "Cozy", icon: CloudRain, description: "Stay in, blankets & movies" },
   { value: "social", label: "Social", icon: PartyPopper, description: "Double dates & group fun" },
   { value: "passionate", label: "Passionate", icon: Flame, description: "Intense & unforgettable" },
 ];
