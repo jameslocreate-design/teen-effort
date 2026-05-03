@@ -141,6 +141,27 @@ serve(async (req) => {
       console.log(`Found ${yelpVenues.length} Yelp venues from ${searches.length} searches`);
     }
 
+    // Reverse-geocode the user's coordinates so the AI knows the actual city
+    let cityLabel = "";
+    if (hasLocation) {
+      try {
+        const geo = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`,
+          { headers: { "User-Agent": "DateApp/1.0" } }
+        );
+        if (geo.ok) {
+          const g = await geo.json();
+          const a = g.address || {};
+          const city = a.city || a.town || a.village || a.county || "";
+          const state = a.state || "";
+          cityLabel = [city, state].filter(Boolean).join(", ");
+        }
+      } catch (e) {
+        console.warn("Reverse geocode failed:", e);
+      }
+      console.log("User city:", cityLabel || "(unknown)", "coords:", latitude, longitude);
+    }
+
     const yelpContext = yelpVenues.length > 0
       ? `\n\nHere are real venues from Yelp near the user. EVERY date idea MUST reference at least one of these venues:\n${yelpVenues
           .slice(0, 10)
@@ -151,6 +172,12 @@ serve(async (req) => {
           .join("\n")}`
       : "";
 
+    const locationLine = cityLabel
+      ? `\n\nUSER LOCATION: ${cityLabel} (lat ${latitude}, lon ${longitude}). Every suggestion MUST be in or within driving distance of ${cityLabel}. Do NOT suggest venues in any other city or state.`
+      : hasLocation
+        ? `\n\nUSER LOCATION: lat ${latitude}, lon ${longitude}. Suggest places near these coordinates only.`
+        : "";
+
     const prompt = `You are a creative date planner. Generate exactly 3 unique, specific date ideas based on these preferences:
 
 - Budget: ${cost || "any"}
@@ -160,20 +187,24 @@ ${funActivity ? `- Specific Activity: ${funActivity}` : ""}
 - Cuisine: ${includeEating && cuisine ? cuisine : "N/A - do NOT suggest restaurants"}
 - Distance willing to travel: ${distance || "any"}
 ${!includeEating ? "IMPORTANT: The user does NOT want restaurant or dining suggestions. Focus on activities and experiences only." : ""}
-- Time available: ${timeRange || "any"}
+- Time available: ${timeRange || "any"}${locationLine}
 ${yelpContext}
 
-${yelpVenues.length > 0 ? "CRITICAL: You MUST use the venue names from the Yelp list above. Build each date idea around ONE specific venue from the list." : ""}
+${yelpVenues.length > 0
+  ? "CRITICAL: You MUST use the venue names from the Yelp list above. Build each date idea around ONE specific venue from the list."
+  : cityLabel
+    ? `CRITICAL: No live venue data is available. Suggest REAL, well-known places that actually exist in ${cityLabel} (parks, landmarks, neighborhoods, popular venues a local would know). Never invent venues from other cities like San Francisco, New York, or Los Angeles.`
+    : "CRITICAL: No location data is available. Keep suggestions generic (e.g., 'a local coffee shop', 'a nearby park') — do NOT name specific venues."}
 
 For each idea, respond ONLY with valid JSON — no markdown, no code fences, no extra text. Use this exact format:
 [
   {
     "title": "Short catchy title",
-    "description": "2-3 sentence vivid description of the date mentioning the specific venue name from Yelp",
+    "description": "2-3 sentence vivid description of the date mentioning the specific venue name",
     "estimated_cost": "e.g. Free, $10-20, $50+",
     "duration": "e.g. 2-3 hours",
     "vibe": "one word mood like Romantic, Adventurous, Cozy",
-    "venue_name": "Exact venue name from Yelp list (or null if no location)",
+    "venue_name": "Exact venue name (or null if generic)",
     "distance_miles": "distance from Yelp (or N/A)"
   }
 ]`;
