@@ -205,7 +205,7 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
     "duration": "e.g. 2-3 hours",
     "vibe": "one word mood like Romantic, Adventurous, Cozy",
     "venue_name": "Exact venue name (or null if generic)",
-    "website_url": "Best-guess official website URL of the venue (e.g. https://fullthrottleadrenalinepark.com). If you don't know the exact URL, return null — DO NOT make up a URL.",
+    "website_url": "The official website URL of THIS specific venue (e.g. https://fullthrottleadrenalinepark.com). Must be the venue's own homepage — NOT a Google search, NOT Yelp, NOT TripAdvisor, NOT a directory listing. If you are not confident of the exact official URL, return null.",
     "distance_miles": "N/A"
   }
 ]`;
