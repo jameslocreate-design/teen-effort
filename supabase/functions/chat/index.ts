@@ -276,13 +276,15 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
             };
           }
         }
-        // No Yelp match — use the AI's suggested website, or generate a Google search fallback
+        // No Yelp match — prefer the AI's suggested official website; otherwise link to the
+        // venue's Google Maps place page (which resolves directly to the specific business,
+        // not a generic search results page).
         let url: string | undefined = typeof idea.website_url === "string" && idea.website_url.startsWith("http")
           ? idea.website_url
           : undefined;
         if (!url && venueName) {
           const q = encodeURIComponent(`${venueName}${cityLabel ? " " + cityLabel : ""}`);
-          url = `https://www.google.com/search?q=${q}`;
+          url = `https://www.google.com/maps/search/?api=1&query=${q}`;
         }
         return { ...idea, url };
       });
