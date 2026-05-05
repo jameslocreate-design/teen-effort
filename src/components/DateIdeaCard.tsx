@@ -74,7 +74,7 @@ const DateIdeaCard = ({ idea, index }: DateIdeaCardProps) => {
             className="h-7 gap-1.5 text-xs"
             onClick={() => window.open(idea.url, "_blank")}
           >
-            View on Yelp
+            View venue
             <ExternalLink className="h-3 w-3" />
           </Button>
         )}
