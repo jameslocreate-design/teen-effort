@@ -47,55 +47,77 @@ const LinkPartner = () => {
         return;
       }
 
-      // Check if already linked
-      const { data: existingLink } = await supabase
+      // Find ALL existing rows between these two users (either direction, any status).
+      // Duplicates may exist from earlier buggy flows — handle them all.
+      const { data: existingRows } = await supabase
         .from("partner_links")
-        .select("id, status")
-        .or(`user1_id.eq.${user!.id},user2_id.eq.${user!.id}`)
-        .eq("status", "accepted")
-        .maybeSingle();
-
-      if (existingLink) {
-        toast.info("You're already linked with a partner!");
-        navigate("/", { replace: true });
-        return;
-      }
-
-      // Check for existing pending link between these two users
-      const { data: pendingLink } = await supabase
-        .from("partner_links")
-        .select("id, status, user1_id, user2_id")
+        .select("id, status, user1_id, user2_id, created_at")
         .or(
           `and(user1_id.eq.${user!.id},user2_id.eq.${partnerId}),and(user1_id.eq.${partnerId},user2_id.eq.${user!.id})`
         )
+        .order("created_at", { ascending: true });
+
+      // Also check if THIS user is already accepted-linked to anyone else
+      const { data: otherAccepted } = await supabase
+        .from("partner_links")
+        .select("id, user1_id, user2_id")
+        .eq("status", "accepted")
+        .or(`user1_id.eq.${user!.id},user2_id.eq.${user!.id}`)
+        .order("created_at", { ascending: false })
+        .limit(1)
         .maybeSingle();
 
-      if (pendingLink) {
-        if (pendingLink.status === "accepted") {
-          toast.info("You're already linked with this partner!");
+      if (otherAccepted) {
+        const otherPartnerId =
+          otherAccepted.user1_id === user!.id ? otherAccepted.user2_id : otherAccepted.user1_id;
+        if (otherPartnerId !== partnerId) {
+          toast.info("You're already linked with a different partner. Unlink first to change.");
           navigate("/", { replace: true });
           return;
         }
-        // Accept the pending link
-        await supabase
-          .from("partner_links")
-          .update({ status: "accepted" })
-          .eq("id", pendingLink.id);
-        setStatus("success");
-        return;
       }
 
-      // Create and immediately accept the link
-      const { error } = await supabase.from("partner_links").insert({
-        user1_id: partnerId,
-        user2_id: user!.id,
-        status: "accepted",
-      });
+      const rows = existingRows || [];
+      const acceptedRow = rows.find((r) => r.status === "accepted");
+      let linkId: string | null = acceptedRow?.id ?? null;
 
-      if (error) {
-        console.error("Link error:", error);
-        setStatus("error");
-        return;
+      if (acceptedRow) {
+        // Already linked — just dedupe and continue
+      } else if (rows.length > 0) {
+        // Promote the oldest row to accepted
+        linkId = rows[0].id;
+        const { error: upErr } = await supabase
+          .from("partner_links")
+          .update({ status: "accepted" })
+          .eq("id", linkId);
+        if (upErr) {
+          console.error("Accept update error:", upErr);
+          setStatus("error");
+          return;
+        }
+      } else {
+        // Create a brand-new accepted link
+        const { data: inserted, error } = await supabase
+          .from("partner_links")
+          .insert({
+            user1_id: partnerId,
+            user2_id: user!.id,
+            status: "accepted",
+          })
+          .select("id")
+          .single();
+        if (error || !inserted) {
+          console.error("Link insert error:", error);
+          setStatus("error");
+          return;
+        }
+        linkId = inserted.id;
+      }
+
+      // Remove any duplicate rows between these two users so future reads return exactly one
+      const duplicateIds = rows.map((r) => r.id).filter((id) => id !== linkId);
+      if (duplicateIds.length > 0) {
+        await supabase.from("partner_links").delete().in("id", duplicateIds);
       }
 
       setStatus("success");
