@@ -6,65 +6,87 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-interface YelpBusiness {
+interface OsmVenue {
   name: string;
-  rating: number;
-  review_count: number;
-  price?: string;
-  location: {
-    address1: string;
-    city: string;
-  };
-  categories: Array<{ title: string }>;
-  distance: number;
-  url: string;
-  coordinates: {
-    latitude: number;
-    longitude: number;
-  };
+  lat: number;
+  lon: number;
+  category: string;
+  website?: string;
+  city?: string;
+  distance_miles: number;
 }
 
-async function searchYelp(
-  term: string,
+function haversineMiles(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 3958.8;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.asin(Math.sqrt(a));
+}
+
+function formatMiles(miles: number): string {
+  if (miles < 0.1) return `${Math.round(miles * 5280)} feet`;
+  if (miles < 10) return `${miles.toFixed(1)} miles`;
+  return `${Math.round(miles)} miles`;
+}
+
+// Query OpenStreetMap Overpass API for real venues near the user
+async function searchOverpass(
   latitude: number,
   longitude: number,
-  categories?: string,
-  radius?: number
-): Promise<YelpBusiness[]> {
-  const YELP_API_KEY = Deno.env.get("YELP_API_KEY");
-  if (!YELP_API_KEY) throw new Error("YELP_API_KEY is not configured");
+  radiusMeters: number,
+  filters: string[]
+): Promise<OsmVenue[]> {
+  // Build Overpass QL query — looks for nodes/ways/relations matching any filter
+  const filterBlocks = filters
+    .map(
+      (f) =>
+        `node[${f}](around:${radiusMeters},${latitude},${longitude});` +
+        `way[${f}](around:${radiusMeters},${latitude},${longitude});`
+    )
+    .join("");
+  const query = `[out:json][timeout:20];(${filterBlocks});out center tags 60;`;
 
-  const params = new URLSearchParams({
-    term,
-    latitude: latitude.toString(),
-    longitude: longitude.toString(),
-    limit: "10",
-    radius: (radius || 8000).toString(), // ~5 miles default
-  });
-  
-  if (categories) params.append("categories", categories);
-
-  const response = await fetch(
-    `https://api.yelp.com/v3/businesses/search?${params}`,
-    {
-      headers: {
-        Authorization: `Bearer ${YELP_API_KEY}`,
-      },
+  try {
+    const resp = await fetch("https://overpass-api.de/api/interpreter", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "data=" + encodeURIComponent(query),
+    });
+    if (!resp.ok) {
+      console.error("Overpass error:", resp.status);
+      return [];
     }
-  );
-
-  if (!response.ok) {
-    console.error("Yelp API error:", response.status, await response.text());
+    const data = await resp.json();
+    const out: OsmVenue[] = [];
+    for (const el of data.elements || []) {
+      const tags = el.tags || {};
+      const name: string | undefined = tags.name;
+      if (!name) continue;
+      const lat = el.lat ?? el.center?.lat;
+      const lon = el.lon ?? el.center?.lon;
+      if (typeof lat !== "number" || typeof lon !== "number") continue;
+      const category =
+        tags.amenity || tags.leisure || tags.tourism || tags.shop || tags.cuisine || "venue";
+      out.push({
+        name,
+        lat,
+        lon,
+        category,
+        website: tags.website || tags["contact:website"] || undefined,
+        city: tags["addr:city"],
+        distance_miles: haversineMiles(latitude, longitude, lat, lon),
+      });
+    }
+    out.sort((a, b) => a.distance_miles - b.distance_miles);
+    return out;
+  } catch (e) {
+    console.error("Overpass fetch failed:", e);
     return [];
   }
-
-  const data = await response.json();
-  return data.businesses || [];
-}
-
-function metersToMiles(meters: number): string {
-  const miles = meters / 1609.34;
-  return miles < 1 ? `${(miles * 5280).toFixed(0)} feet` : `${miles.toFixed(1)} miles`;
 }
 
 serve(async (req) => {
@@ -79,69 +101,55 @@ serve(async (req) => {
 
     const hasLocation = typeof latitude === "number" && typeof longitude === "number";
 
-    let yelpVenues: YelpBusiness[] = [];
-    if (hasLocation) {
-      let radius = 8000;
-      if (distance?.includes("Walking")) radius = 1600;
-      else if (distance?.includes("Short drive")) radius = 8000;
-      else if (distance?.includes("Day trip")) radius = 16000;
-      else if (distance?.includes("Road trip")) radius = 40000;
+    // Determine search radius from "distance" filter (in meters)
+    let radiusMeters = 12000;
+    const distStr = Array.isArray(distance) ? distance.join(" ") : String(distance || "");
+    if (distStr.includes("Walking")) radiusMeters = 2000;
+    else if (distStr.includes("Short drive")) radiusMeters = 12000;
+    else if (distStr.includes("Day trip")) radiusMeters = 30000;
+    else if (distStr.includes("Road trip")) radiusMeters = 80000;
 
-      const categoryMap: Record<string, string> = {
-        Italian: "italian",
-        American: "tradamerican,newamerican",
-        Chinese: "chinese",
-        Japanese: "japanese",
-        Mexican: "mexican",
-        Thai: "thai",
-        French: "french",
-        Indian: "indian",
-      };
+    // Build OSM tag filters based on what the user wants
+    const osmFilters: string[] = [];
+    const actStr = Array.isArray(activity) ? activity.join(" ") : String(activity || "");
+    const funStr = Array.isArray(funActivity) ? funActivity.join(" ") : String(funActivity || "");
+    const combined = `${actStr} ${funStr}`.toLowerCase();
 
-      // Build multiple search queries to cover all aspects of the date
-      const searches: Array<{ term: string; categories?: string }> = [];
-
-      if (funActivity) {
-        searches.push({ term: funActivity });
-      }
-      if (includeEating && cuisine) {
-        searches.push({ term: cuisine, categories: categoryMap[cuisine] });
-      }
-      if (activity?.includes("Romantic")) {
-        searches.push({ term: "romantic date night" });
-      } else if (activity?.includes("Adventure")) {
-        searches.push({ term: "outdoor activities adventures" });
-      } else if (activity?.includes("Creative")) {
-        searches.push({ term: "art classes painting pottery" });
-      } else if (activity?.includes("Relaxed")) {
-        searches.push({ term: "cafe lounge spa" });
-      }
-
-      // Always add a general "things to do" search as fallback
-      if (searches.length === 0) {
-        searches.push({ term: "fun things to do date" });
-        if (includeEating) searches.push({ term: "restaurants" });
-      }
-
-      // Run all searches in parallel and combine results
-      const allResults = await Promise.all(
-        searches.map(s => searchYelp(s.term, latitude, longitude, s.categories, radius))
-      );
-
-      // Combine and deduplicate by name
-      const seen = new Set<string>();
-      for (const results of allResults) {
-        for (const biz of results) {
-          if (!seen.has(biz.name)) {
-            seen.add(biz.name);
-            yelpVenues.push(biz);
-          }
-        }
-      }
-      console.log(`Found ${yelpVenues.length} Yelp venues from ${searches.length} searches`);
+    if (includeEating) {
+      osmFilters.push('"amenity"~"restaurant|cafe|bar|pub|ice_cream|fast_food"');
+    }
+    if (combined.includes("romantic") || combined.includes("relaxed") || combined.includes("cozy")) {
+      osmFilters.push('"amenity"~"cafe|bar|restaurant"');
+      osmFilters.push('"leisure"~"park|garden"');
+      osmFilters.push('"tourism"~"viewpoint|gallery|museum"');
+    }
+    if (combined.includes("adventure") || combined.includes("outdoor") || combined.includes("active")) {
+      osmFilters.push('"leisure"~"park|nature_reserve|sports_centre|pitch|water_park|stadium|trampoline_park|escape_game|bowling_alley|climbing|miniature_golf|golf_course|ice_rink"');
+      osmFilters.push('"tourism"~"attraction|theme_park|zoo|aquarium"');
+    }
+    if (combined.includes("creative") || combined.includes("art") || combined.includes("cultural")) {
+      osmFilters.push('"tourism"~"museum|gallery|artwork"');
+      osmFilters.push('"amenity"~"arts_centre|theatre|cinema|library"');
+    }
+    if (combined.includes("social") || combined.includes("nightlife") || combined.includes("playful") || combined.includes("fun")) {
+      osmFilters.push('"amenity"~"bar|pub|nightclub|cinema|theatre|bowling_alley"');
+      osmFilters.push('"leisure"~"bowling_alley|escape_game|amusement_arcade|trampoline_park"');
     }
 
-    // Reverse-geocode the user's coordinates so the AI knows the actual city
+    // Always include a generic fallback so we never come up empty
+    if (osmFilters.length === 0) {
+      osmFilters.push('"tourism"~"attraction|museum|gallery|viewpoint|theme_park|zoo|aquarium"');
+      osmFilters.push('"leisure"~"park|garden|bowling_alley|escape_game|ice_rink|miniature_golf"');
+      osmFilters.push('"amenity"~"cafe|restaurant|bar|cinema|theatre|arts_centre"');
+    }
+
+    let venues: OsmVenue[] = [];
+    if (hasLocation) {
+      venues = await searchOverpass(latitude, longitude, radiusMeters, osmFilters);
+      console.log(`Overpass returned ${venues.length} venues within ${radiusMeters}m`);
+    }
+
+    // Reverse-geocode for the city label
     let cityLabel = "";
     if (hasLocation) {
       try {
@@ -162,20 +170,19 @@ serve(async (req) => {
       console.log("User city:", cityLabel || "(unknown)", "coords:", latitude, longitude);
     }
 
-    const yelpContext = yelpVenues.length > 0
-      ? `\n\nHere are real venues from Yelp near the user. EVERY date idea MUST reference at least one of these venues:\n${yelpVenues
-          .slice(0, 10)
-          .map(
-            (v, i) =>
-              `${i + 1}. ${v.name} - ${v.rating}★ (${v.review_count} reviews), ${v.categories.map(c => c.title).join(", ")}, ${metersToMiles(v.distance)} away`
-          )
+    // Pick the closest 15 to give the AI plenty of options
+    const topVenues = venues.slice(0, 15);
+
+    const venueContext = topVenues.length > 0
+      ? `\n\nReal venues near the user (from OpenStreetMap, sorted by distance). EVERY date idea MUST be built around ONE of these EXACT venues. Do NOT invent or substitute other names:\n${topVenues
+          .map((v, i) => `${i + 1}. ${v.name} — ${v.category} — ${formatMiles(v.distance_miles)} away${v.website ? ` — website: ${v.website}` : ""}`)
           .join("\n")}`
       : "";
 
     const locationLine = cityLabel
-      ? `\n\nUSER LOCATION: ${cityLabel} (lat ${latitude}, lon ${longitude}). Every suggestion MUST be in or within driving distance of ${cityLabel}. Do NOT suggest venues in any other city or state.`
+      ? `\n\nUSER LOCATION: ${cityLabel} (lat ${latitude}, lon ${longitude}). Every suggestion MUST be in or within driving distance of ${cityLabel}. ABSOLUTELY DO NOT suggest venues in San Francisco, New York, Los Angeles, or any other city the user is not in.`
       : hasLocation
-        ? `\n\nUSER LOCATION: lat ${latitude}, lon ${longitude}. Suggest places near these coordinates only.`
+        ? `\n\nUSER LOCATION: lat ${latitude}, lon ${longitude}. Suggest places near these coordinates only. Never default to San Francisco.`
         : "";
 
     const prompt = `You are a creative date planner. Generate exactly 3 unique, specific date ideas based on these preferences:
@@ -188,25 +195,24 @@ ${funActivity ? `- Specific Activity: ${funActivity}` : ""}
 - Distance willing to travel: ${distance || "any"}
 ${!includeEating ? "IMPORTANT: The user does NOT want restaurant or dining suggestions. Focus on activities and experiences only." : ""}
 - Time available: ${timeRange || "any"}${locationLine}
-${yelpContext}
+${venueContext}
 
-${yelpVenues.length > 0
-  ? "CRITICAL: You MUST use the venue names from the Yelp list above. Build each date idea around ONE specific venue from the list."
+${topVenues.length > 0
+  ? "CRITICAL: Pick 3 different venues from the numbered list above. Use the EXACT venue name. Do NOT invent venues. Do NOT suggest places from other cities."
   : cityLabel
-    ? `CRITICAL: No live venue data is available. Suggest REAL, well-known places that actually exist in ${cityLabel} (parks, landmarks, neighborhoods, popular venues a local would know). Never invent venues from other cities like San Francisco, New York, or Los Angeles.`
-    : "CRITICAL: No location data is available. Keep suggestions generic (e.g., 'a local coffee shop', 'a nearby park') — do NOT name specific venues."}
+    ? `CRITICAL: No live venue data. Suggest REAL, well-known places that actually exist in ${cityLabel}. Never invent venues from San Francisco, New York, or other cities.`
+    : "CRITICAL: No location data. Keep suggestions generic — do NOT name specific venues."}
 
 For each idea, respond ONLY with valid JSON — no markdown, no code fences, no extra text. Use this exact format:
 [
   {
     "title": "Short catchy title",
-    "description": "2-3 sentence vivid description of the date mentioning the specific venue name",
+    "description": "2-3 sentence vivid description mentioning the specific venue name",
     "estimated_cost": "e.g. Free, $10-20, $50+",
     "duration": "e.g. 2-3 hours",
     "vibe": "one word mood like Romantic, Adventurous, Cozy",
-    "venue_name": "Exact venue name (or null if generic)",
-    "website_url": "The official website URL of THIS specific venue (e.g. https://fullthrottleadrenalinepark.com). Must be the venue's own homepage — NOT a Google search, NOT Yelp, NOT TripAdvisor, NOT a directory listing. If you are not confident of the exact official URL, return null.",
-    "distance_miles": "N/A"
+    "venue_name": "EXACT venue name from the list above (or null if no list)",
+    "website_url": "Official venue website if you know it for certain — otherwise null. NOT Yelp, NOT TripAdvisor, NOT a Google search."
   }
 ]`;
 
@@ -251,42 +257,42 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
 
     const data = await response.json();
     const raw = data.choices?.[0]?.message?.content || "[]";
-
     const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
 
     let ideas;
     try {
       ideas = JSON.parse(cleaned);
-      
-      // Enhance with Yelp data when available; otherwise fall back to AI's website_url or a Google search link
+
       ideas = ideas.map((idea: any) => {
-        const venueName = idea.venue_name;
-        if (venueName && yelpVenues.length > 0) {
-          const match = yelpVenues.find(v =>
-            v.name.toLowerCase().includes(venueName.toLowerCase()) ||
-            venueName.toLowerCase().includes(v.name.toLowerCase())
+        const venueName: string | undefined = idea.venue_name;
+        let matched: OsmVenue | undefined;
+        if (venueName) {
+          const vn = venueName.toLowerCase();
+          matched = topVenues.find(
+            (v) => v.name.toLowerCase() === vn ||
+                   v.name.toLowerCase().includes(vn) ||
+                   vn.includes(v.name.toLowerCase())
           );
-          if (match) {
-            return {
-              ...idea,
-              rating: match.rating,
-              review_count: match.review_count,
-              url: match.url,
-              distance_miles: metersToMiles(match.distance),
-            };
-          }
         }
-        // No Yelp match — prefer the AI's suggested official website; otherwise link to the
-        // venue's Google Maps place page (which resolves directly to the specific business,
-        // not a generic search results page).
-        let url: string | undefined = typeof idea.website_url === "string" && idea.website_url.startsWith("http")
-          ? idea.website_url
-          : undefined;
-        if (!url && venueName) {
+
+        // Distance: prefer real OSM distance from user's coords
+        let distance_miles = "N/A";
+        if (matched) {
+          distance_miles = formatMiles(matched.distance_miles);
+        }
+
+        // Link priority: matched OSM website → AI-supplied URL → Google Maps place link
+        let url: string | undefined;
+        if (matched?.website && matched.website.startsWith("http")) {
+          url = matched.website;
+        } else if (typeof idea.website_url === "string" && idea.website_url.startsWith("http")) {
+          url = idea.website_url;
+        } else if (venueName) {
           const q = encodeURIComponent(`${venueName}${cityLabel ? " " + cityLabel : ""}`);
           url = `https://www.google.com/maps/search/?api=1&query=${q}`;
         }
-        return { ...idea, url };
+
+        return { ...idea, distance_miles, url };
       });
     } catch {
       console.error("Failed to parse AI response:", raw);
