@@ -33,12 +33,14 @@ const PartnerLink = ({ onLinked }: PartnerLinkProps) => {
         if (data?.partner_code) setMyCode(data.partner_code);
       });
 
-    // Check for pending incoming links
+    // Check for pending incoming links (handle accidental duplicates by taking the latest)
     supabase
       .from("partner_links")
       .select("*")
       .eq("user2_id", user.id)
       .eq("status", "pending")
+      .order("created_at", { ascending: false })
+      .limit(1)
       .maybeSingle()
       .then(({ data }) => {
         if (data) setPendingLink(data);
