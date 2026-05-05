@@ -99,6 +99,53 @@ const PartnerLink = ({ onLinked }: PartnerLinkProps) => {
       return;
     }
 
+    // Block if already linked to a DIFFERENT partner
+    const { data: existingAccepted } = await supabase
+      .from("partner_links")
+      .select("id, user1_id, user2_id")
+      .eq("status", "accepted")
+      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (existingAccepted) {
+      const otherId =
+        existingAccepted.user1_id === user.id ? existingAccepted.user2_id : existingAccepted.user1_id;
+      if (otherId === partnerId) {
+        toast.info("You're already linked with this partner!");
+        setLoading(false);
+        onLinked();
+        return;
+      }
+      toast.error("You're already linked with another partner. Unlink first.");
+      setLoading(false);
+      return;
+    }
+
+    // Look for any existing row between these two users (either direction, any status)
+    const { data: existingRows } = await supabase
+      .from("partner_links")
+      .select("id, status, user1_id, user2_id, created_at")
+      .or(
+        `and(user1_id.eq.${user.id},user2_id.eq.${partnerId}),and(user1_id.eq.${partnerId},user2_id.eq.${user.id})`
+      )
+      .order("created_at", { ascending: true });
+
+    const rows = existingRows || [];
+
+    if (rows.length > 0) {
+      // Auto-accept whatever's there — both sides clicked, link them up now
+      const keepId = rows[0].id;
+      await supabase.from("partner_links").update({ status: "accepted" }).eq("id", keepId);
+      const dupes = rows.slice(1).map((r) => r.id);
+      if (dupes.length > 0) await supabase.from("partner_links").delete().in("id", dupes);
+      toast.success("You're linked! 💕");
+      setLoading(false);
+      onLinked();
+      return;
+    }
+
     const { error } = await supabase.from("partner_links").insert({
       user1_id: user.id,
       user2_id: partnerId,
@@ -120,7 +167,7 @@ const PartnerLink = ({ onLinked }: PartnerLinkProps) => {
   const handleLink = () => handleLinkWithCode(partnerCode);
 
   const handleAccept = async () => {
-    if (!pendingLink) return;
+    if (!pendingLink || !user) return;
     const { error } = await supabase
       .from("partner_links")
       .update({ status: "accepted" })
@@ -128,10 +175,25 @@ const PartnerLink = ({ onLinked }: PartnerLinkProps) => {
 
     if (error) {
       toast.error("Failed to accept");
-    } else {
-      toast.success("You're linked! 💕");
-      onLinked();
+      return;
     }
+
+    // Clean up any other pending/duplicate rows between these two users
+    const otherUserId =
+      pendingLink.user1_id === user.id ? pendingLink.user2_id : pendingLink.user1_id;
+    const { data: dupes } = await supabase
+      .from("partner_links")
+      .select("id")
+      .or(
+        `and(user1_id.eq.${user.id},user2_id.eq.${otherUserId}),and(user1_id.eq.${otherUserId},user2_id.eq.${user.id})`
+      )
+      .neq("id", pendingLink.id);
+    if (dupes && dupes.length > 0) {
+      await supabase.from("partner_links").delete().in("id", dupes.map((d) => d.id));
+    }
+
+    toast.success("You're linked! 💕");
+    onLinked();
   };
 
   return (
