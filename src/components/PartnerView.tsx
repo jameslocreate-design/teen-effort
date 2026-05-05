@@ -29,12 +29,14 @@ const PartnerView = ({ onUnlinked }: PartnerViewProps) => {
     if (!user) return;
     setLoading(true);
 
-    // Get accepted partner link
+    // Get accepted partner link (use limit(1) so accidental duplicates don't break the read)
     const { data: link } = await supabase
       .from("partner_links")
       .select("id, created_at, user1_id, user2_id")
       .eq("status", "accepted")
       .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+      .order("created_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     if (!link) {
