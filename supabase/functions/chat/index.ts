@@ -263,7 +263,7 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
     try {
       ideas = JSON.parse(cleaned);
 
-      ideas = ideas.map((idea: any) => {
+      ideas = await Promise.all(ideas.map(async (idea: any) => {
         const venueName: string | undefined = idea.venue_name;
         let matched: OsmVenue | undefined;
         if (venueName) {
@@ -275,10 +275,27 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
           );
         }
 
-        // Distance: prefer real OSM distance from user's coords
+        // Distance: prefer real OSM distance; otherwise geocode the venue name with Nominatim
         let distance_miles = "N/A";
         if (matched) {
           distance_miles = formatMiles(matched.distance_miles);
+        } else if (hasLocation && venueName) {
+          try {
+            const q = encodeURIComponent(`${venueName}${cityLabel ? ", " + cityLabel : ""}`);
+            const r = await fetch(
+              `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${q}`,
+              { headers: { "User-Agent": "DateApp/1.0" } }
+            );
+            if (r.ok) {
+              const arr = await r.json();
+              if (Array.isArray(arr) && arr[0]?.lat && arr[0]?.lon) {
+                const miles = haversineMiles(latitude, longitude, parseFloat(arr[0].lat), parseFloat(arr[0].lon));
+                distance_miles = formatMiles(miles);
+              }
+            }
+          } catch (e) {
+            console.warn("Nominatim venue lookup failed:", e);
+          }
         }
 
         // Link priority: matched OSM website → AI-supplied URL → Google Maps place link
@@ -293,7 +310,7 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
         }
 
         return { ...idea, distance_miles, url };
-      });
+      }));
     } catch {
       console.error("Failed to parse AI response:", raw);
       ideas = [];

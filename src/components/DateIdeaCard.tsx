@@ -60,10 +60,10 @@ const DateIdeaCard = ({ idea, index }: DateIdeaCardProps) => {
             <Sparkles className="h-3.5 w-3.5 text-primary/70" />
             {idea.vibe}
           </span>
-          {idea.distance_miles && (
+          {idea.distance_miles && idea.distance_miles !== "N/A" && (
             <span className="flex items-center gap-1.5">
               <MapPin className="h-3.5 w-3.5 text-primary/70" />
-              {idea.distance_miles}
+              {idea.distance_miles} away
             </span>
           )}
         </div>
@@ -74,7 +74,7 @@ const DateIdeaCard = ({ idea, index }: DateIdeaCardProps) => {
             className="h-7 gap-1.5 text-xs"
             onClick={() => window.open(idea.url, "_blank")}
           >
-            View on Yelp
+            View venue
             <ExternalLink className="h-3 w-3" />
           </Button>
         )}
