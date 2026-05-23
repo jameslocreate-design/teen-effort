@@ -42,6 +42,7 @@ interface SavedGift {
 
 const GiftPlanner = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<GiftFilters>({
     cost: null, personalization: null, event: null,
   });
