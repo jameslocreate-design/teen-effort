@@ -26,6 +26,8 @@ const AuthPage = () => {
   const [password, setPassword] = useState("");
   const [dob, setDob] = useState("");
   const [phone, setPhone] = useState("");
+  const [phonePassword, setPhonePassword] = useState("");
+  const [isPhoneSignUp, setIsPhoneSignUp] = useState(true);
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [emailOtp, setEmailOtp] = useState("");
@@ -92,24 +94,40 @@ const AuthPage = () => {
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Phone OTP creates an account on first verification, so always age-gate.
-    if (!verifyAge(dob)) return;
     const formatted = formatPhone(phone);
     if (formatted.length < 10) {
       toast.error("Please enter a valid phone number");
       return;
     }
+    if (isPhoneSignUp) {
+      if (!verifyAge(dob)) return;
+      if (phonePassword.length < 6) {
+        toast.error("Password must be at least 6 characters");
+        return;
+      }
+    }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: formatted,
-        options: { data: { birthday: dob } },
-      });
-      if (error) throw error;
-      setOtpSent(true);
-      toast.success("Verification code sent to your phone!");
+      if (isPhoneSignUp) {
+        // Sign-up: send OTP. Account exists but unconfirmed until code is entered.
+        const { error } = await supabase.auth.signInWithOtp({
+          phone: formatted,
+          options: { data: { birthday: dob } },
+        });
+        if (error) throw error;
+        setOtpSent(true);
+        toast.success("Verification code sent! Enter it to finish creating your account.");
+      } else {
+        // Sign-in with existing password
+        const { error } = await supabase.auth.signInWithPassword({
+          phone: formatted,
+          password: phonePassword,
+        });
+        if (error) throw error;
+        toast.success("Signed in!");
+      }
     } catch (err: any) {
-      toast.error(err.message || "Failed to send code");
+      toast.error(err.message || "Failed");
     } finally {
       setLoading(false);
     }
@@ -123,19 +141,29 @@ const AuthPage = () => {
     }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.verifyOtp({
+      // 1. Verify SMS code — this confirms the account and signs the user in.
+      const { error: verifyError } = await supabase.auth.verifyOtp({
         phone: formatPhone(phone),
         token: otp,
         type: "sms",
       });
-      if (error) throw error;
-      toast.success("Signed in successfully!");
+      if (verifyError) throw verifyError;
+      // 2. Immediately attach the password so future sign-ins use phone + password.
+      const { error: pwError } = await supabase.auth.updateUser({
+        password: phonePassword,
+      });
+      if (pwError) {
+        toast.error("Code verified but password failed to save: " + pwError.message);
+        return;
+      }
+      toast.success("Account created and signed in!");
     } catch (err: any) {
       toast.error(err.message || "Invalid verification code");
     } finally {
       setLoading(false);
     }
   };
+
 
   const handleVerifyEmailOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -321,28 +349,53 @@ const AuthPage = () => {
                 required
               />
             </div>
-            <div className="space-y-1">
-              <div className="relative">
-                <Cake className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="date"
-                  placeholder="Date of birth"
-                  value={dob}
-                  onChange={(e) => setDob(e.target.value)}
-                  max={new Date().toISOString().split("T")[0]}
-                  className="pl-10 bg-secondary/50 border-border"
-                  required
-                />
-              </div>
-              <p className="text-[11px] text-muted-foreground px-1">You must be 13 or older to use this app.</p>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="password"
+                placeholder={isPhoneSignUp ? "Create a password" : "Password"}
+                value={phonePassword}
+                onChange={(e) => setPhonePassword(e.target.value)}
+                className="pl-10 bg-secondary/50 border-border"
+                required
+                minLength={6}
+              />
             </div>
+            {isPhoneSignUp && (
+              <div className="space-y-1">
+                <div className="relative">
+                  <Cake className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="date"
+                    placeholder="Date of birth"
+                    value={dob}
+                    onChange={(e) => setDob(e.target.value)}
+                    max={new Date().toISOString().split("T")[0]}
+                    className="pl-10 bg-secondary/50 border-border"
+                    required
+                  />
+                </div>
+                <p className="text-[11px] text-muted-foreground px-1">You must be 13 or older to use this app.</p>
+              </div>
+            )}
             <p className="text-xs text-muted-foreground">US numbers auto-add +1. For other countries, include your country code (e.g. +44).</p>
             <Button type="submit" disabled={loading} className="w-full h-11 rounded-xl">
-              {loading ? "Sending..." : "Send Verification Code"}
+              {loading ? (isPhoneSignUp ? "Sending..." : "Signing in...") : (isPhoneSignUp ? "Send Verification Code" : "Sign In")}
               <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
+            <p className="text-center text-sm text-muted-foreground">
+              {isPhoneSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
+              <button
+                type="button"
+                onClick={() => setIsPhoneSignUp(!isPhoneSignUp)}
+                className="text-primary hover:underline font-medium"
+              >
+                {isPhoneSignUp ? "Sign in" : "Sign up"}
+              </button>
+            </p>
           </form>
         )}
+
 
         {authMethod === "phone" && otpSent && (
           <form onSubmit={handleVerifyOtp} className="space-y-4">
