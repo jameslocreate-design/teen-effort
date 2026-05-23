@@ -67,7 +67,8 @@ const AuthPage = () => {
           },
         });
         if (error) throw error;
-        toast.success("Check your email to confirm your account!");
+        setEmailOtpSent(true);
+        toast.success("We sent a 6-digit code to your email");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
