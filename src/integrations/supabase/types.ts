@@ -798,6 +798,33 @@ export type Database = {
         }
         Relationships: []
       }
+      usage_limits: {
+        Row: {
+          count: number
+          feature: string
+          id: string
+          period_start: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          feature: string
+          id?: string
+          period_start: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          feature?: string
+          id?: string
+          period_start?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -916,6 +943,10 @@ export type Database = {
     }
     Functions: {
       admin_export_table: { Args: { _table_name: string }; Returns: Json }
+      check_and_increment_usage: {
+        Args: { _feature: string; _limit: number; _user_id: string }
+        Returns: Json
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -929,6 +960,10 @@ export type Database = {
         Returns: string
       }
       get_admin_stats: { Args: never; Returns: Json }
+      get_current_usage: {
+        Args: { _feature: string; _user_id: string }
+        Returns: number
+      }
       get_partner_user_id: { Args: { _user_id: string }; Returns: string }
       has_active_subscription: {
         Args: { _environment?: string; _user_id: string }

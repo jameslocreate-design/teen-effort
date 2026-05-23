@@ -5,6 +5,10 @@ import { Textarea } from "@/components/ui/textarea";
 import FilterGroup from "@/components/FilterGroup";
 import GiftIdeaCard from "@/components/GiftIdeaCard";
 import { generateGiftIdeas, type GiftFilters, type GiftIdea } from "@/lib/gift-planner";
+import { UsageLimitError } from "@/lib/date-planner";
+import { UsageMeter } from "@/components/UsageMeter";
+import { notifyUsageUpdated } from "@/hooks/useUsage";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -38,6 +42,7 @@ interface SavedGift {
 
 const GiftPlanner = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<GiftFilters>({
     cost: null, personalization: null, event: null,
   });
@@ -70,8 +75,16 @@ const GiftPlanner = () => {
     setHasGenerated(true);
     try {
       setIdeas(await generateGiftIdeas(filters));
+      notifyUsageUpdated("gift_ideas");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to generate ideas");
+      if (err instanceof UsageLimitError) {
+        toast.error(err.message, {
+          action: { label: "Upgrade", onClick: () => navigate("/pricing") },
+          duration: 8000,
+        });
+      } else {
+        toast.error(err instanceof Error ? err.message : "Failed to generate ideas");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -130,6 +143,8 @@ const GiftPlanner = () => {
           </p>
         </div>
       </div>
+
+      <UsageMeter feature="gift_ideas" label="gift generations" />
 
       <Button
         onClick={handleGenerate}

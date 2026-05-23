@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { checkAndIncrementUsage } from "../_shared/usage-limits.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,6 +13,29 @@ serve(async (req) => {
   }
 
   try {
+    let usage;
+    try {
+      usage = await checkAndIncrementUsage(req, "gift_ideas");
+    } catch (authErr) {
+      console.error("Auth/usage error", authErr);
+      return new Response(
+        JSON.stringify({ error: "You must be signed in to generate gift ideas." }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    if (!usage.allowed) {
+      return new Response(
+        JSON.stringify({
+          error: "limit_reached",
+          message: `You've used all ${usage.limit} free gift generations this month. Upgrade for unlimited access.`,
+          feature: "gift_ideas",
+          limit: usage.limit,
+          remaining: 0,
+        }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const { cost, personalization, event } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");

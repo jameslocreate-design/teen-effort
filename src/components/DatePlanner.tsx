@@ -8,7 +8,10 @@ import DatePickerDialog from "@/components/date-planner/DatePickerDialog";
 import MoodSelector from "@/components/MoodSelector";
 import DateCountdown from "@/components/DateCountdown";
 import SavedDateIdeas from "@/components/SavedDateIdeas";
-import { generateDateIdeas, type DateFilters as DateFiltersType, type DateIdea } from "@/lib/date-planner";
+import { generateDateIdeas, UsageLimitError, type DateFilters as DateFiltersType, type DateIdea } from "@/lib/date-planner";
+import { UsageMeter } from "@/components/UsageMeter";
+import { notifyUsageUpdated } from "@/hooks/useUsage";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -16,6 +19,7 @@ import { format } from "date-fns";
 
 const DatePlanner = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<DateFiltersType>({
     cost: null, location: null, activity: null, distance: null,
     timeRange: null, cuisine: null, latitude: null, longitude: null, funActivity: null, mood: null,
@@ -75,8 +79,16 @@ const DatePlanner = () => {
     setHasGenerated(true);
     try {
       setIdeas(await generateDateIdeas(filters));
+      notifyUsageUpdated("date_ideas");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to generate ideas");
+      if (err instanceof UsageLimitError) {
+        toast.error(err.message, {
+          action: { label: "Upgrade", onClick: () => navigate("/pricing") },
+          duration: 8000,
+        });
+      } else {
+        toast.error(err instanceof Error ? err.message : "Failed to generate ideas");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -168,6 +180,8 @@ const DatePlanner = () => {
       <MoodSelector selected={filters.mood} onSelect={(mood) => setFilters(prev => ({ ...prev, mood }))} />
 
       <DateFilters filters={filters} onFilterChange={updateFilter} />
+
+      <UsageMeter feature="date_ideas" label="date generations" />
 
       {/* Sticky generate button on mobile */}
       <div className="sticky bottom-20 lg:bottom-0 z-30">

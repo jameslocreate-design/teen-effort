@@ -3,7 +3,8 @@ import { Brain, Sparkles, Loader2, TrendingUp, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { generateDateIdeas, type DateIdea, type DateFilters } from "@/lib/date-planner";
+import { generateDateIdeas, UsageLimitError, type DateIdea, type DateFilters } from "@/lib/date-planner";
+import { notifyUsageUpdated } from "@/hooks/useUsage";
 import DateIdeaCard from "@/components/DateIdeaCard";
 import { toast } from "sonner";
 
@@ -104,8 +105,13 @@ const SmartRecommendations = () => {
       }
 
       setIdeas(await generateDateIdeas(filters));
+      notifyUsageUpdated("date_ideas");
     } catch (err) {
-      toast.error("Failed to generate recommendations");
+      if (err instanceof UsageLimitError) {
+        toast.error(err.message);
+      } else {
+        toast.error("Failed to generate recommendations");
+      }
     }
     setLoading(false);
   };

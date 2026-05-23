@@ -3,7 +3,8 @@ import { Heart, X, Loader2, Sparkles, Check, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { generateDateIdeas, type DateIdea, type DateFilters } from "@/lib/date-planner";
+import { generateDateIdeas, UsageLimitError, type DateIdea, type DateFilters } from "@/lib/date-planner";
+import { notifyUsageUpdated } from "@/hooks/useUsage";
 import { toast } from "sonner";
 
 const SwipeDates = () => {
@@ -63,8 +64,13 @@ const SwipeDates = () => {
       }
       const newIdeas = await generateDateIdeas(filters);
       setIdeas(newIdeas);
+      notifyUsageUpdated("date_ideas");
     } catch (err) {
-      toast.error("Failed to generate ideas");
+      if (err instanceof UsageLimitError) {
+        toast.error(err.message);
+      } else {
+        toast.error("Failed to generate ideas");
+      }
     }
     setLoading(false);
   };
