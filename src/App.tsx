@@ -10,6 +10,8 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import LinkPartner from "./pages/LinkPartner";
 import DateLogPage from "./pages/DateLogPage";
+import Pricing from "./pages/Pricing";
+import CheckoutReturn from "./pages/CheckoutReturn";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +28,8 @@ const App = () => (
             <Route path="/link/:code" element={<LinkPartner />} />
             <Route path="/admin" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/checkout/return" element={<CheckoutReturn />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
