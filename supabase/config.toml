@@ -3,6 +3,9 @@ project_id = "znvyttxbxkvtyegjiwxj"
 [functions.chat]
 verify_jwt = false
 
+[functions.gift-ideas]
+verify_jwt = false
+
 [functions.process-email-queue]
 verify_jwt = false
 
