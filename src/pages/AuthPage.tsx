@@ -28,6 +28,8 @@ const AuthPage = () => {
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
+  const [emailOtp, setEmailOtp] = useState("");
+  const [emailOtpSent, setEmailOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // Compliance: COPPA requires we do not collect data from children under 13.
@@ -65,7 +67,8 @@ const AuthPage = () => {
           },
         });
         if (error) throw error;
-        toast.success("Check your email to confirm your account!");
+        setEmailOtpSent(true);
+        toast.success("We sent a 6-digit code to your email");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -134,6 +137,42 @@ const AuthPage = () => {
     }
   };
 
+  const handleVerifyEmailOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (emailOtp.length < 6) {
+      toast.error("Please enter the 6-digit code");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: emailOtp,
+        type: "signup",
+      });
+      if (error) throw error;
+      toast.success("Email verified! You're signed in.");
+    } catch (err: any) {
+      toast.error(err.message || "Invalid verification code");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendEmailOtp = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resend({ type: "signup", email });
+      if (error) throw error;
+      toast.success("New code sent");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to resend code");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-8">
@@ -145,8 +184,10 @@ const AuthPage = () => {
           <p className="text-sm text-muted-foreground">
             {authMethod === "phone"
               ? otpSent ? "Enter the code we sent" : "Sign in with your phone"
+              : emailOtpSent ? "Verify your email"
               : isSignUp ? "Create your account" : "Welcome back"}
           </p>
+
         </div>
 
         {/* Auth Method Toggle */}
@@ -174,7 +215,7 @@ const AuthPage = () => {
         </div>
 
         {/* Email Form */}
-        {authMethod === "email" && (
+        {authMethod === "email" && !emailOtpSent && (
           <form onSubmit={handleEmailSubmit} className="space-y-4">
             <div className="relative">
               <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -217,11 +258,54 @@ const AuthPage = () => {
               </div>
             )}
             <Button type="submit" disabled={loading} className="w-full h-11 rounded-xl">
-              {loading ? "Loading..." : isSignUp ? "Create Account" : "Sign In"}
+              {loading ? "Loading..." : isSignUp ? "Send Verification Code" : "Sign In"}
               <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           </form>
         )}
+
+        {/* Email OTP Verification */}
+        {authMethod === "email" && emailOtpSent && (
+          <form onSubmit={handleVerifyEmailOtp} className="space-y-4">
+            <p className="text-sm text-muted-foreground text-center">
+              Enter the 6-digit code sent to <span className="text-foreground font-medium">{email}</span>
+            </p>
+            <div className="relative">
+              <Hash className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="6-digit code"
+                value={emailOtp}
+                onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                className="pl-10 bg-secondary/50 border-border text-center tracking-widest text-lg"
+                required
+                maxLength={6}
+              />
+            </div>
+            <Button type="submit" disabled={loading} className="w-full h-11 rounded-xl">
+              {loading ? "Verifying..." : "Verify & Continue"}
+              <ArrowRight className="h-4 w-4 ml-1" />
+            </Button>
+            <div className="flex justify-between text-sm">
+              <button
+                type="button"
+                onClick={() => { setEmailOtpSent(false); setEmailOtp(""); }}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                ← Back
+              </button>
+              <button
+                type="button"
+                onClick={handleResendEmailOtp}
+                disabled={loading}
+                className="text-primary hover:underline"
+              >
+                Resend code
+              </button>
+            </div>
+          </form>
+        )}
+
 
         {/* Phone Form */}
         {authMethod === "phone" && !otpSent && (
@@ -289,7 +373,7 @@ const AuthPage = () => {
         )}
 
         {/* Toggle sign up / sign in (email only) */}
-        {authMethod === "email" && (
+        {authMethod === "email" && !emailOtpSent && (
           <p className="text-center text-sm text-muted-foreground">
             {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
             <button
