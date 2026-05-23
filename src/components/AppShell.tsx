@@ -44,7 +44,8 @@ type Tab =
   | "planner" | "roulette" | "gifts" | "calendar"
   | "wishlists" | "quiz" | "stats" | "achievements"
   | "journal" | "bucket" | "reviews" | "expert"
-  | "referral" | "partner" | "partner-view" | "profile"
+  | "referral" | "partner" | "partner-view" | "profile" | "premium"
+  | "date-log" | "letters" | "map" | "swipe" | "timeline" | "smart" | "vision" | "appreciate";
   | "date-log" | "letters" | "map" | "swipe" | "timeline" | "smart" | "vision" | "appreciate";
 
 interface NavSection {
