@@ -75,8 +75,16 @@ const GiftPlanner = () => {
     setHasGenerated(true);
     try {
       setIdeas(await generateGiftIdeas(filters));
+      notifyUsageUpdated("gift_ideas");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to generate ideas");
+      if (err instanceof UsageLimitError) {
+        toast.error(err.message, {
+          action: { label: "Upgrade", onClick: () => navigate("/pricing") },
+          duration: 8000,
+        });
+      } else {
+        toast.error(err instanceof Error ? err.message : "Failed to generate ideas");
+      }
     } finally {
       setIsLoading(false);
     }
