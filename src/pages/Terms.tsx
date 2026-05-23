@@ -1,13 +1,11 @@
 import { useNavigate } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import termsText from "@/content/terms.txt?raw";
+import termsMd from "@/content/terms.md?raw";
 
 export default function Terms() {
   const navigate = useNavigate();
-
-  // Split into paragraphs on blank lines; preserve internal line breaks.
-  const paragraphs = termsText.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
 
   return (
     <div className="min-h-screen bg-background">
@@ -19,16 +17,53 @@ export default function Terms() {
         <h1 className="font-display text-4xl md:text-5xl font-bold mb-2">
           Terms &amp; Conditions
         </h1>
-        <p className="text-sm text-muted-foreground mb-8">
-          Please read these terms carefully before using the Services.
+        <p className="text-sm text-muted-foreground mb-10">
+          Last updated May 23, 2026
         </p>
 
-        <article className="space-y-4 text-sm md:text-base leading-relaxed text-foreground/90 font-sans">
-          {paragraphs.map((p, i) => (
-            <p key={i} className="whitespace-pre-line">
-              {p}
-            </p>
-          ))}
+        <article className="text-foreground/90 font-sans">
+          <ReactMarkdown
+            components={{
+              h2: ({ node, ...props }) => (
+                <h2
+                  className="font-display text-2xl md:text-3xl font-semibold mt-10 mb-4 pb-2 border-b border-border"
+                  {...props}
+                />
+              ),
+              h3: ({ node, ...props }) => (
+                <h3
+                  className="font-display text-xl font-semibold mt-6 mb-3"
+                  {...props}
+                />
+              ),
+              p: ({ node, ...props }) => (
+                <p
+                  className="text-sm md:text-base leading-relaxed mb-4"
+                  {...props}
+                />
+              ),
+              strong: ({ node, ...props }) => (
+                <strong
+                  className="block font-semibold text-foreground mt-5 mb-2"
+                  {...props}
+                />
+              ),
+              a: ({ node, ...props }) => (
+                <a
+                  className="text-primary underline underline-offset-2 break-words"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  {...props}
+                />
+              ),
+              ul: ({ node, ...props }) => (
+                <ul className="list-disc pl-6 mb-4 space-y-1 text-sm md:text-base" {...props} />
+              ),
+              li: ({ node, ...props }) => <li className="leading-relaxed" {...props} />,
+            }}
+          >
+            {termsMd}
+          </ReactMarkdown>
         </article>
       </div>
     </div>
