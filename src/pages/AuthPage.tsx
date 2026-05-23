@@ -373,7 +373,7 @@ const AuthPage = () => {
         )}
 
         {/* Toggle sign up / sign in (email only) */}
-        {authMethod === "email" && (
+        {authMethod === "email" && !emailOtpSent && (
           <p className="text-center text-sm text-muted-foreground">
             {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
             <button
