@@ -19,6 +19,7 @@ import { format } from "date-fns";
 
 const DatePlanner = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<DateFiltersType>({
     cost: null, location: null, activity: null, distance: null,
     timeRange: null, cuisine: null, latitude: null, longitude: null, funActivity: null, mood: null,
