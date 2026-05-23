@@ -36,6 +36,7 @@ import SmartRecommendations from "@/components/SmartRecommendations";
 import VisionBoard from "@/components/VisionBoard";
 import AppreciationPrompts from "@/components/AppreciationPrompts";
 import SettingsPage from "@/components/SettingsPage";
+import PremiumGate from "@/components/PremiumGate";
 import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
