@@ -386,6 +386,18 @@ const SettingsPage = ({ onBack }: { onBack: () => void }) => {
           </Dialog>
         </Section>
 
+        {/* Terms & Conditions */}
+        <Section icon={<FileText className="h-4 w-4" />} title="Terms & Conditions" desc="Rules for using our services">
+          <Button
+            variant="outline"
+            className="w-full h-11 rounded-xl justify-start gap-2"
+            onClick={() => navigate("/terms")}
+          >
+            <Eye className="h-4 w-4" />
+            Read Terms & Conditions
+          </Button>
+        </Section>
+
         {/* Danger Zone */}
         <Section icon={<Trash2 className="h-4 w-4" />} title="Danger Zone" desc="Pause or permanently delete your account">
           <AlertDialog>
