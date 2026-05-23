@@ -144,6 +144,8 @@ const GiftPlanner = () => {
         </div>
       </div>
 
+      <UsageMeter feature="gift_ideas" label="gift generations" />
+
       <Button
         onClick={handleGenerate}
         disabled={isLoading}
