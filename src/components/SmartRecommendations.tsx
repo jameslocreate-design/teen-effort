@@ -105,8 +105,13 @@ const SmartRecommendations = () => {
       }
 
       setIdeas(await generateDateIdeas(filters));
+      notifyUsageUpdated("date_ideas");
     } catch (err) {
-      toast.error("Failed to generate recommendations");
+      if (err instanceof UsageLimitError) {
+        toast.error(err.message);
+      } else {
+        toast.error("Failed to generate recommendations");
+      }
     }
     setLoading(false);
   };
