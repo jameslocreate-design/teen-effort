@@ -26,6 +26,8 @@ const AuthPage = () => {
   const [password, setPassword] = useState("");
   const [dob, setDob] = useState("");
   const [phone, setPhone] = useState("");
+  const [phonePassword, setPhonePassword] = useState("");
+  const [isPhoneSignUp, setIsPhoneSignUp] = useState(true);
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [emailOtp, setEmailOtp] = useState("");
