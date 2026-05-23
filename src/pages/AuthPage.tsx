@@ -213,7 +213,7 @@ const AuthPage = () => {
         </div>
 
         {/* Email Form */}
-        {authMethod === "email" && (
+        {authMethod === "email" && !emailOtpSent && (
           <form onSubmit={handleEmailSubmit} className="space-y-4">
             <div className="relative">
               <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -256,11 +256,54 @@ const AuthPage = () => {
               </div>
             )}
             <Button type="submit" disabled={loading} className="w-full h-11 rounded-xl">
-              {loading ? "Loading..." : isSignUp ? "Create Account" : "Sign In"}
+              {loading ? "Loading..." : isSignUp ? "Send Verification Code" : "Sign In"}
               <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           </form>
         )}
+
+        {/* Email OTP Verification */}
+        {authMethod === "email" && emailOtpSent && (
+          <form onSubmit={handleVerifyEmailOtp} className="space-y-4">
+            <p className="text-sm text-muted-foreground text-center">
+              Enter the 6-digit code sent to <span className="text-foreground font-medium">{email}</span>
+            </p>
+            <div className="relative">
+              <Hash className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="6-digit code"
+                value={emailOtp}
+                onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                className="pl-10 bg-secondary/50 border-border text-center tracking-widest text-lg"
+                required
+                maxLength={6}
+              />
+            </div>
+            <Button type="submit" disabled={loading} className="w-full h-11 rounded-xl">
+              {loading ? "Verifying..." : "Verify & Continue"}
+              <ArrowRight className="h-4 w-4 ml-1" />
+            </Button>
+            <div className="flex justify-between text-sm">
+              <button
+                type="button"
+                onClick={() => { setEmailOtpSent(false); setEmailOtp(""); }}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                ← Back
+              </button>
+              <button
+                type="button"
+                onClick={handleResendEmailOtp}
+                disabled={loading}
+                className="text-primary hover:underline"
+              >
+                Resend code
+              </button>
+            </div>
+          </form>
+        )}
+
 
         {/* Phone Form */}
         {authMethod === "phone" && !otpSent && (
