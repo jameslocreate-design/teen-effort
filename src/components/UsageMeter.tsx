@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Sparkles } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useUsage, type UsageFeature } from "@/hooks/useUsage";
 
