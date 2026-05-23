@@ -36,6 +36,7 @@ import SmartRecommendations from "@/components/SmartRecommendations";
 import VisionBoard from "@/components/VisionBoard";
 import AppreciationPrompts from "@/components/AppreciationPrompts";
 import SettingsPage from "@/components/SettingsPage";
+import PremiumGate from "@/components/PremiumGate";
 import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
@@ -43,7 +44,7 @@ type Tab =
   | "planner" | "roulette" | "gifts" | "calendar"
   | "wishlists" | "quiz" | "stats" | "achievements"
   | "journal" | "bucket" | "reviews" | "expert"
-  | "referral" | "partner" | "partner-view" | "profile"
+  | "referral" | "partner" | "partner-view" | "profile" | "premium"
   | "date-log" | "letters" | "map" | "swipe" | "timeline" | "smart" | "vision" | "appreciate";
 
 interface NavSection {
@@ -93,6 +94,7 @@ const navSections: NavSection[] = [
       { id: "partner", label: "Link Partner", icon: <Link2 className="h-4 w-4" /> },
       { id: "partner-view", label: "Partner", icon: <Users className="h-4 w-4" /> },
       { id: "referral", label: "Invite Friends", icon: <Share2 className="h-4 w-4" /> },
+      { id: "premium", label: "Premium", icon: <Star className="h-4 w-4" /> },
       { id: "profile", label: "Profile", icon: <User className="h-4 w-4" /> },
     ],
   },
@@ -181,6 +183,11 @@ const AppShell = () => {
   const handleTabChange = (tab: Tab) => {
     if (tab === "date-log") {
       navigate("/date-log");
+      setSidebarOpen(false);
+      return;
+    }
+    if (tab === "premium") {
+      navigate("/pricing");
       setSidebarOpen(false);
       return;
     }
@@ -311,9 +318,9 @@ const AppShell = () => {
         <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
           <div className="mx-auto max-w-3xl px-4 sm:px-6 py-6 sm:py-8">
             {activeTab === "planner" && <><DateStreak /><DatePlanner /></>}
-            {activeTab === "smart" && <SmartRecommendations />}
+            {activeTab === "smart" && <PremiumGate feature="Smart Recommendations" description="Get personalized date ideas based on your history and preferences."><SmartRecommendations /></PremiumGate>}
             {activeTab === "swipe" && <SwipeDates />}
-            {activeTab === "roulette" && <DateRoulette />}
+            {activeTab === "roulette" && <PremiumGate feature="Date Roulette" description="Spin the wheel for surprise date ideas — unlimited spins with Premium."><DateRoulette /></PremiumGate>}
             {activeTab === "gifts" && <GiftPlanner />}
             {activeTab === "bucket" && <BucketList />}
             {activeTab === "expert" && <AskTheExpert />}
