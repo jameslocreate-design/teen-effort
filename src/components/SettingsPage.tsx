@@ -36,6 +36,7 @@ const DEFAULT_PRIVACY: PrivacySettings = {
 };
 
 const SettingsPage = ({ onBack }: { onBack: () => void }) => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [privacy, setPrivacy] = useState<PrivacySettings>(DEFAULT_PRIVACY);
   const [savingPrivacy, setSavingPrivacy] = useState(false);
