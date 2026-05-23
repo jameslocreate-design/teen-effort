@@ -186,6 +186,11 @@ const AppShell = () => {
       setSidebarOpen(false);
       return;
     }
+    if (tab === "premium") {
+      navigate("/pricing");
+      setSidebarOpen(false);
+      return;
+    }
     setActiveTab(tab);
     setSidebarOpen(false);
   };
