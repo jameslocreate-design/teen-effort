@@ -184,8 +184,10 @@ const AuthPage = () => {
           <p className="text-sm text-muted-foreground">
             {authMethod === "phone"
               ? otpSent ? "Enter the code we sent" : "Sign in with your phone"
+              : emailOtpSent ? "Verify your email"
               : isSignUp ? "Create your account" : "Welcome back"}
           </p>
+
         </div>
 
         {/* Auth Method Toggle */}
