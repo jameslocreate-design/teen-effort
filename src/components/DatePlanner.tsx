@@ -181,6 +181,8 @@ const DatePlanner = () => {
 
       <DateFilters filters={filters} onFilterChange={updateFilter} />
 
+      <UsageMeter feature="date_ideas" label="date generations" />
+
       {/* Sticky generate button on mobile */}
       <div className="sticky bottom-20 lg:bottom-0 z-30">
         <Button
