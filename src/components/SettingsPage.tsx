@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ const DEFAULT_PRIVACY: PrivacySettings = {
 };
 
 const SettingsPage = ({ onBack }: { onBack: () => void }) => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [privacy, setPrivacy] = useState<PrivacySettings>(DEFAULT_PRIVACY);
   const [savingPrivacy, setSavingPrivacy] = useState(false);
@@ -382,6 +384,18 @@ const SettingsPage = ({ onBack }: { onBack: () => void }) => {
               </ScrollArea>
             </DialogContent>
           </Dialog>
+        </Section>
+
+        {/* Terms & Conditions */}
+        <Section icon={<FileText className="h-4 w-4" />} title="Terms & Conditions" desc="Rules for using our services">
+          <Button
+            variant="outline"
+            className="w-full h-11 rounded-xl justify-start gap-2"
+            onClick={() => navigate("/terms")}
+          >
+            <Eye className="h-4 w-4" />
+            Read Terms & Conditions
+          </Button>
         </Section>
 
         {/* Danger Zone */}
