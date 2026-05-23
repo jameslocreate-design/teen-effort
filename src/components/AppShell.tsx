@@ -94,6 +94,7 @@ const navSections: NavSection[] = [
       { id: "partner", label: "Link Partner", icon: <Link2 className="h-4 w-4" /> },
       { id: "partner-view", label: "Partner", icon: <Users className="h-4 w-4" /> },
       { id: "referral", label: "Invite Friends", icon: <Share2 className="h-4 w-4" /> },
+      { id: "premium", label: "Premium", icon: <Star className="h-4 w-4" /> },
       { id: "profile", label: "Profile", icon: <User className="h-4 w-4" /> },
     ],
   },
