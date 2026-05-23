@@ -137,6 +137,42 @@ const AuthPage = () => {
     }
   };
 
+  const handleVerifyEmailOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (emailOtp.length < 6) {
+      toast.error("Please enter the 6-digit code");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: emailOtp,
+        type: "signup",
+      });
+      if (error) throw error;
+      toast.success("Email verified! You're signed in.");
+    } catch (err: any) {
+      toast.error(err.message || "Invalid verification code");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendEmailOtp = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resend({ type: "signup", email });
+      if (error) throw error;
+      toast.success("New code sent");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to resend code");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-8">
