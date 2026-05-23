@@ -64,8 +64,13 @@ const SwipeDates = () => {
       }
       const newIdeas = await generateDateIdeas(filters);
       setIdeas(newIdeas);
+      notifyUsageUpdated("date_ideas");
     } catch (err) {
-      toast.error("Failed to generate ideas");
+      if (err instanceof UsageLimitError) {
+        toast.error(err.message);
+      } else {
+        toast.error("Failed to generate ideas");
+      }
     }
     setLoading(false);
   };
