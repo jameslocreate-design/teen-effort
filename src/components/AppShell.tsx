@@ -112,6 +112,7 @@ const AppShell = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
+  const [needsPartnerStep, setNeedsPartnerStep] = useState<boolean | null>(null);
   const [profileName, setProfileName] = useState<string>("");
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("planner");
@@ -137,6 +138,24 @@ const AppShell = () => {
         if ((data as any)?.avatar_url) setProfileAvatar((data as any).avatar_url);
         if (isComplete && !localStorage.getItem("onboarding-done")) {
           setShowOnboarding(true);
+        }
+        if (isComplete) {
+          // Check if user needs the partner-link onboarding step
+          if (localStorage.getItem("partner-onboarding-done")) {
+            setNeedsPartnerStep(false);
+          } else {
+            const { data: links } = await supabase
+              .from("partner_links")
+              .select("id")
+              .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+              .limit(1);
+            if (links && links.length > 0) {
+              localStorage.setItem("partner-onboarding-done", "true");
+              setNeedsPartnerStep(false);
+            } else {
+              setNeedsPartnerStep(true);
+            }
+          }
         }
       });
   };
