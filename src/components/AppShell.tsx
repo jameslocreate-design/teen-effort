@@ -192,6 +192,34 @@ const AppShell = () => {
   if (!user) return <AuthPage />;
   if (profileComplete === null) return null;
   if (!profileComplete) return <ProfileSetup onComplete={() => setProfileComplete(true)} />;
+
+  if (needsPartnerStep) {
+    const finishPartnerStep = () => {
+      localStorage.setItem("partner-onboarding-done", "true");
+      setNeedsPartnerStep(false);
+    };
+    return (
+      <div className="min-h-screen bg-background px-4 py-8 overflow-y-auto">
+        <div className="max-w-md mx-auto space-y-6">
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl font-display italic text-primary">Link your partner</h2>
+            <p className="text-sm text-muted-foreground">
+              Share your code or enter theirs to unlock shared calendars, wishlists, and more. You can always do this later.
+            </p>
+          </div>
+          <PartnerLink onLinked={finishPartnerStep} />
+          <Button
+            variant="ghost"
+            onClick={finishPartnerStep}
+            className="w-full text-muted-foreground hover:text-foreground"
+          >
+            Skip for now
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (showSettings) return <SettingsPage onBack={() => setShowSettings(false)} />;
 
   const handleOnboardingComplete = () => {
