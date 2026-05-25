@@ -13,6 +13,7 @@ import DateLogPage from "./pages/DateLogPage";
 import Pricing from "./pages/Pricing";
 import CheckoutReturn from "./pages/CheckoutReturn";
 import Terms from "./pages/Terms";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/checkout/return" element={<CheckoutReturn />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
