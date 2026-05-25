@@ -2,10 +2,8 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Heart, Mail, Lock, ArrowRight, Phone, Hash, Cake } from "lucide-react";
+import { Heart, Mail, Lock, ArrowRight, Hash, Cake } from "lucide-react";
 import { toast } from "sonner";
-
-type AuthMethod = "email" | "phone";
 
 // Returns age in full years given a yyyy-mm-dd string. Returns -1 if invalid.
 const calcAge = (dob: string): number => {
@@ -19,37 +17,23 @@ const calcAge = (dob: string): number => {
   return age;
 };
 
+type View = "auth" | "forgot";
+
 const AuthPage = () => {
+  const [view, setView] = useState<View>("auth");
   const [isSignUp, setIsSignUp] = useState(false);
-  const [authMethod, setAuthMethod] = useState<AuthMethod>("email");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [dob, setDob] = useState("");
-  const [phone, setPhone] = useState("");
-  const [phonePassword, setPhonePassword] = useState("");
-  const [isPhoneSignUp, setIsPhoneSignUp] = useState(true);
-  const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
   const [emailOtp, setEmailOtp] = useState("");
   const [emailOtpSent, setEmailOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Compliance: COPPA requires we do not collect data from children under 13.
-  // We gate BEFORE calling supabase.auth.signUp so no account or profile row is created.
   const verifyAge = (dobValue: string): boolean => {
     const age = calcAge(dobValue);
-    if (age < 0) {
-      toast.error("Please enter a valid date of birth");
-      return false;
-    }
-    if (age < 13) {
-      toast.error("You must be at least 13 years old to use this app.");
-      return false;
-    }
-    if (age > 120) {
-      toast.error("Please enter a valid date of birth");
-      return false;
-    }
+    if (age < 0) { toast.error("Please enter a valid date of birth"); return false; }
+    if (age < 13) { toast.error("You must be at least 13 years old to use this app."); return false; }
+    if (age > 120) { toast.error("Please enter a valid date of birth"); return false; }
     return true;
   };
 
@@ -82,102 +66,12 @@ const AuthPage = () => {
     }
   };
 
-  const formatPhone = (value: string) => {
-    // Only allow digits and +
-    const cleaned = value.replace(/[^\d+]/g, "");
-    // Auto-prepend +1 for US numbers if no country code
-    if (cleaned && !cleaned.startsWith("+")) {
-      return "+1" + cleaned;
-    }
-    return cleaned;
-  };
-
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const formatted = formatPhone(phone);
-    if (formatted.length < 10) {
-      toast.error("Please enter a valid phone number");
-      return;
-    }
-    if (isPhoneSignUp) {
-      if (!verifyAge(dob)) return;
-      if (phonePassword.length < 6) {
-        toast.error("Password must be at least 6 characters");
-        return;
-      }
-    }
-    setLoading(true);
-    try {
-      if (isPhoneSignUp) {
-        // Sign-up: send OTP. Account exists but unconfirmed until code is entered.
-        const { error } = await supabase.auth.signInWithOtp({
-          phone: formatted,
-          options: { data: { birthday: dob } },
-        });
-        if (error) throw error;
-        setOtpSent(true);
-        toast.success("Verification code sent! Enter it to finish creating your account.");
-      } else {
-        // Sign-in with existing password
-        const { error } = await supabase.auth.signInWithPassword({
-          phone: formatted,
-          password: phonePassword,
-        });
-        if (error) throw error;
-        toast.success("Signed in!");
-      }
-    } catch (err: any) {
-      toast.error(err.message || "Failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (otp.length < 6) {
-      toast.error("Please enter the 6-digit code");
-      return;
-    }
-    setLoading(true);
-    try {
-      // 1. Verify SMS code — this confirms the account and signs the user in.
-      const { error: verifyError } = await supabase.auth.verifyOtp({
-        phone: formatPhone(phone),
-        token: otp,
-        type: "sms",
-      });
-      if (verifyError) throw verifyError;
-      // 2. Immediately attach the password so future sign-ins use phone + password.
-      const { error: pwError } = await supabase.auth.updateUser({
-        password: phonePassword,
-      });
-      if (pwError) {
-        toast.error("Code verified but password failed to save: " + pwError.message);
-        return;
-      }
-      toast.success("Account created and signed in!");
-    } catch (err: any) {
-      toast.error(err.message || "Invalid verification code");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
   const handleVerifyEmailOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (emailOtp.length < 6) {
-      toast.error("Please enter the 6-digit code");
-      return;
-    }
+    if (emailOtp.length < 6) return toast.error("Please enter the 6-digit code");
     setLoading(true);
     try {
-      const { error } = await supabase.auth.verifyOtp({
-        email,
-        token: emailOtp,
-        type: "signup",
-      });
+      const { error } = await supabase.auth.verifyOtp({ email, token: emailOtp, type: "signup" });
       if (error) throw error;
       toast.success("Email verified! You're signed in.");
     } catch (err: any) {
@@ -200,6 +94,23 @@ const AuthPage = () => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return toast.error("Enter your email first");
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast.success("Check your email for a password reset link");
+      setView("auth");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send reset email");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
@@ -210,40 +121,42 @@ const AuthPage = () => {
           </div>
           <h1 className="text-2xl font-bold text-foreground">Date Planner</h1>
           <p className="text-sm text-muted-foreground">
-            {authMethod === "phone"
-              ? otpSent ? "Enter the code we sent" : "Sign in with your phone"
+            {view === "forgot" ? "Reset your password"
               : emailOtpSent ? "Verify your email"
               : isSignUp ? "Create your account" : "Welcome back"}
           </p>
-
         </div>
 
-        {/* Auth Method Toggle */}
-        <div className="flex rounded-xl bg-secondary/50 p-1 gap-1">
-          <button
-            onClick={() => { setAuthMethod("email"); setOtpSent(false); }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              authMethod === "email"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Mail className="h-4 w-4" /> Email
-          </button>
-          <button
-            onClick={() => { setAuthMethod("phone"); setOtpSent(false); }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              authMethod === "phone"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Phone className="h-4 w-4" /> Phone
-          </button>
-        </div>
+        {/* Forgot Password */}
+        {view === "forgot" && (
+          <form onSubmit={handleForgotPassword} className="space-y-4">
+            <div className="relative">
+              <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="pl-10 bg-secondary/50 border-border"
+                required
+              />
+            </div>
+            <Button type="submit" disabled={loading} className="w-full h-11 rounded-xl">
+              {loading ? "Sending…" : "Send reset link"}
+              <ArrowRight className="h-4 w-4 ml-1" />
+            </Button>
+            <button
+              type="button"
+              onClick={() => setView("auth")}
+              className="w-full text-sm text-muted-foreground hover:text-foreground"
+            >
+              ← Back to sign in
+            </button>
+          </form>
+        )}
 
         {/* Email Form */}
-        {authMethod === "email" && !emailOtpSent && (
+        {view === "auth" && !emailOtpSent && (
           <form onSubmit={handleEmailSubmit} className="space-y-4">
             <div className="relative">
               <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -285,6 +198,17 @@ const AuthPage = () => {
                 <p className="text-[11px] text-muted-foreground px-1">You must be 13 or older to use this app.</p>
               </div>
             )}
+            {!isSignUp && (
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setView("forgot")}
+                  className="text-xs text-primary hover:underline"
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
             <Button type="submit" disabled={loading} className="w-full h-11 rounded-xl">
               {loading ? "Loading..." : isSignUp ? "Send Verification Code" : "Sign In"}
               <ArrowRight className="h-4 w-4 ml-1" />
@@ -293,7 +217,7 @@ const AuthPage = () => {
         )}
 
         {/* Email OTP Verification */}
-        {authMethod === "email" && emailOtpSent && (
+        {view === "auth" && emailOtpSent && (
           <form onSubmit={handleVerifyEmailOtp} className="space-y-4">
             <p className="text-sm text-muted-foreground text-center">
               Enter the 6-digit code sent to <span className="text-foreground font-medium">{email}</span>
@@ -334,99 +258,8 @@ const AuthPage = () => {
           </form>
         )}
 
-
-        {/* Phone Form */}
-        {authMethod === "phone" && !otpSent && (
-          <form onSubmit={handleSendOtp} className="space-y-4">
-            <div className="relative">
-              <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="tel"
-                placeholder="Phone number (e.g. 5551234567)"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="pl-10 bg-secondary/50 border-border"
-                required
-              />
-            </div>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="password"
-                placeholder={isPhoneSignUp ? "Create a password" : "Password"}
-                value={phonePassword}
-                onChange={(e) => setPhonePassword(e.target.value)}
-                className="pl-10 bg-secondary/50 border-border"
-                required
-                minLength={6}
-              />
-            </div>
-            {isPhoneSignUp && (
-              <div className="space-y-1">
-                <div className="relative">
-                  <Cake className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="date"
-                    placeholder="Date of birth"
-                    value={dob}
-                    onChange={(e) => setDob(e.target.value)}
-                    max={new Date().toISOString().split("T")[0]}
-                    className="pl-10 bg-secondary/50 border-border"
-                    required
-                  />
-                </div>
-                <p className="text-[11px] text-muted-foreground px-1">You must be 13 or older to use this app.</p>
-              </div>
-            )}
-            <p className="text-xs text-muted-foreground">US numbers auto-add +1. For other countries, include your country code (e.g. +44).</p>
-            <Button type="submit" disabled={loading} className="w-full h-11 rounded-xl">
-              {loading ? (isPhoneSignUp ? "Sending..." : "Signing in...") : (isPhoneSignUp ? "Send Verification Code" : "Sign In")}
-              <ArrowRight className="h-4 w-4 ml-1" />
-            </Button>
-            <p className="text-center text-sm text-muted-foreground">
-              {isPhoneSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
-              <button
-                type="button"
-                onClick={() => setIsPhoneSignUp(!isPhoneSignUp)}
-                className="text-primary hover:underline font-medium"
-              >
-                {isPhoneSignUp ? "Sign in" : "Sign up"}
-              </button>
-            </p>
-          </form>
-        )}
-
-
-        {authMethod === "phone" && otpSent && (
-          <form onSubmit={handleVerifyOtp} className="space-y-4">
-            <div className="relative">
-              <Hash className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="6-digit code"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                className="pl-10 bg-secondary/50 border-border text-center tracking-widest text-lg"
-                required
-                maxLength={6}
-              />
-            </div>
-            <Button type="submit" disabled={loading} className="w-full h-11 rounded-xl">
-              {loading ? "Verifying..." : "Verify & Sign In"}
-              <ArrowRight className="h-4 w-4 ml-1" />
-            </Button>
-            <button
-              type="button"
-              onClick={() => setOtpSent(false)}
-              className="w-full text-sm text-muted-foreground hover:text-foreground"
-            >
-              ← Change phone number
-            </button>
-          </form>
-        )}
-
-        {/* Toggle sign up / sign in (email only) */}
-        {authMethod === "email" && !emailOtpSent && (
+        {/* Toggle sign up / sign in */}
+        {view === "auth" && !emailOtpSent && (
           <p className="text-center text-sm text-muted-foreground">
             {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
             <button
