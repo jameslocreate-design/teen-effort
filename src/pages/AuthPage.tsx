@@ -99,19 +99,44 @@ const AuthPage = () => {
     }
   };
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
+  const handleSendResetCode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return toast.error("Enter your email first");
     setLoading(true);
     try {
+      // resetPasswordForEmail sends an email containing BOTH a magic link and a 6-digit token.
+      // We use the 6-digit token to avoid email-scanner prefetch consuming the link.
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
       if (error) throw error;
-      toast.success("Check your email for a password reset link");
-      setView("auth");
+      setResetSent(true);
+      toast.success("Check your email for a 6-digit reset code");
     } catch (err: any) {
       toast.error(err.message || "Failed to send reset email");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyResetCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (resetCode.length < 6) return toast.error("Enter the 6-digit code");
+    if (newPassword.length < 6) return toast.error("Password must be at least 6 characters");
+    if (newPassword !== confirmPassword) return toast.error("Passwords don't match");
+    setLoading(true);
+    try {
+      const { error: verifyErr } = await supabase.auth.verifyOtp({
+        email,
+        token: resetCode,
+        type: "recovery",
+      });
+      if (verifyErr) throw verifyErr;
+      const { error: updErr } = await supabase.auth.updateUser({ password: newPassword });
+      if (updErr) throw updErr;
+      toast.success("Password updated! You're signed in.");
+    } catch (err: any) {
+      toast.error(err.message || "Invalid or expired code");
     } finally {
       setLoading(false);
     }
