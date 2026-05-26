@@ -28,6 +28,11 @@ const AuthPage = () => {
   const [emailOtp, setEmailOtp] = useState("");
   const [emailOtpSent, setEmailOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  // Password recovery state
+  const [resetSent, setResetSent] = useState(false);
+  const [resetCode, setResetCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const verifyAge = (dobValue: string): boolean => {
     const age = calcAge(dobValue);
