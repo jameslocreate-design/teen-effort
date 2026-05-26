@@ -173,13 +173,10 @@ const SavedDateIdeas = ({ onAddToCalendar, refreshKey }: SavedDateIdeasProps) =>
                 <Dices className="h-3.5 w-3.5" /> Add to Roulette
               </Button>
               {saved.yelp_url && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 gap-1.5 text-xs"
-                  onClick={() => window.open(saved.yelp_url!, "_blank")}
-                >
-                  View on Yelp <ExternalLink className="h-3 w-3" />
+                <Button asChild variant="ghost" size="sm" className="h-7 gap-1.5 text-xs">
+                  <a href={saved.yelp_url} target="_blank" rel="noopener noreferrer">
+                    View on Yelp <ExternalLink className="h-3 w-3" />
+                  </a>
                 </Button>
               )}
               <Button
