@@ -68,14 +68,11 @@ const DateIdeaCard = ({ idea, index }: DateIdeaCardProps) => {
           )}
         </div>
         {idea.url && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 gap-1.5 text-xs"
-            onClick={() => window.open(idea.url, "_blank")}
-          >
-            View venue
-            <ExternalLink className="h-3 w-3" />
+          <Button asChild variant="ghost" size="sm" className="h-7 gap-1.5 text-xs">
+            <a href={idea.url} target="_blank" rel="noopener noreferrer">
+              View venue
+              <ExternalLink className="h-3 w-3" />
+            </a>
           </Button>
         )}
       </div>
