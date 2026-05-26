@@ -312,12 +312,10 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
 
                 <div className="flex items-center gap-2">
                   {entry.yelp_url && (
-                    <Button
-                      variant="ghost" size="sm"
-                      className="h-7 gap-1.5 text-xs px-2"
-                      onClick={() => window.open(entry.yelp_url!, "_blank")}
-                    >
-                      View on Yelp <ExternalLink className="h-3 w-3" />
+                    <Button asChild variant="ghost" size="sm" className="h-7 gap-1.5 text-xs px-2">
+                      <a href={entry.yelp_url} target="_blank" rel="noopener noreferrer">
+                        View on Yelp <ExternalLink className="h-3 w-3" />
+                      </a>
                     </Button>
                   )}
                   <Button
