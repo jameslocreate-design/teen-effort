@@ -157,9 +157,12 @@ const AuthPage = () => {
           </p>
         </div>
 
-        {/* Forgot Password */}
-        {view === "forgot" && (
-          <form onSubmit={handleForgotPassword} className="space-y-4">
+        {/* Forgot Password — step 1: send code */}
+        {view === "forgot" && !resetSent && (
+          <form onSubmit={handleSendResetCode} className="space-y-4">
+            <p className="text-sm text-muted-foreground text-center">
+              Enter your email and we'll send you a 6-digit code to reset your password.
+            </p>
             <div className="relative">
               <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
@@ -172,16 +175,82 @@ const AuthPage = () => {
               />
             </div>
             <Button type="submit" disabled={loading} className="w-full h-11 rounded-xl">
-              {loading ? "Sending…" : "Send reset link"}
+              {loading ? "Sending…" : "Send reset code"}
               <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
             <button
               type="button"
-              onClick={() => setView("auth")}
+              onClick={() => { setView("auth"); setResetSent(false); }}
               className="w-full text-sm text-muted-foreground hover:text-foreground"
             >
               ← Back to sign in
             </button>
+          </form>
+        )}
+
+        {/* Forgot Password — step 2: verify code + set new password */}
+        {view === "forgot" && resetSent && (
+          <form onSubmit={handleVerifyResetCode} className="space-y-4">
+            <p className="text-sm text-muted-foreground text-center">
+              Enter the 6-digit code sent to <span className="text-foreground font-medium">{email}</span> and choose a new password.
+            </p>
+            <div className="relative">
+              <Hash className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="6-digit code"
+                value={resetCode}
+                onChange={(e) => setResetCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                className="pl-10 bg-secondary/50 border-border text-center tracking-widest text-lg"
+                required
+                maxLength={6}
+              />
+            </div>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="password"
+                placeholder="New password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="pl-10 bg-secondary/50 border-border"
+                required
+                minLength={6}
+              />
+            </div>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="password"
+                placeholder="Confirm new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="pl-10 bg-secondary/50 border-border"
+                required
+                minLength={6}
+              />
+            </div>
+            <Button type="submit" disabled={loading} className="w-full h-11 rounded-xl">
+              {loading ? "Updating…" : "Reset Password"}
+              <ArrowRight className="h-4 w-4 ml-1" />
+            </Button>
+            <div className="flex justify-between text-sm">
+              <button
+                type="button"
+                onClick={() => { setResetSent(false); setResetCode(""); setNewPassword(""); setConfirmPassword(""); }}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                ← Use different email
+              </button>
+              <button
+                type="button"
+                onClick={handleSendResetCode as any}
+                disabled={loading}
+                className="text-primary hover:underline"
+              >
+                Resend code
+              </button>
+            </div>
           </form>
         )}
 
