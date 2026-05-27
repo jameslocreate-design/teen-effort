@@ -114,10 +114,12 @@ const AuthPage = () => {
   };
 
   const handleResendEmailOtp = async () => {
+    if (signupResendIn > 0) return;
     setLoading(true);
     try {
       const { error } = await supabase.auth.resend({ type: "signup", email });
       if (error) throw error;
+      setSignupResendIn(RESEND_COOLDOWN_SECONDS);
       toast.success("New code sent");
     } catch (err: any) {
       toast.error(err.message || "Failed to resend code");
