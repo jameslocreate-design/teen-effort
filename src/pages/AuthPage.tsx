@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Heart, Mail, Lock, ArrowRight, Hash, Cake } from "lucide-react";
+import { Heart, Mail, Lock, ArrowRight, Hash, Cake, Link2 } from "lucide-react";
 import { toast } from "sonner";
+
+const RESEND_COOLDOWN_SECONDS = 30;
 
 // Returns age in full years given a yyyy-mm-dd string. Returns -1 if invalid.
 const calcAge = (dob: string): number => {
@@ -33,6 +35,30 @@ const AuthPage = () => {
   const [resetCode, setResetCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  // Resend cooldowns (seconds remaining)
+  const [signupResendIn, setSignupResendIn] = useState(0);
+  const [resetResendIn, setResetResendIn] = useState(0);
+  // Pending partner invite
+  const [hasPendingInvite, setHasPendingInvite] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem("pending-partner-code")) {
+      setHasPendingInvite(true);
+      setIsSignUp(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (signupResendIn <= 0) return;
+    const t = setTimeout(() => setSignupResendIn((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [signupResendIn]);
+
+  useEffect(() => {
+    if (resetResendIn <= 0) return;
+    const t = setTimeout(() => setResetResendIn((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resetResendIn]);
 
   const verifyAge = (dobValue: string): boolean => {
     const age = calcAge(dobValue);
@@ -59,6 +85,7 @@ const AuthPage = () => {
         });
         if (error) throw error;
         setEmailOtpSent(true);
+        setSignupResendIn(RESEND_COOLDOWN_SECONDS);
         toast.success("We sent a 6-digit code to your email");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -87,10 +114,12 @@ const AuthPage = () => {
   };
 
   const handleResendEmailOtp = async () => {
+    if (signupResendIn > 0) return;
     setLoading(true);
     try {
       const { error } = await supabase.auth.resend({ type: "signup", email });
       if (error) throw error;
+      setSignupResendIn(RESEND_COOLDOWN_SECONDS);
       toast.success("New code sent");
     } catch (err: any) {
       toast.error(err.message || "Failed to resend code");
@@ -102,6 +131,7 @@ const AuthPage = () => {
   const handleSendResetCode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return toast.error("Enter your email first");
+    if (resetSent && resetResendIn > 0) return;
     setLoading(true);
     try {
       // resetPasswordForEmail sends an email containing BOTH a magic link and a 6-digit token.
@@ -111,6 +141,7 @@ const AuthPage = () => {
       });
       if (error) throw error;
       setResetSent(true);
+      setResetResendIn(RESEND_COOLDOWN_SECONDS);
       toast.success("Check your email for a 6-digit reset code");
     } catch (err: any) {
       toast.error(err.message || "Failed to send reset email");
@@ -156,6 +187,20 @@ const AuthPage = () => {
               : isSignUp ? "Create your account" : "Welcome back"}
           </p>
         </div>
+
+        {hasPendingInvite && view === "auth" && !emailOtpSent && (
+          <div className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 flex items-start gap-3">
+            <Link2 className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+            <div className="text-sm">
+              <p className="font-medium text-foreground">You've been invited to link up 💕</p>
+              <p className="text-muted-foreground text-xs mt-0.5">
+                {isSignUp
+                  ? "Create your account and we'll connect you with your partner automatically."
+                  : "Sign in and we'll connect you with your partner automatically."}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Forgot Password — step 1: send code */}
         {view === "forgot" && !resetSent && (
@@ -245,10 +290,10 @@ const AuthPage = () => {
               <button
                 type="button"
                 onClick={handleSendResetCode as any}
-                disabled={loading}
-                className="text-primary hover:underline"
+                disabled={loading || resetResendIn > 0}
+                className="text-primary hover:underline disabled:opacity-50 disabled:no-underline"
               >
-                Resend code
+                {resetResendIn > 0 ? `Resend in ${resetResendIn}s` : "Resend code"}
               </button>
             </div>
           </form>
@@ -348,10 +393,10 @@ const AuthPage = () => {
               <button
                 type="button"
                 onClick={handleResendEmailOtp}
-                disabled={loading}
-                className="text-primary hover:underline"
+                disabled={loading || signupResendIn > 0}
+                className="text-primary hover:underline disabled:opacity-50 disabled:no-underline"
               >
-                Resend code
+                {signupResendIn > 0 ? `Resend in ${signupResendIn}s` : "Resend code"}
               </button>
             </div>
           </form>
