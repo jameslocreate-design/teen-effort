@@ -167,8 +167,11 @@ const AppShell = () => {
   // If user signed in via /link/:code flow, finish linking now
   useEffect(() => {
     if (!user) return;
+    // Don't redirect if we're already on a /link/ route — LinkPartner handles it
+    if (window.location.pathname.startsWith("/link/")) return;
     const pendingCode = localStorage.getItem("pending-partner-code");
     if (pendingCode) {
+      localStorage.removeItem("pending-partner-code");
       navigate(`/link/${pendingCode}`, { replace: true });
     }
   }, [user, navigate]);
