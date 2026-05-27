@@ -131,6 +131,7 @@ const AuthPage = () => {
   const handleSendResetCode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return toast.error("Enter your email first");
+    if (resetSent && resetResendIn > 0) return;
     setLoading(true);
     try {
       // resetPasswordForEmail sends an email containing BOTH a magic link and a 6-digit token.
@@ -140,6 +141,7 @@ const AuthPage = () => {
       });
       if (error) throw error;
       setResetSent(true);
+      setResetResendIn(RESEND_COOLDOWN_SECONDS);
       toast.success("Check your email for a 6-digit reset code");
     } catch (err: any) {
       toast.error(err.message || "Failed to send reset email");
