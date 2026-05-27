@@ -54,7 +54,7 @@ const PartnerLink = ({ onLinked }: PartnerLinkProps) => {
       // Auto-trigger linking
       handleLinkWithCode(pendingCode);
     }
-  }, [user]);
+  }, [user, handleLinkWithCode]);
 
   const copyLink = () => {
     navigator.clipboard.writeText(shareUrl);
