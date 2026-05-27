@@ -393,10 +393,10 @@ const AuthPage = () => {
               <button
                 type="button"
                 onClick={handleResendEmailOtp}
-                disabled={loading}
-                className="text-primary hover:underline"
+                disabled={loading || signupResendIn > 0}
+                className="text-primary hover:underline disabled:opacity-50 disabled:no-underline"
               >
-                Resend code
+                {signupResendIn > 0 ? `Resend in ${signupResendIn}s` : "Resend code"}
               </button>
             </div>
           </form>
