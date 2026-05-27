@@ -79,7 +79,7 @@ const PartnerLink = ({ onLinked }: PartnerLinkProps) => {
     }
   };
 
-  const handleLinkWithCode = async (code: string) => {
+  const handleLinkWithCode = useCallback(async (code: string) => {
     if (!user || !code.trim()) return;
     setLoading(true);
 
