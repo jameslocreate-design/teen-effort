@@ -60,18 +60,22 @@ const WeatherWidget = () => {
         windSpeed: Math.round(current.wind_speed_10m),
       });
 
-      // Reverse geocode for city name (free, no API key)
+      // Reverse geocode for city name (OpenStreetMap Nominatim — free, no API key)
       try {
         const geoRes = await fetch(
-          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`
+          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=10&addressdetails=1`
         );
         const geoData = await geoRes.json();
+        const a = geoData.address || {};
         const name =
-          geoData.city ||
-          geoData.locality ||
-          geoData.principalSubdivision ||
+          a.city ||
+          a.town ||
+          a.village ||
+          a.municipality ||
+          a.county ||
+          a.state ||
           "";
-        if (name) setCity(name);
+        if (name) setCity(name.replace(/^(City|Town|Village|Township) of\s+/i, "").replace(/\s+(Township|County)$/i, ""));
       } catch {
         // ignore geocode failure
       }
