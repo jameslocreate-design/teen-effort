@@ -290,10 +290,10 @@ const AuthPage = () => {
               <button
                 type="button"
                 onClick={handleSendResetCode as any}
-                disabled={loading}
-                className="text-primary hover:underline"
+                disabled={loading || resetResendIn > 0}
+                className="text-primary hover:underline disabled:opacity-50 disabled:no-underline"
               >
-                Resend code
+                {resetResendIn > 0 ? `Resend in ${resetResendIn}s` : "Resend code"}
               </button>
             </div>
           </form>
