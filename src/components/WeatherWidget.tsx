@@ -60,16 +60,18 @@ const WeatherWidget = () => {
         windSpeed: Math.round(current.wind_speed_10m),
       });
 
-      // Reverse geocode for city name
+      // Reverse geocode for city name (free, no API key)
       try {
         const geoRes = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m&timezone=auto`
+          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`
         );
         const geoData = await geoRes.json();
-        if (geoData.timezone) {
-          const parts = geoData.timezone.split("/");
-          setCity(parts[parts.length - 1].replace(/_/g, " "));
-        }
+        const name =
+          geoData.city ||
+          geoData.locality ||
+          geoData.principalSubdivision ||
+          "";
+        if (name) setCity(name);
       } catch {
         // ignore geocode failure
       }
