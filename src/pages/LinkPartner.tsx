@@ -27,7 +27,13 @@ const LinkPartner = () => {
       return;
     }
 
-    linkPartner(code);
+    // Safety timeout — if RPC hangs, surface an error instead of spinning forever
+    const timeout = setTimeout(() => {
+      setStatus((s) => (s === "loading" ? "error" : s));
+    }, 12000);
+
+    linkPartner(code).finally(() => clearTimeout(timeout));
+    return () => clearTimeout(timeout);
   }, [user, authLoading, code]);
 
   const linkPartner = async (partnerCode: string) => {
