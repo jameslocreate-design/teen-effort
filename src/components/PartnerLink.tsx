@@ -162,7 +162,7 @@ const PartnerLink = ({ onLinked }: PartnerLinkProps) => {
       toast.success("Link request sent! Waiting for partner to accept.");
     }
     setLoading(false);
-  };
+  }, [user, onLinked]);
 
   const handleLink = () => handleLinkWithCode(partnerCode);
 
