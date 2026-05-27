@@ -54,7 +54,8 @@ const PartnerLink = ({ onLinked }: PartnerLinkProps) => {
       // Auto-trigger linking
       handleLinkWithCode(pendingCode);
     }
-  }, [user, handleLinkWithCode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const copyLink = () => {
     navigator.clipboard.writeText(shareUrl);
