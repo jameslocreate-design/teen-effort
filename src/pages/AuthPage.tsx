@@ -35,6 +35,30 @@ const AuthPage = () => {
   const [resetCode, setResetCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  // Resend cooldowns (seconds remaining)
+  const [signupResendIn, setSignupResendIn] = useState(0);
+  const [resetResendIn, setResetResendIn] = useState(0);
+  // Pending partner invite
+  const [hasPendingInvite, setHasPendingInvite] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem("pending-partner-code")) {
+      setHasPendingInvite(true);
+      setIsSignUp(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (signupResendIn <= 0) return;
+    const t = setTimeout(() => setSignupResendIn((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [signupResendIn]);
+
+  useEffect(() => {
+    if (resetResendIn <= 0) return;
+    const t = setTimeout(() => setResetResendIn((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resetResendIn]);
 
   const verifyAge = (dobValue: string): boolean => {
     const age = calcAge(dobValue);
