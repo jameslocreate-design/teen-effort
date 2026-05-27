@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -54,6 +54,7 @@ const PartnerLink = ({ onLinked }: PartnerLinkProps) => {
       // Auto-trigger linking
       handleLinkWithCode(pendingCode);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const copyLink = () => {
@@ -79,7 +80,7 @@ const PartnerLink = ({ onLinked }: PartnerLinkProps) => {
     }
   };
 
-  const handleLinkWithCode = async (code: string) => {
+  const handleLinkWithCode = useCallback(async (code: string) => {
     if (!user || !code.trim()) return;
     setLoading(true);
 
@@ -162,7 +163,7 @@ const PartnerLink = ({ onLinked }: PartnerLinkProps) => {
       toast.success("Link request sent! Waiting for partner to accept.");
     }
     setLoading(false);
-  };
+  }, [user, onLinked]);
 
   const handleLink = () => handleLinkWithCode(partnerCode);
 

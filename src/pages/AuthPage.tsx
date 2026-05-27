@@ -92,7 +92,18 @@ const AuthPage = () => {
         if (error) throw error;
       }
     } catch (err: any) {
-      toast.error(err.message || "Authentication failed");
+      const msg = err?.message || "Authentication failed";
+      // If the user hasn't verified their email yet, drop them into the OTP flow
+      if (/confirm|not confirmed|verify/i.test(msg)) {
+        try {
+          await supabase.auth.resend({ type: "signup", email });
+        } catch {}
+        setEmailOtpSent(true);
+        setSignupResendIn(RESEND_COOLDOWN_SECONDS);
+        toast.info("Please verify your email — we just sent you a new 6-digit code.");
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setLoading(false);
     }
