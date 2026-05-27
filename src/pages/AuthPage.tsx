@@ -188,6 +188,20 @@ const AuthPage = () => {
           </p>
         </div>
 
+        {hasPendingInvite && view === "auth" && !emailOtpSent && (
+          <div className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 flex items-start gap-3">
+            <Link2 className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+            <div className="text-sm">
+              <p className="font-medium text-foreground">You've been invited to link up 💕</p>
+              <p className="text-muted-foreground text-xs mt-0.5">
+                {isSignUp
+                  ? "Create your account and we'll connect you with your partner automatically."
+                  : "Sign in and we'll connect you with your partner automatically."}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Forgot Password — step 1: send code */}
         {view === "forgot" && !resetSent && (
           <form onSubmit={handleSendResetCode} className="space-y-4">
