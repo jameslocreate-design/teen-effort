@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Heart, Mail, Lock, ArrowRight, Hash, Cake } from "lucide-react";
+import { Heart, Mail, Lock, ArrowRight, Hash, Cake, Link2 } from "lucide-react";
 import { toast } from "sonner";
+
+const RESEND_COOLDOWN_SECONDS = 30;
 
 // Returns age in full years given a yyyy-mm-dd string. Returns -1 if invalid.
 const calcAge = (dob: string): number => {
