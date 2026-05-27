@@ -37,6 +37,8 @@ const LinkPartner = () => {
   }, [user, authLoading, code]);
 
   const linkPartner = async (partnerCode: string) => {
+    // Always clear the pending code so we don't loop back here
+    localStorage.removeItem("pending-partner-code");
     try {
       // Look up partner by code
       const { data: partnerId } = await supabase.rpc("lookup_user_by_partner_code", {
