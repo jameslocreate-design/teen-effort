@@ -15,39 +15,39 @@
     --popover: 30 15% 98%;
     --popover-foreground: 20 10% 15%;
 
-    --primary: 18 45% 55%;
-    --primary-foreground: 30 20% 96%;
+    --primary: 345 55% 45%;
+    --primary-foreground: 345 30% 97%;
 
-    --secondary: 25 12% 90%;
-    --secondary-foreground: 20 8% 35%;
+    --secondary: 345 25% 92%;
+    --secondary-foreground: 345 20% 30%;
 
-    --muted: 25 10% 92%;
-    --muted-foreground: 20 6% 45%;
+    --muted: 345 15% 94%;
+    --muted-foreground: 345 8% 45%;
 
-    --accent: 18 35% 40%;
-    --accent-foreground: 30 20% 96%;
+    --accent: 345 50% 38%;
+    --accent-foreground: 345 30% 97%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 25 10% 88%;
-    --input: 25 10% 88%;
-    --ring: 18 45% 55%;
+    --border: 345 15% 88%;
+    --input: 345 15% 88%;
+    --ring: 345 55% 45%;
 
     --radius: 1rem;
 
-    --chat-user: 25 12% 90%;
-    --chat-ai: 30 15% 98%;
-    --chat-glow: 18 45% 55%;
+    --chat-user: 345 25% 92%;
+    --chat-ai: 345 30% 98%;
+    --chat-glow: 345 55% 45%;
 
-    --sidebar-background: 30 18% 97%;
-    --sidebar-foreground: 20 8% 35%;
-    --sidebar-primary: 18 45% 55%;
-    --sidebar-primary-foreground: 30 20% 96%;
-    --sidebar-accent: 25 12% 92%;
-    --sidebar-accent-foreground: 20 10% 15%;
-    --sidebar-border: 25 10% 88%;
-    --sidebar-ring: 18 45% 55%;
+    --sidebar-background: 345 50% 38%;
+    --sidebar-foreground: 345 30% 95%;
+    --sidebar-primary: 345 30% 97%;
+    --sidebar-primary-foreground: 345 55% 35%;
+    --sidebar-accent: 345 45% 45%;
+    --sidebar-accent-foreground: 345 30% 97%;
+    --sidebar-border: 345 40% 32%;
+    --sidebar-ring: 345 30% 97%;
   }
 
   .dark {
@@ -60,39 +60,39 @@
     --popover: 20 6% 9%;
     --popover-foreground: 30 15% 88%;
 
-    --primary: 18 45% 55%;
-    --primary-foreground: 20 8% 5%;
+    --primary: 345 60% 55%;
+    --primary-foreground: 345 20% 8%;
 
-    --secondary: 20 5% 13%;
-    --secondary-foreground: 30 10% 72%;
+    --secondary: 345 10% 14%;
+    --secondary-foreground: 345 15% 80%;
 
-    --muted: 20 4% 11%;
-    --muted-foreground: 25 8% 45%;
+    --muted: 345 8% 12%;
+    --muted-foreground: 345 8% 55%;
 
-    --accent: 18 35% 40%;
-    --accent-foreground: 30 15% 88%;
+    --accent: 345 50% 40%;
+    --accent-foreground: 345 15% 92%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 20 5% 15%;
-    --input: 20 5% 15%;
-    --ring: 18 45% 55%;
+    --border: 345 10% 16%;
+    --input: 345 10% 16%;
+    --ring: 345 60% 55%;
 
     --radius: 1rem;
 
-    --chat-user: 20 5% 13%;
-    --chat-ai: 20 6% 9%;
-    --chat-glow: 18 45% 55%;
+    --chat-user: 345 10% 14%;
+    --chat-ai: 345 8% 10%;
+    --chat-glow: 345 60% 55%;
 
-    --sidebar-background: 20 8% 6%;
-    --sidebar-foreground: 30 10% 72%;
-    --sidebar-primary: 18 45% 55%;
-    --sidebar-primary-foreground: 20 8% 5%;
-    --sidebar-accent: 20 5% 12%;
-    --sidebar-accent-foreground: 30 15% 88%;
-    --sidebar-border: 20 5% 13%;
-    --sidebar-ring: 18 45% 55%;
+    --sidebar-background: 345 50% 35%;
+    --sidebar-foreground: 345 25% 92%;
+    --sidebar-primary: 345 20% 95%;
+    --sidebar-primary-foreground: 345 50% 30%;
+    --sidebar-accent: 345 45% 42%;
+    --sidebar-accent-foreground: 345 25% 95%;
+    --sidebar-border: 345 40% 28%;
+    --sidebar-ring: 345 25% 92%;
   }
 }
 
