@@ -6,50 +6,51 @@
 
 @layer base {
   :root {
-    /* Midnight & Rose — dark by default */
-    --background: 220 22% 5%;          /* #0a0c10 */
-    --foreground: 214 32% 91%;         /* #e2e8f0 */
+    /* Light mode — cream & rose */
+    --background: 30 30% 97%;          /* warm cream */
+    --foreground: 222 30% 12%;
 
-    --card: 222 19% 10%;               /* #13161d */
-    --card-foreground: 214 32% 91%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 30% 12%;
 
-    --popover: 222 19% 10%;
-    --popover-foreground: 214 32% 91%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 30% 12%;
 
-    --primary: 344 76% 62%;            /* #e8547a rose */
+    --primary: 344 76% 52%;            /* rose, slightly deeper for contrast */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 222 23% 15%;          /* #1e2330 */
-    --secondary-foreground: 214 32% 91%;
+    --secondary: 344 30% 94%;
+    --secondary-foreground: 222 30% 18%;
 
-    --muted: 222 19% 12%;
-    --muted-foreground: 215 16% 47%;   /* #64748b */
+    --muted: 30 20% 93%;
+    --muted-foreground: 215 16% 40%;
 
-    --accent: 38 45% 61%;              /* #c9a96e warm gold */
-    --accent-foreground: 220 22% 5%;
+    --accent: 38 55% 48%;              /* warm gold */
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 222 23% 15%;             /* #1e2330 */
-    --input: 222 23% 15%;
-    --ring: 344 76% 62%;
+    --border: 30 15% 88%;
+    --input: 30 15% 88%;
+    --ring: 344 76% 52%;
 
     --radius: 0.75rem;
 
-    --chat-user: 222 19% 10%;
-    --chat-ai: 222 19% 12%;
-    --chat-glow: 344 76% 62%;
+    --chat-user: 344 30% 94%;
+    --chat-ai: 30 25% 96%;
+    --chat-glow: 344 76% 52%;
 
-    --sidebar-background: 220 22% 5%;
-    --sidebar-foreground: 214 32% 91%;
-    --sidebar-primary: 344 76% 62%;
+    --sidebar-background: 30 30% 97%;
+    --sidebar-foreground: 222 30% 12%;
+    --sidebar-primary: 344 76% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 23% 15%;
-    --sidebar-accent-foreground: 214 32% 91%;
-    --sidebar-border: 222 23% 15%;
-    --sidebar-ring: 344 76% 62%;
+    --sidebar-accent: 30 20% 93%;
+    --sidebar-accent-foreground: 222 30% 18%;
+    --sidebar-border: 30 15% 88%;
+    --sidebar-ring: 344 76% 52%;
   }
+
 
   .dark {
     --background: 220 22% 5%;
