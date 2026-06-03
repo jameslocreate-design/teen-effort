@@ -3,6 +3,7 @@ import { Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useUsage, type UsageFeature } from "@/hooks/useUsage";
+import { USAGE_FEATURE_TIERS } from "@/lib/tiers";
 
 interface UsageMeterProps {
   feature: UsageFeature;
@@ -11,10 +12,11 @@ interface UsageMeterProps {
 
 export function UsageMeter({ feature, label }: UsageMeterProps) {
   const { user } = useAuth();
-  const { isActive } = useSubscription(user?.id);
+  const { tier } = useSubscription(user?.id);
   const { count, limit, remaining, loading } = useUsage(user?.id, feature);
 
-  if (!user || loading || isActive) return null;
+  // Hide the meter once the user's tier unlocks unlimited use of this feature.
+  if (!user || loading || tier >= USAGE_FEATURE_TIERS[feature]) return null;
 
   const pct = Math.min(100, (count / limit) * 100);
   const exhausted = remaining === 0;

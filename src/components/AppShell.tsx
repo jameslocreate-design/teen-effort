@@ -368,9 +368,9 @@ const AppShell = () => {
         <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
           <div className="mx-auto max-w-3xl px-4 sm:px-6 py-6 sm:py-8">
             {activeTab === "planner" && <><DateStreak /><DatePlanner /></>}
-            {activeTab === "smart" && <PremiumGate feature="Smart Recommendations" description="Get personalized date ideas based on your history and preferences."><SmartRecommendations /></PremiumGate>}
+            {activeTab === "smart" && <PremiumGate feature="Smart Recommendations" minTier={2} description="Get personalized date ideas based on your history and preferences."><SmartRecommendations /></PremiumGate>}
             {activeTab === "swipe" && <SwipeDates />}
-            {activeTab === "roulette" && <PremiumGate feature="Date Roulette" description="Spin the wheel for surprise date ideas — unlimited spins with Premium."><DateRoulette /></PremiumGate>}
+            {activeTab === "roulette" && <PremiumGate feature="Date Roulette" minTier={2} description="Spin the wheel for surprise date ideas — unlimited spins with Romance and above."><DateRoulette /></PremiumGate>}
             {activeTab === "gifts" && <GiftPlanner />}
             {activeTab === "bucket" && <BucketList />}
             {activeTab === "expert" && <AskTheExpert />}

@@ -68,5 +68,18 @@ export function useSubscription(userId: string | null | undefined) {
     (subscription.status === "canceled" && periodEndMs !== null && periodEndMs > now)
   );
 
-  return { subscription, isActive, loading };
+  const PRICE_TIERS: Record<string, number> = {
+    spark_monthly: 1,
+    romance_monthly: 2,
+    soulmate_monthly: 3,
+    // Legacy full-access plans count as the top tier
+    premium_monthly: 3,
+    premium_yearly: 3,
+  };
+
+  const tier = isActive && subscription?.price_id
+    ? (PRICE_TIERS[subscription.price_id] ?? 1)
+    : 0;
+
+  return { subscription, isActive, tier, loading };
 }
