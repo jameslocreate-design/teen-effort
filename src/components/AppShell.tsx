@@ -37,6 +37,8 @@ import VisionBoard from "@/components/VisionBoard";
 import AppreciationPrompts from "@/components/AppreciationPrompts";
 import SettingsPage from "@/components/SettingsPage";
 import PremiumGate from "@/components/PremiumGate";
+import PremiumBadge from "@/components/PremiumBadge";
+import { SubscriptionStatusBanner } from "@/components/SubscriptionStatusBanner";
 import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
