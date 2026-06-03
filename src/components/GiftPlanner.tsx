@@ -11,6 +11,8 @@ import { notifyUsageUpdated } from "@/hooks/useUsage";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSubscription } from "@/hooks/useSubscription";
+import { FEATURE_TIERS } from "@/lib/tiers";
 import { toast } from "sonner";
 
 const costOptions = [
