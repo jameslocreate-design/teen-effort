@@ -348,6 +348,7 @@ const AppShell = () => {
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
+        <SubscriptionStatusBanner />
         {/* Mobile header */}
         <header className="lg:hidden border-b border-border px-4 py-3 flex items-center justify-between bg-background/95 backdrop-blur-md sticky top-0 z-40">
           <div className="flex items-center gap-3">
