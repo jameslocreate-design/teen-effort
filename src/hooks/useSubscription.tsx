@@ -70,8 +70,11 @@ export function useSubscription(userId: string | null | undefined) {
 
   const PRICE_TIERS: Record<string, number> = {
     spark_monthly: 1,
+    spark_yearly: 1,
     romance_monthly: 2,
+    romance_yearly: 2,
     soulmate_monthly: 3,
+    soulmate_yearly: 3,
     // Legacy full-access plans count as the top tier
     premium_monthly: 3,
     premium_yearly: 3,
@@ -81,5 +84,11 @@ export function useSubscription(userId: string | null | undefined) {
     ? (PRICE_TIERS[subscription.price_id] ?? 1)
     : 0;
 
-  return { subscription, isActive, tier, loading };
+  const isPastDue = subscription?.status === "past_due";
+  const isTrialing = subscription?.status === "trialing";
+  const isCanceling =
+    isActive && (subscription?.cancel_at_period_end || subscription?.status === "canceled");
+  const periodEnd = subscription?.current_period_end ?? null;
+
+  return { subscription, isActive, tier, isPastDue, isTrialing, isCanceling, periodEnd, loading };
 }

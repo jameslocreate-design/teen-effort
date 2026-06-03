@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Loader2, Sparkles, Gift, Bookmark, Trash2, Coins, Banknote, Wallet, Gem, Cake, Diamond, Heart, TreePine, HeartHandshake, Music } from "lucide-react";
+import { Loader2, Sparkles, Gift, Bookmark, Trash2, Coins, Banknote, Wallet, Gem, Cake, Diamond, Heart, TreePine, HeartHandshake, Music, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import FilterGroup from "@/components/FilterGroup";
@@ -11,6 +11,8 @@ import { notifyUsageUpdated } from "@/hooks/useUsage";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSubscription } from "@/hooks/useSubscription";
+import { FEATURE_TIERS } from "@/lib/tiers";
 import { toast } from "sonner";
 
 const costOptions = [
@@ -43,6 +45,8 @@ interface SavedGift {
 const GiftPlanner = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { tier } = useSubscription(user?.id);
+  const canSaveGifts = tier >= FEATURE_TIERS.saved_gifts;
   const [filters, setFilters] = useState<GiftFilters>({
     cost: null, personalization: null, event: null,
   });
@@ -92,6 +96,13 @@ const GiftPlanner = () => {
 
   const handleSaveGift = async (idea: GiftIdea, index: number) => {
     if (!user) return;
+    if (!canSaveGifts) {
+      toast.error("Saving gift ideas is a Romance feature", {
+        action: { label: "Upgrade", onClick: () => navigate("/pricing") },
+        duration: 8000,
+      });
+      return;
+    }
     setSavingIndex(index);
     const { error } = await supabase.from("saved_gifts").insert({
       user_id: user.id, title: idea.title, description: idea.description,
@@ -174,7 +185,7 @@ const GiftPlanner = () => {
                 disabled={savingIndex === i}
                 className="absolute top-3 right-3 rounded-xl text-xs font-sans"
               >
-                <Bookmark className="h-3.5 w-3.5" />
+                {canSaveGifts ? <Bookmark className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
                 {savingIndex === i ? "Saving..." : "Save"}
               </Button>
             </div>

@@ -37,6 +37,8 @@ import VisionBoard from "@/components/VisionBoard";
 import AppreciationPrompts from "@/components/AppreciationPrompts";
 import SettingsPage from "@/components/SettingsPage";
 import PremiumGate from "@/components/PremiumGate";
+import PremiumBadge from "@/components/PremiumBadge";
+import { SubscriptionStatusBanner } from "@/components/SubscriptionStatusBanner";
 import { toast } from "sonner";
 import AuthPage from "@/pages/AuthPage";
 
@@ -286,9 +288,7 @@ const AppShell = () => {
         </div>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-foreground truncate">{profileName || "Your Name"}</p>
-          <span className="inline-block mt-0.5 text-[9px] font-bold uppercase tracking-[0.15em] text-primary bg-primary/10 px-2 py-0.5 rounded-full font-sans">
-            Member
-          </span>
+          <PremiumBadge minTier={1} className="mt-0.5" />
         </div>
       </div>
     </div>
@@ -348,6 +348,7 @@ const AppShell = () => {
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
+        <SubscriptionStatusBanner />
         {/* Mobile header */}
         <header className="lg:hidden border-b border-border px-4 py-3 flex items-center justify-between bg-background/95 backdrop-blur-md sticky top-0 z-40">
           <div className="flex items-center gap-3">
