@@ -288,9 +288,7 @@ const AppShell = () => {
         </div>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-foreground truncate">{profileName || "Your Name"}</p>
-          <span className="inline-block mt-0.5 text-[9px] font-bold uppercase tracking-[0.15em] text-primary bg-primary/10 px-2 py-0.5 rounded-full font-sans">
-            Member
-          </span>
+          <PremiumBadge minTier={1} className="mt-0.5" />
         </div>
       </div>
     </div>
