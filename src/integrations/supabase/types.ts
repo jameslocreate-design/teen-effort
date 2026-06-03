@@ -965,6 +965,7 @@ export type Database = {
         Returns: number
       }
       get_partner_user_id: { Args: { _user_id: string }; Returns: string }
+      get_subscription_tier: { Args: { _user_id: string }; Returns: number }
       has_active_subscription: {
         Args: { _environment?: string; _user_id: string }
         Returns: boolean
