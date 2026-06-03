@@ -96,6 +96,13 @@ const GiftPlanner = () => {
 
   const handleSaveGift = async (idea: GiftIdea, index: number) => {
     if (!user) return;
+    if (!canSaveGifts) {
+      toast.error("Saving gift ideas is a Romance feature", {
+        action: { label: "Upgrade", onClick: () => navigate("/pricing") },
+        duration: 8000,
+      });
+      return;
+    }
     setSavingIndex(index);
     const { error } = await supabase.from("saved_gifts").insert({
       user_id: user.id, title: idea.title, description: idea.description,
