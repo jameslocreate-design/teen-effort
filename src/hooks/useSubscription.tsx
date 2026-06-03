@@ -90,5 +90,27 @@ export function useSubscription(userId: string | null | undefined) {
     isActive && (subscription?.cancel_at_period_end || subscription?.status === "canceled");
   const periodEnd = subscription?.current_period_end ?? null;
 
-  return { subscription, isActive, tier, isPastDue, isTrialing, isCanceling, periodEnd, loading };
+  // Billing cycle inferred from the price lookup key suffix.
+  const isYearly = !!subscription?.price_id?.endsWith("_yearly");
+  const isMonthly = !!subscription?.price_id?.endsWith("_monthly");
+
+  // Days left in the current trial (rounded up). null when not trialing.
+  const trialDaysLeft =
+    isTrialing && periodEndMs !== null
+      ? Math.max(0, Math.ceil((periodEndMs - now) / (1000 * 60 * 60 * 24)))
+      : null;
+
+  return {
+    subscription,
+    isActive,
+    tier,
+    isPastDue,
+    isTrialing,
+    isCanceling,
+    isYearly,
+    isMonthly,
+    trialDaysLeft,
+    periodEnd,
+    loading,
+  };
 }
