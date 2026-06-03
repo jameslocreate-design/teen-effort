@@ -185,7 +185,7 @@ const GiftPlanner = () => {
                 disabled={savingIndex === i}
                 className="absolute top-3 right-3 rounded-xl text-xs font-sans"
               >
-                <Bookmark className="h-3.5 w-3.5" />
+                {canSaveGifts ? <Bookmark className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
                 {savingIndex === i ? "Saving..." : "Save"}
               </Button>
             </div>
