@@ -6,14 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Shield, LogOut, Users, Heart, CalendarDays, Gift, ListChecks, HelpCircle,
   BarChart3, Megaphone, MessageSquare, TrendingUp, Activity, Star, Camera, Download, Bookmark,
-  Share2, ClipboardList, MessageCircle, ScrollText
+  Share2, ClipboardList, MessageCircle, ScrollText, DollarSign
 } from "lucide-react";
 import AdminUserManagement from "@/components/admin/AdminUserManagement";
 import AdminContentModeration from "@/components/admin/AdminContentModeration";
 import AdminMarketing from "@/components/admin/AdminMarketing";
 import AdminDataExport from "@/components/admin/AdminDataExport";
+import AdminRevenue from "@/components/admin/AdminRevenue";
 
-type AdminView = "dashboard" | "users" | "content" | "marketing" | "export";
+type AdminView = "dashboard" | "revenue" | "users" | "content" | "marketing" | "export";
 
 interface AdminStats {
   total_users: number;
