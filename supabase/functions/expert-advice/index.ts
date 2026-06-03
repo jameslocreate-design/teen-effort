@@ -25,6 +25,35 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    // Determine the requester's subscription tier for priority handling.
+    let tier = 0;
+    try {
+      const authHeader = req.headers.get("Authorization");
+      const token = authHeader?.replace("Bearer ", "");
+      if (token) {
+        const supabaseAuth = createClient(supabaseUrl, serviceRoleKey);
+        const { data: { user } } = await supabaseAuth.auth.getUser(token);
+        if (user) {
+          const { data: tierData } = await supabaseAuth.rpc("get_subscription_tier", {
+            _user_id: user.id,
+          });
+          tier = typeof tierData === "number" ? tierData : 0;
+        }
+      }
+    } catch (_e) {
+      // Non-fatal: fall back to standard handling.
+    }
+
+    // Soulmate (tier 3) gets a stronger, priority model.
+    const isPriority = tier >= 3;
+    const model = isPriority ? "google/gemini-2.5-pro" : "google/gemini-3-flash-preview";
+    const systemContent = isPriority
+      ? "You are a warm, empathetic, top-tier relationship expert giving priority, premium advice. Provide deeply thoughtful, personalized, and actionable guidance (3-5 paragraphs). Be supportive but honest, never judgmental. Format with markdown."
+      : "You are a warm, empathetic relationship expert. Give thoughtful, balanced advice to relationship questions. Keep responses concise (2-4 paragraphs). Be supportive but honest. Never be judgmental. Format with markdown.";
+
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
       {
@@ -34,13 +63,9 @@ serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
+          model,
           messages: [
-            {
-              role: "system",
-              content:
-                "You are a warm, empathetic relationship expert. Give thoughtful, balanced advice to relationship questions. Keep responses concise (2-4 paragraphs). Be supportive but honest. Never be judgmental. Format with markdown.",
-            },
+            { role: "system", content: systemContent },
             { role: "user", content: question },
           ],
         }),
