@@ -20,13 +20,25 @@ export function UsageMeter({ feature, label }: UsageMeterProps) {
 
   const pct = Math.min(100, (count / limit) * 100);
   const exhausted = remaining === 0;
+  const nearLimit = !exhausted && pct >= 80;
+
+  const accent = exhausted || nearLimit ? "text-primary" : "text-muted-foreground";
+  const barColor = exhausted ? "bg-destructive" : nearLimit ? "bg-primary" : "bg-primary/70";
 
   return (
-    <div className="rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-sm">
+    <div
+      className={`rounded-xl border px-4 py-3 text-sm ${
+        nearLimit || exhausted ? "border-primary/40 bg-primary/5" : "border-border/60 bg-card/60"
+      }`}
+    >
       <div className="flex items-center justify-between gap-2">
-        <span className="text-muted-foreground">
+        <span className={accent}>
           {exhausted ? (
             <span className="text-foreground font-medium">No free {label} left this month</span>
+          ) : nearLimit ? (
+            <span className="text-foreground font-medium">
+              Only {remaining} free {label} left this month
+            </span>
           ) : (
             <>
               <span className="text-foreground font-medium">{remaining}</span>{" "}
@@ -44,10 +56,15 @@ export function UsageMeter({ feature, label }: UsageMeterProps) {
       </div>
       <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
         <div
-          className="h-full bg-primary transition-all"
+          className={`h-full transition-all ${barColor}`}
           style={{ width: `${pct}%` }}
         />
       </div>
+      {nearLimit && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          You're almost out — upgrade for unlimited {label}.
+        </p>
+      )}
     </div>
   );
 }

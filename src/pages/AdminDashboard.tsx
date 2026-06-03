@@ -6,14 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Shield, LogOut, Users, Heart, CalendarDays, Gift, ListChecks, HelpCircle,
   BarChart3, Megaphone, MessageSquare, TrendingUp, Activity, Star, Camera, Download, Bookmark,
-  Share2, ClipboardList, MessageCircle, ScrollText
+  Share2, ClipboardList, MessageCircle, ScrollText, DollarSign
 } from "lucide-react";
 import AdminUserManagement from "@/components/admin/AdminUserManagement";
 import AdminContentModeration from "@/components/admin/AdminContentModeration";
 import AdminMarketing from "@/components/admin/AdminMarketing";
 import AdminDataExport from "@/components/admin/AdminDataExport";
+import AdminRevenue from "@/components/admin/AdminRevenue";
 
-type AdminView = "dashboard" | "users" | "content" | "marketing" | "export";
+type AdminView = "dashboard" | "revenue" | "users" | "content" | "marketing" | "export";
 
 interface AdminStats {
   total_users: number;
@@ -97,6 +98,7 @@ const AdminDashboard = () => {
 
   const navItems: { id: AdminView; label: string; icon: React.ReactNode }[] = [
     { id: "dashboard", label: "Dashboard & Analytics", icon: <BarChart3 className="h-4 w-4" /> },
+    { id: "revenue", label: "Revenue", icon: <DollarSign className="h-4 w-4" /> },
     { id: "users", label: "User Management", icon: <Users className="h-4 w-4" /> },
     { id: "content", label: "Content Moderation", icon: <MessageSquare className="h-4 w-4" /> },
     { id: "marketing", label: "Marketing", icon: <Megaphone className="h-4 w-4" /> },
@@ -202,6 +204,7 @@ const AdminDashboard = () => {
             </div>
           )}
 
+          {activeView === "revenue" && <AdminRevenue />}
           {activeView === "users" && <AdminUserManagement />}
           {activeView === "content" && <AdminContentModeration />}
           {activeView === "marketing" && <AdminMarketing />}
