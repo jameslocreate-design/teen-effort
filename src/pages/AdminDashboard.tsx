@@ -204,6 +204,7 @@ const AdminDashboard = () => {
             </div>
           )}
 
+          {activeView === "revenue" && <AdminRevenue />}
           {activeView === "users" && <AdminUserManagement />}
           {activeView === "content" && <AdminContentModeration />}
           {activeView === "marketing" && <AdminMarketing />}
