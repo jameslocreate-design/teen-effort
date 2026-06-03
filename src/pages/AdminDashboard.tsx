@@ -98,6 +98,7 @@ const AdminDashboard = () => {
 
   const navItems: { id: AdminView; label: string; icon: React.ReactNode }[] = [
     { id: "dashboard", label: "Dashboard & Analytics", icon: <BarChart3 className="h-4 w-4" /> },
+    { id: "revenue", label: "Revenue", icon: <DollarSign className="h-4 w-4" /> },
     { id: "users", label: "User Management", icon: <Users className="h-4 w-4" /> },
     { id: "content", label: "Content Moderation", icon: <MessageSquare className="h-4 w-4" /> },
     { id: "marketing", label: "Marketing", icon: <Megaphone className="h-4 w-4" /> },
