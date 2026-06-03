@@ -45,6 +45,8 @@ interface SavedGift {
 const GiftPlanner = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { tier } = useSubscription(user?.id);
+  const canSaveGifts = tier >= FEATURE_TIERS.saved_gifts;
   const [filters, setFilters] = useState<GiftFilters>({
     cost: null, personalization: null, event: null,
   });
