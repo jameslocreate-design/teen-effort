@@ -76,6 +76,15 @@ Deno.serve(async (req) => {
       productDescription = product.name;
     }
 
+    // Free trial for the higher tiers on new subscriptions.
+    const TRIAL_DAYS: Record<string, number> = {
+      romance_monthly: 7,
+      romance_yearly: 7,
+      soulmate_monthly: 7,
+      soulmate_yearly: 7,
+    };
+    const trialDays = isRecurring ? TRIAL_DAYS[priceId] : undefined;
+
     const session = await stripe.checkout.sessions.create({
       line_items: [{ price: stripePrice.id, quantity: quantity || 1 }],
       mode: isRecurring ? "subscription" : "payment",
@@ -84,10 +93,15 @@ Deno.serve(async (req) => {
       ...(customerId && { customer: customerId }),
       ...(!isRecurring && { payment_intent_data: { description: productDescription } }),
       managed_payments: { enabled: true },
-      ...(userId && {
-        metadata: { userId },
-        ...(isRecurring && { subscription_data: { metadata: { userId } } }),
-      }),
+      ...(isRecurring && (userId || trialDays)
+        ? {
+            subscription_data: {
+              ...(userId && { metadata: { userId } }),
+              ...(trialDays && { trial_period_days: trialDays }),
+            },
+          }
+        : {}),
+      ...(userId && { metadata: { userId } }),
     });
 
     return new Response(JSON.stringify({ clientSecret: session.client_secret }), {
