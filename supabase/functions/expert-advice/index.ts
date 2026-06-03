@@ -107,7 +107,7 @@ serve(async (req) => {
         user_id: null,
         content: advice,
         is_ai: true,
-        anonymous_name: "AI Expert 🤖",
+        anonymous_name: isPriority ? "AI Expert ⭐ (Priority)" : "AI Expert 🤖",
       });
 
       if (insertError) {
