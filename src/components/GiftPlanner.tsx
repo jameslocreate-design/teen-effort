@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Loader2, Sparkles, Gift, Bookmark, Trash2, Coins, Banknote, Wallet, Gem, Cake, Diamond, Heart, TreePine, HeartHandshake, Music } from "lucide-react";
+import { Loader2, Sparkles, Gift, Bookmark, Trash2, Coins, Banknote, Wallet, Gem, Cake, Diamond, Heart, TreePine, HeartHandshake, Music, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import FilterGroup from "@/components/FilterGroup";
