@@ -3,18 +3,25 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Check, Sparkles, Heart, ArrowLeft, Crown } from "lucide-react";
+import { Check, Sparkles, Heart, ArrowLeft, Crown, Minus } from "lucide-react";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { useSubscription } from "@/hooks/useSubscription";
-import { TIERS } from "@/lib/tiers";
+import {
+  TIERS,
+  COMPARISON_FEATURES,
+  priceIdFor,
+  yearlySavingsMonths,
+  type BillingCycle,
+} from "@/lib/tiers";
 import { toast } from "sonner";
 
 export default function Pricing() {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [checkoutPriceId, setCheckoutPriceId] = useState<string | null>(null);
-  const { isActive, tier, subscription, loading } = useSubscription(user?.id);
+  const [cycle, setCycle] = useState<BillingCycle>("monthly");
+  const { isActive, tier, subscription, isCanceling, periodEnd, loading } = useSubscription(user?.id);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
@@ -64,7 +71,7 @@ export default function Pricing() {
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
 
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm mb-4">
             <Sparkles className="h-4 w-4" /> Choose your plan
           </div>
@@ -76,6 +83,33 @@ export default function Pricing() {
           </p>
         </div>
 
+        {/* Billing cycle toggle */}
+        <div className="flex justify-center mb-10">
+          <div className="inline-flex items-center rounded-full border border-border bg-card p-1">
+            <button
+              onClick={() => setCycle("monthly")}
+              className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+                cycle === "monthly" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setCycle("yearly")}
+              className={`px-5 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
+                cycle === "yearly" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+              }`}
+            >
+              Yearly
+              <span className={`text-[10px] font-bold uppercase tracking-wide rounded-full px-1.5 py-0.5 ${
+                cycle === "yearly" ? "bg-primary-foreground/20" : "bg-primary/10 text-primary"
+              }`}>
+                2 months free
+              </span>
+            </button>
+          </div>
+        </div>
+
         {isActive && (
           <Card className="p-6 mb-8 border-primary/30 bg-primary/5 text-center">
             <Heart className="h-8 w-8 text-primary mx-auto mb-2" />
@@ -84,7 +118,7 @@ export default function Pricing() {
             </h2>
             <p className="text-muted-foreground mb-4">
               Status: {subscription?.status}
-              {subscription?.cancel_at_period_end && " (cancels at period end)"}
+              {isCanceling && periodEnd && ` · access until ${new Date(periodEnd).toLocaleDateString()}`}
             </p>
             <Button onClick={handleManageBilling}>Manage Billing</Button>
           </Card>
@@ -94,6 +128,8 @@ export default function Pricing() {
           {TIERS.map((t) => {
             const isCurrent = isActive && tier === t.level;
             const isDowngrade = isActive && tier > t.level;
+            const priceDisplay = cycle === "yearly" ? t.priceYearly : t.price;
+            const priceId = priceIdFor(t, cycle);
             return (
               <Card
                 key={t.id}
@@ -111,15 +147,27 @@ export default function Pricing() {
                   <h3 className="font-display text-2xl font-semibold">{t.name}</h3>
                 </div>
                 <p className="text-sm text-muted-foreground mb-4">{t.tagline}</p>
-                <div className="flex items-baseline gap-2 mb-6">
-                  <span className="text-4xl font-bold">{t.price}</span>
-                  <span className="text-muted-foreground">/ month</span>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-4xl font-bold">{priceDisplay}</span>
+                  <span className="text-muted-foreground">/ {cycle === "yearly" ? "year" : "month"}</span>
+                </div>
+                <div className="h-5 mb-5">
+                  {cycle === "yearly" && (
+                    <span className="text-xs text-primary font-medium">
+                      Save {yearlySavingsMonths(t)} months vs monthly
+                    </span>
+                  )}
+                  {cycle === "monthly" && t.trialDays && (
+                    <span className="text-xs text-primary font-medium">
+                      {t.trialDays}-day free trial
+                    </span>
+                  )}
                 </div>
                 <Button
                   className="w-full mb-6"
                   variant={t.highlight ? "default" : "outline"}
                   disabled={isCurrent || isDowngrade || !user || loading}
-                  onClick={() => setCheckoutPriceId(t.priceId)}
+                  onClick={() => setCheckoutPriceId(priceId)}
                 >
                   {isCurrent
                     ? "Current plan"
@@ -129,6 +177,8 @@ export default function Pricing() {
                     ? "Sign in to subscribe"
                     : isActive
                     ? `Upgrade to ${t.name}`
+                    : t.trialDays
+                    ? `Start ${t.trialDays}-day free trial`
                     : `Choose ${t.name}`}
                 </Button>
                 <ul className="space-y-3">
@@ -142,6 +192,41 @@ export default function Pricing() {
               </Card>
             );
           })}
+        </div>
+
+        {/* Comparison table */}
+        <div className="mt-16">
+          <h2 className="font-display text-2xl font-semibold text-center mb-6">Compare every plan</h2>
+          <div className="overflow-x-auto rounded-2xl border border-border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-card/50">
+                  <th className="text-left font-medium text-muted-foreground px-4 py-3 min-w-[200px]">Feature</th>
+                  {TIERS.map((t) => (
+                    <th key={t.id} className="text-center font-semibold px-4 py-3 whitespace-nowrap">
+                      {t.name}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARISON_FEATURES.map((feat) => (
+                  <tr key={feat.label} className="border-b border-border/50 last:border-0">
+                    <td className="px-4 py-3 text-foreground">{feat.label}</td>
+                    {TIERS.map((t) => (
+                      <td key={t.id} className="text-center px-4 py-3">
+                        {t.level >= feat.minLevel ? (
+                          <Check className="h-4 w-4 text-primary mx-auto" />
+                        ) : (
+                          <Minus className="h-4 w-4 text-muted-foreground/40 mx-auto" />
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-8">
