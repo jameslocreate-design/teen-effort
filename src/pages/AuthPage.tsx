@@ -75,7 +75,7 @@ const AuthPage = () => {
     setLoading(true);
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -84,9 +84,15 @@ const AuthPage = () => {
           },
         });
         if (error) throw error;
-        setEmailOtpSent(true);
-        setSignupResendIn(RESEND_COOLDOWN_SECONDS);
-        toast.success("We sent a 6-digit code to your email");
+        // Verification temporarily disabled: if the account is auto-confirmed,
+        // signUp returns a session and the user is signed in immediately.
+        if (data.session) {
+          toast.success("Account created! You're signed in.");
+        } else {
+          setEmailOtpSent(true);
+          setSignupResendIn(RESEND_COOLDOWN_SECONDS);
+          toast.success("We sent a 6-digit code to your email");
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
