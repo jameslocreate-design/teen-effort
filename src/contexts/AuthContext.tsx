@@ -17,16 +17,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const handleSession = (session: any) => {
       setUser(session?.user ?? null);
       setLoading(false);
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
+      // If the user signed in mid-OAuth consent flow, return them to the consent URL.
+      if (session?.user) {
+        const params = new URLSearchParams(window.location.search);
+        const next = params.get("next");
+        if (next && next.startsWith("/") && !next.startsWith("//")) {
+          window.location.replace(next);
+        }
+      }
+    };
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => handleSession(session));
+    supabase.auth.getSession().then(({ data: { session } }) => handleSession(session));
     return () => subscription.unsubscribe();
   }, []);
 
