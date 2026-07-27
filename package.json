@@ -20,8 +20,15 @@
     "cap:open:android": "npx cap open android"
   },
   "dependencies": {
+    "@capacitor/app": "^8",
+    "@capacitor/browser": "^8",
     "@capacitor/cli": "^8.2.0",
+    "@capacitor/core": "^8",
+    "@capacitor/haptics": "^8",
     "@capacitor/ios": "^8.2.0",
+    "@capacitor/keyboard": "^8",
+    "@capacitor/splash-screen": "^8",
+    "@capacitor/status-bar": "^8",
     "@hookform/resolvers": "^3.10.0",
     "@lovable.dev/mcp-js": "^0.23.0",
     "@radix-ui/react-accordion": "^1.2.11",
