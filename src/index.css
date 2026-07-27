@@ -238,6 +238,34 @@
   .loading-dots span:nth-child(3) { animation-delay: 600ms; }
 
   .safe-area-bottom {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--keyboard-height, 0px));
+  }
+
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0px);
   }
 }
+
+/* Native (Capacitor) shell adjustments — no effect in the browser */
+:root {
+  --keyboard-height: 0px;
+}
+
+body.is-native {
+  overscroll-behavior-y: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+body.is-native input,
+body.is-native textarea,
+body.is-native [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+body.is-ios {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
