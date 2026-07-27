@@ -17,7 +17,10 @@
     "cap:run:ios": "npx cap run ios",
     "cap:run:android": "npx cap run android",
     "cap:open:ios": "npx cap open ios",
-    "cap:open:android": "npx cap open android"
+    "cap:open:android": "npx cap open android",
+    "cap:assets": "npx @capacitor/assets generate --ios --iconBackgroundColor '#0a0c10' --splashBackgroundColor '#0a0c10'",
+    "ios:dev": "CAP_LIVE_RELOAD=1 npx cap sync ios && npx cap run ios",
+    "ios:release": "npm run build && npx cap sync ios && npx cap open ios"
   },
   "dependencies": {
     "@capacitor/app": "^8",
