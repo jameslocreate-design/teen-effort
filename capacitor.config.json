@@ -1,14 +1,21 @@
 {
   "appId": "app.lovable.c5b6102f3f274c69a5ad0fff55b1d1e0",
-  "appName": "teen-effort",
+  "appName": "Teen Effort",
   "webDir": "dist",
   "server": {
     "url": "https://c5b6102f-3f27-4c69-a5ad-0fff55b1d1e0.lovableproject.com?forceHideBadge=true",
     "cleartext": true
   },
+  "ios": {
+    "contentInset": "always",
+    "backgroundColor": "#0a0c10",
+    "limitsNavigationsToAppBoundDomains": false,
+    "preferredContentMode": "mobile",
+    "scrollEnabled": true
+  },
   "plugins": {
     "SplashScreen": {
-      "launchShowDuration": 3000,
+      "launchShowDuration": 2000,
       "launchAutoHide": true,
       "backgroundColor": "#0a0c10",
       "androidSplashResourceName": "splash",
@@ -17,6 +24,16 @@
       "spinnerColor": "#f53e6a",
       "splashFullScreen": true,
       "splashImmersive": true
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#0a0c10",
+      "overlaysWebView": false
+    },
+    "Keyboard": {
+      "resize": "native",
+      "style": "DARK",
+      "resizeOnFullScreen": true
     }
   }
 }
