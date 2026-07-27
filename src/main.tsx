@@ -29,4 +29,7 @@ if (isInIframe || isPreviewHost) {
   });
 }
 
+void initNative();
+
+
 createRoot(document.getElementById("root")!).render(<App />);
