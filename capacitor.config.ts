@@ -1,0 +1,53 @@
+import type { CapacitorConfig } from "@capacitor/cli";
+
+/**
+ * Set CAP_LIVE_RELOAD=1 before `npx cap sync` to point the native shell at the
+ * Lovable preview (fast iteration). Leave it unset for any build you ship to
+ * TestFlight or the App Store — release builds must load the bundled `dist`.
+ */
+const useLiveReload = process.env.CAP_LIVE_RELOAD === "1";
+
+const config: CapacitorConfig = {
+  appId: "app.lovable.c5b6102f3f274c69a5ad0fff55b1d1e0",
+  appName: "Teen Effort",
+  webDir: "dist",
+  ...(useLiveReload
+    ? {
+        server: {
+          url: "https://c5b6102f-3f27-4c69-a5ad-0fff55b1d1e0.lovableproject.com?forceHideBadge=true",
+          cleartext: true,
+        },
+      }
+    : {}),
+  ios: {
+    contentInset: "always",
+    backgroundColor: "#0a0c10",
+    preferredContentMode: "mobile",
+    scrollEnabled: true,
+  },
+  plugins: {
+    SplashScreen: {
+      launchShowDuration: 2000,
+      launchAutoHide: true,
+      backgroundColor: "#0a0c10",
+      showSpinner: true,
+      spinnerColor: "#f53e6a",
+      splashFullScreen: true,
+      splashImmersive: true,
+      androidSplashResourceName: "splash",
+      androidScaleType: "CENTER_CROP",
+    },
+    StatusBar: {
+      style: "DARK",
+      backgroundColor: "#0a0c10",
+      overlaysWebView: false,
+    },
+    Keyboard: {
+      resize: "native",
+      style: "DARK",
+      resizeOnFullScreen: true,
+    },
+  },
+};
+
+export default config;
