@@ -34,13 +34,18 @@ const PremiumGate = ({ children, feature = "This feature", description, minTier 
           {feature} is a {requiredTier.name} feature
         </h3>
         <p className="text-sm text-muted-foreground max-w-md mx-auto font-sans">
-          {description ?? `Upgrade to ${requiredTier.name} or higher to unlock this and more for you and your partner.`}
+          {description ??
+            (purchasesBlocked()
+              ? `${requiredTier.name} unlocks this and more for you and your partner.`
+              : `Upgrade to ${requiredTier.name} or higher to unlock this and more for you and your partner.`)}
         </p>
       </div>
-      <Button onClick={() => navigate("/pricing")} className="rounded-xl gap-2">
-        <Sparkles className="h-4 w-4" />
-        Upgrade to {requiredTier.name}
-      </Button>
+      {!purchasesBlocked() && (
+        <Button onClick={() => navigate("/pricing")} className="rounded-xl gap-2">
+          <Sparkles className="h-4 w-4" />
+          Upgrade to {requiredTier.name}
+        </Button>
+      )}
     </div>
   );
 };
