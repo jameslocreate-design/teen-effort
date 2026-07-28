@@ -25,6 +25,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
       // If the user signed in mid-OAuth consent flow, return them to the consent URL.
       if (session?.user) {
+        // Native-only side effects (no-ops on web)
+        registerPush(session.user.id).catch(() => {});
+        initPurchases(session.user.id).catch(() => {});
+
         const params = new URLSearchParams(window.location.search);
         const next = params.get("next");
         if (next && next.startsWith("/") && !next.startsWith("//")) {
@@ -32,6 +36,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => handleSession(session));
     supabase.auth.getSession().then(({ data: { session } }) => handleSession(session));
     return () => subscription.unsubscribe();
