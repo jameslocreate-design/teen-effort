@@ -208,8 +208,13 @@ export default function Pricing() {
                   <Button
                     className="w-full mb-6"
                     variant={t.highlight ? "default" : "outline"}
-                    disabled={isCurrent || isDowngrade || !user || loading}
-                    onClick={() => setCheckoutPriceId(priceId)}
+                    disabled={
+                      isCurrent || isDowngrade || !user || loading || iap.busy ||
+                      (iap.available && !iap.ready)
+                    }
+                    onClick={() =>
+                      iap.available ? handleIapPurchase(priceId) : setCheckoutPriceId(priceId)
+                    }
                   >
                     {isCurrent
                       ? "Current plan"
@@ -217,12 +222,15 @@ export default function Pricing() {
                       ? "Included in your plan"
                       : !user
                       ? "Sign in to subscribe"
-                      : isActive
+                      : iap.busy
+                      ? "Processing…"
+                      : hasPlan
                       ? `Upgrade to ${t.name}`
                       : t.trialDays
                       ? `Start ${t.trialDays}-day free trial`
                       : `Choose ${t.name}`}
                   </Button>
+
                 )}
                 <ul className="space-y-3">
                   {t.features.map((f) => (
