@@ -166,24 +166,34 @@ export default function Pricing() {
                     </span>
                   )}
                 </div>
-                <Button
-                  className="w-full mb-6"
-                  variant={t.highlight ? "default" : "outline"}
-                  disabled={isCurrent || isDowngrade || !user || loading}
-                  onClick={() => setCheckoutPriceId(priceId)}
-                >
-                  {isCurrent
-                    ? "Current plan"
-                    : isDowngrade
-                    ? "Included in your plan"
-                    : !user
-                    ? "Sign in to subscribe"
-                    : isActive
-                    ? `Upgrade to ${t.name}`
-                    : t.trialDays
-                    ? `Start ${t.trialDays}-day free trial`
-                    : `Choose ${t.name}`}
-                </Button>
+                {noPurchases ? (
+                  <div className="w-full mb-6 rounded-xl border border-border bg-muted/40 px-4 py-3 text-center text-sm text-muted-foreground">
+                    {isCurrent
+                      ? "Your current plan"
+                      : isDowngrade
+                      ? "Included in your plan"
+                      : "Included with a Teen Effort membership"}
+                  </div>
+                ) : (
+                  <Button
+                    className="w-full mb-6"
+                    variant={t.highlight ? "default" : "outline"}
+                    disabled={isCurrent || isDowngrade || !user || loading}
+                    onClick={() => setCheckoutPriceId(priceId)}
+                  >
+                    {isCurrent
+                      ? "Current plan"
+                      : isDowngrade
+                      ? "Included in your plan"
+                      : !user
+                      ? "Sign in to subscribe"
+                      : isActive
+                      ? `Upgrade to ${t.name}`
+                      : t.trialDays
+                      ? `Start ${t.trialDays}-day free trial`
+                      : `Choose ${t.name}`}
+                  </Button>
+                )}
                 <ul className="space-y-3">
                   {t.features.map((f) => (
                     <li key={f} className="flex items-start gap-2 text-sm">
