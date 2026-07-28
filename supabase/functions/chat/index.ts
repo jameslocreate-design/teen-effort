@@ -126,13 +126,13 @@ serve(async (req) => {
 
     const hasLocation = typeof latitude === "number" && typeof longitude === "number";
 
-    // Determine search radius from "distance" filter (in meters)
-    let radiusMeters = 12000;
+    // Determine search radius from "distance" filter (miles → meters)
+    let radiusMeters = 16093; // default 10 miles
     const distStr = Array.isArray(distance) ? distance.join(" ") : String(distance || "");
-    if (distStr.includes("Walking")) radiusMeters = 2000;
-    else if (distStr.includes("Short drive")) radiusMeters = 12000;
-    else if (distStr.includes("Day trip")) radiusMeters = 30000;
-    else if (distStr.includes("Road trip")) radiusMeters = 80000;
+    if (distStr.includes("5 miles")) radiusMeters = 8047;
+    else if (distStr.includes("10 miles")) radiusMeters = 16093;
+    else if (distStr.includes("15 miles")) radiusMeters = 24140;
+    else if (distStr.includes("20 miles")) radiusMeters = 32187;
 
     // Build OSM tag filters based on what the user wants
     const osmFilters: string[] = [];
