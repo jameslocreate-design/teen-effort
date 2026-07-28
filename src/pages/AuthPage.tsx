@@ -32,7 +32,28 @@ const AuthPage = () => {
   const [emailOtp, setEmailOtp] = useState("");
   const [emailOtpSent, setEmailOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
+
+  const handleAppleSignIn = async () => {
+    setAppleLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("apple", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        toast.error("Couldn't sign in with Apple. Please try again.");
+        return;
+      }
+      if (result.redirected) return;
+    } catch {
+      toast.error("Couldn't sign in with Apple. Please try again.");
+    } finally {
+      setAppleLoading(false);
+    }
+  };
+
   // Password recovery state
+
   const [resetSent, setResetSent] = useState(false);
   const [resetCode, setResetCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
