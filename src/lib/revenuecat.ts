@@ -85,14 +85,13 @@ export async function getPackages() {
   if (!iapAvailable()) return [];
   const { Purchases } = await sdk();
   try {
-    const { current } = (await Purchases.getOfferings()).all
-      ? await Purchases.getOfferings()
-      : { current: null };
-    return current?.availablePackages ?? [];
+    const offerings = await Purchases.getOfferings();
+    return offerings.current?.availablePackages ?? [];
   } catch {
     return [];
   }
 }
+
 
 /**
  * Buys the package matching a price lookup key (e.g. `romance_monthly`).
