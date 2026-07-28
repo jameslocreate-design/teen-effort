@@ -14,6 +14,7 @@ import { notifyUsageUpdated } from "@/hooks/useUsage";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { purchasesBlocked } from "@/lib/native";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -83,7 +84,7 @@ const DatePlanner = () => {
     } catch (err) {
       if (err instanceof UsageLimitError) {
         toast.error(err.message, {
-          action: { label: "Upgrade", onClick: () => navigate("/pricing") },
+          action: purchasesBlocked() ? undefined : { label: "Upgrade", onClick: () => navigate("/pricing") },
           duration: 8000,
         });
       } else {

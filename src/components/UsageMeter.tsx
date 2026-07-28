@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useUsage, type UsageFeature } from "@/hooks/useUsage";
 import { USAGE_FEATURE_TIERS } from "@/lib/tiers";
+import { purchasesBlocked } from "@/lib/native";
 
 interface UsageMeterProps {
   feature: UsageFeature;
@@ -46,13 +47,15 @@ export function UsageMeter({ feature, label }: UsageMeterProps) {
             </>
           )}
         </span>
-        <Link
-          to="/pricing"
-          className="inline-flex items-center gap-1 text-primary font-medium hover:underline whitespace-nowrap"
-        >
-          <Sparkles className="h-3.5 w-3.5" />
-          Upgrade
-        </Link>
+        {!purchasesBlocked() && (
+          <Link
+            to="/pricing"
+            className="inline-flex items-center gap-1 text-primary font-medium hover:underline whitespace-nowrap"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            Upgrade
+          </Link>
+        )}
       </div>
       <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
         <div

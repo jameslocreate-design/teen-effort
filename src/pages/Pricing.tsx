@@ -15,6 +15,7 @@ import {
   type BillingCycle,
 } from "@/lib/tiers";
 import { toast } from "sonner";
+import { purchasesBlocked } from "@/lib/native";
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -22,6 +23,8 @@ export default function Pricing() {
   const [checkoutPriceId, setCheckoutPriceId] = useState<string | null>(null);
   const [cycle, setCycle] = useState<BillingCycle>("monthly");
   const { isActive, tier, subscription, isCanceling, periodEnd, loading } = useSubscription(user?.id);
+  // Apple Guideline 3.1.1: no external purchase flow inside the iOS app.
+  const noPurchases = purchasesBlocked();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
@@ -45,7 +48,7 @@ export default function Pricing() {
     window.open(data.url, "_blank");
   };
 
-  if (checkoutPriceId) {
+  if (checkoutPriceId && !noPurchases) {
     return (
       <div className="min-h-screen bg-background">
         <PaymentTestModeBanner />
@@ -65,7 +68,7 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-background">
-      <PaymentTestModeBanner />
+      {!noPurchases && <PaymentTestModeBanner />}
       <div className="max-w-6xl mx-auto px-4 py-12 pb-24">
         <Button variant="ghost" onClick={() => navigate("/")} className="mb-6">
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
@@ -73,15 +76,18 @@ export default function Pricing() {
 
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm mb-4">
-            <Sparkles className="h-4 w-4" /> Choose your plan
+            <Sparkles className="h-4 w-4" /> {noPurchases ? "Membership plans" : "Choose your plan"}
           </div>
           <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">
-            Pick the plan that fits your love story
+            {noPurchases ? "What each membership includes" : "Pick the plan that fits your love story"}
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Every plan builds on the last. Upgrade anytime — the Soulmate tier unlocks absolutely everything.
+            {noPurchases
+              ? "Every plan builds on the last — the Soulmate tier unlocks absolutely everything."
+              : "Every plan builds on the last. Upgrade anytime — the Soulmate tier unlocks absolutely everything."}
           </p>
         </div>
+
 
         {/* Billing cycle toggle */}
         <div className="flex justify-center mb-10">
@@ -120,7 +126,7 @@ export default function Pricing() {
               Status: {subscription?.status}
               {isCanceling && periodEnd && ` · access until ${new Date(periodEnd).toLocaleDateString()}`}
             </p>
-            <Button onClick={handleManageBilling}>Manage Billing</Button>
+            {!noPurchases && <Button onClick={handleManageBilling}>Manage Billing</Button>}
           </Card>
         )}
 
@@ -163,24 +169,34 @@ export default function Pricing() {
                     </span>
                   )}
                 </div>
-                <Button
-                  className="w-full mb-6"
-                  variant={t.highlight ? "default" : "outline"}
-                  disabled={isCurrent || isDowngrade || !user || loading}
-                  onClick={() => setCheckoutPriceId(priceId)}
-                >
-                  {isCurrent
-                    ? "Current plan"
-                    : isDowngrade
-                    ? "Included in your plan"
-                    : !user
-                    ? "Sign in to subscribe"
-                    : isActive
-                    ? `Upgrade to ${t.name}`
-                    : t.trialDays
-                    ? `Start ${t.trialDays}-day free trial`
-                    : `Choose ${t.name}`}
-                </Button>
+                {noPurchases ? (
+                  <div className="w-full mb-6 rounded-xl border border-border bg-muted/40 px-4 py-3 text-center text-sm text-muted-foreground">
+                    {isCurrent
+                      ? "Your current plan"
+                      : isDowngrade
+                      ? "Included in your plan"
+                      : "Included with a Teen Effort membership"}
+                  </div>
+                ) : (
+                  <Button
+                    className="w-full mb-6"
+                    variant={t.highlight ? "default" : "outline"}
+                    disabled={isCurrent || isDowngrade || !user || loading}
+                    onClick={() => setCheckoutPriceId(priceId)}
+                  >
+                    {isCurrent
+                      ? "Current plan"
+                      : isDowngrade
+                      ? "Included in your plan"
+                      : !user
+                      ? "Sign in to subscribe"
+                      : isActive
+                      ? `Upgrade to ${t.name}`
+                      : t.trialDays
+                      ? `Start ${t.trialDays}-day free trial`
+                      : `Choose ${t.name}`}
+                  </Button>
+                )}
                 <ul className="space-y-3">
                   {t.features.map((f) => (
                     <li key={f} className="flex items-start gap-2 text-sm">
@@ -230,7 +246,9 @@ export default function Pricing() {
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-8">
-          Cancel anytime. Taxes calculated at checkout.
+          {noPurchases
+            ? "Plans are shown for information only. Cancel anytime."
+            : "Cancel anytime. Taxes calculated at checkout."}
         </p>
       </div>
     </div>

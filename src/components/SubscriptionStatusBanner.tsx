@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/hooks/useSubscription";
 import { openBillingPortal } from "@/lib/billing";
+import { purchasesBlocked } from "@/lib/native";
 import { format } from "date-fns";
 
 /**
@@ -18,6 +19,8 @@ export function SubscriptionStatusBanner() {
     useSubscription(user?.id);
 
   if (!user || loading) return null;
+  // Apple bars external purchase/billing entry points inside the iOS app.
+  if (purchasesBlocked()) return null;
 
   if (isPastDue) {
     return (

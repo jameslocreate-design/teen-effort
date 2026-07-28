@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/hooks/useSubscription";
 import { FEATURE_TIERS } from "@/lib/tiers";
+import { purchasesBlocked } from "@/lib/native";
 import { toast } from "sonner";
 
 const costOptions = [
@@ -83,7 +84,7 @@ const GiftPlanner = () => {
     } catch (err) {
       if (err instanceof UsageLimitError) {
         toast.error(err.message, {
-          action: { label: "Upgrade", onClick: () => navigate("/pricing") },
+          action: purchasesBlocked() ? undefined : { label: "Upgrade", onClick: () => navigate("/pricing") },
           duration: 8000,
         });
       } else {
@@ -98,7 +99,7 @@ const GiftPlanner = () => {
     if (!user) return;
     if (!canSaveGifts) {
       toast.error("Saving gift ideas is a Romance feature", {
-        action: { label: "Upgrade", onClick: () => navigate("/pricing") },
+        action: purchasesBlocked() ? undefined : { label: "Upgrade", onClick: () => navigate("/pricing") },
         duration: 8000,
       });
       return;
