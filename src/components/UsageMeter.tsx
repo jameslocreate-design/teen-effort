@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useUsage, type UsageFeature } from "@/hooks/useUsage";
 import { USAGE_FEATURE_TIERS } from "@/lib/tiers";
+import { purchasesBlocked } from "@/lib/native";
 
 interface UsageMeterProps {
   feature: UsageFeature;
