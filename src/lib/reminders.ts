@@ -44,7 +44,7 @@ export async function syncDateReminders() {
   const todayIso = new Date().toISOString().split("T")[0];
   const { data: entries } = await supabase
     .from("calendar_entries")
-    .select("id, title, date, event_time, location")
+    .select("id, title, date, event_time, description")
     .gte("date", todayIso)
     .order("date", { ascending: true })
     .limit(30);
@@ -87,8 +87,8 @@ export async function syncDateReminders() {
       scheduled.push({
         id: idFor(entry.id, 2),
         title: "Starting soon ✨",
-        body: entry.location
-          ? `${entry.title} — ${entry.location}`
+        body: entry.description
+          ? `${entry.title} — ${entry.description}`
           : `${entry.title} starts in 2 hours`,
         schedule: { at: twoHours, allowWhileIdle: true },
         channelId: CHANNEL_ID,
