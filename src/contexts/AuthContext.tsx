@@ -43,8 +43,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signOut = async () => {
+    await logOutPurchases().catch(() => {});
     await supabase.auth.signOut();
   };
+
 
   return (
     <AuthContext.Provider value={{ user, loading, signOut }}>
