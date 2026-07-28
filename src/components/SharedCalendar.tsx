@@ -60,6 +60,7 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
       .eq("partner_link_id", partnerLinkId)
       .gte("date", start).lte("date", end);
     if (data) setEntries(data as CalendarEntry[]);
+    syncDateReminders().catch(() => {});
   }, [user, partnerLinkId, currentMonth]);
 
   const fetchTotalDates = useCallback(async () => {
