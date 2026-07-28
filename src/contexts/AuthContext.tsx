@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { registerPush } from "@/lib/push";
+import { syncDateReminders, initReminderTaps } from "@/lib/reminders";
 import { initPurchases, logOutPurchases } from "@/lib/revenuecat";
 
 
