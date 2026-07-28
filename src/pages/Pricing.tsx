@@ -123,7 +123,7 @@ export default function Pricing() {
               Status: {subscription?.status}
               {isCanceling && periodEnd && ` · access until ${new Date(periodEnd).toLocaleDateString()}`}
             </p>
-            <Button onClick={handleManageBilling}>Manage Billing</Button>
+            {!noPurchases && <Button onClick={handleManageBilling}>Manage Billing</Button>}
           </Card>
         )}
 
