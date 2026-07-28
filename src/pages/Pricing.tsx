@@ -48,7 +48,7 @@ export default function Pricing() {
     window.open(data.url, "_blank");
   };
 
-  if (checkoutPriceId) {
+  if (checkoutPriceId && !noPurchases) {
     return (
       <div className="min-h-screen bg-background">
         <PaymentTestModeBanner />
