@@ -58,10 +58,10 @@ const cuisineOptions = [
 ];
 
 const distanceOptions = [
-  { value: "Walking distance", label: "Walking", icon: Footprints },
-  { value: "Short drive (under 30 min)", label: "Short Drive", icon: Car },
-  { value: "Day trip (30-60 min drive)", label: "Day Trip", icon: Map },
-  { value: "Road trip (1+ hours)", label: "Road Trip", icon: Route },
+  { value: "5 miles or less", label: "≤ 5 mi", icon: Footprints },
+  { value: "10 miles", label: "10 mi", icon: Car },
+  { value: "15 miles", label: "15 mi", icon: Map },
+  { value: "20 miles", label: "20 mi", icon: Route },
 ];
 
 const timePresets = [
