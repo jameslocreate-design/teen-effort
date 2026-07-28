@@ -16,6 +16,7 @@ import {
 } from "@/lib/tiers";
 import { toast } from "sonner";
 import { purchasesBlocked } from "@/lib/native";
+import { useNativePurchases } from "@/hooks/useNativePurchases";
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -23,8 +24,31 @@ export default function Pricing() {
   const [checkoutPriceId, setCheckoutPriceId] = useState<string | null>(null);
   const [cycle, setCycle] = useState<BillingCycle>("monthly");
   const { isActive, tier, subscription, isCanceling, periodEnd, loading } = useSubscription(user?.id);
+  const iap = useNativePurchases(user?.id);
   // Apple Guideline 3.1.1: no external purchase flow inside the iOS app.
-  const noPurchases = purchasesBlocked();
+  // When RevenueCat in-app purchases are available we sell through StoreKit instead.
+  const noPurchases = purchasesBlocked() && !iap.available;
+  const activeTier = Math.max(tier ?? 0, iap.tier);
+  const hasPlan = isActive || iap.tier > 0;
+
+  const handleIapPurchase = async (priceId: string) => {
+    try {
+      await iap.purchase(priceId);
+      toast.success("You're all set — welcome to your new plan!");
+    } catch (e: any) {
+      if (!/cancel/i.test(e?.message ?? "")) {
+        toast.error(e?.message ?? "Purchase could not be completed");
+      }
+    }
+  };
+
+  const handleRestore = async () => {
+    const restored = await iap.restore().catch(() => 0);
+    toast[restored > 0 ? "success" : "info"](
+      restored > 0 ? "Purchases restored." : "No previous purchases found.",
+    );
+  };
+
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
