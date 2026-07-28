@@ -5,6 +5,13 @@ export const isNative = () => Capacitor.isNativePlatform();
 export const isIOS = () => Capacitor.getPlatform() === "ios";
 
 /**
+ * Apple forbids selling digital subscriptions outside In-App Purchase
+ * (App Store Guideline 3.1.1), so every Stripe checkout / billing-portal
+ * entry point must be hidden inside the native iOS shell.
+ */
+export const purchasesBlocked = () => isNative() && isIOS();
+
+/**
  * Opens a URL. On native iOS we use the in-app SFSafariViewController so users
  * stay inside the app (App Review dislikes hard bounces to Safari); on web we
  * fall back to a normal new tab.
