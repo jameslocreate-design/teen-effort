@@ -280,11 +280,25 @@ export default function Pricing() {
           </div>
         </div>
 
+        {iap.available && (
+          <div className="mt-8 flex flex-col items-center gap-3">
+            <Button variant="ghost" onClick={handleRestore} disabled={iap.busy}>
+              Restore purchases
+            </Button>
+            <p className="text-center text-xs text-muted-foreground max-w-md">
+              Payment is charged to your Apple ID at confirmation. Subscriptions renew automatically
+              unless turned off at least 24 hours before the end of the period. Manage or cancel in
+              your Apple ID settings.
+            </p>
+          </div>
+        )}
+
         <p className="text-center text-xs text-muted-foreground mt-8">
           {noPurchases
             ? "Plans are shown for information only. Cancel anytime."
             : "Cancel anytime. Taxes calculated at checkout."}
         </p>
+
       </div>
     </div>
   );
