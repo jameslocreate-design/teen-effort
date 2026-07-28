@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Heart, Mail, Lock, ArrowRight, Hash, Cake, Link2 } from "lucide-react";
+import { Heart, Mail, Lock, ArrowRight, Hash, Cake, Link2, Apple } from "lucide-react";
 import { toast } from "sonner";
+import { lovable } from "@/integrations/lovable/index";
+
 
 const RESEND_COOLDOWN_SECONDS = 30;
 
