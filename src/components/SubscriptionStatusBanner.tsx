@@ -18,6 +18,8 @@ export function SubscriptionStatusBanner() {
     useSubscription(user?.id);
 
   if (!user || loading) return null;
+  // Apple bars external purchase/billing entry points inside the iOS app.
+  if (purchasesBlocked()) return null;
 
   if (isPastDue) {
     return (
