@@ -140,24 +140,27 @@ export default function Pricing() {
           </div>
         </div>
 
-        {isActive && (
+        {hasPlan && (
           <Card className="p-6 mb-8 border-primary/30 bg-primary/5 text-center">
             <Heart className="h-8 w-8 text-primary mx-auto mb-2" />
             <h2 className="font-display text-2xl font-semibold mb-1">
-              You're on the {TIERS.find((t) => t.level === tier)?.name ?? "Premium"} plan
+              You're on the {TIERS.find((t) => t.level === activeTier)?.name ?? "Premium"} plan
             </h2>
             <p className="text-muted-foreground mb-4">
-              Status: {subscription?.status}
+              {iap.tier > 0 && !isActive
+                ? "Managed through your Apple ID subscriptions"
+                : `Status: ${subscription?.status}`}
               {isCanceling && periodEnd && ` · access until ${new Date(periodEnd).toLocaleDateString()}`}
             </p>
-            {!noPurchases && <Button onClick={handleManageBilling}>Manage Billing</Button>}
+            {!noPurchases && !iap.available && <Button onClick={handleManageBilling}>Manage Billing</Button>}
           </Card>
         )}
 
         <div className="grid md:grid-cols-3 gap-6 items-start">
           {TIERS.map((t) => {
-            const isCurrent = isActive && tier === t.level;
-            const isDowngrade = isActive && tier > t.level;
+            const isCurrent = hasPlan && activeTier === t.level;
+            const isDowngrade = hasPlan && activeTier > t.level;
+
             const priceDisplay = cycle === "yearly" ? t.priceYearly : t.price;
             const priceId = priceIdFor(t, cycle);
             return (
