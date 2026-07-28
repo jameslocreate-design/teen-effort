@@ -1,6 +1,9 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
+import { registerPush } from "@/lib/push";
+import { initPurchases, logOutPurchases } from "@/lib/revenuecat";
+
 
 interface AuthContextType {
   user: User | null;
