@@ -29,6 +29,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Native-only side effects (no-ops on web)
         registerPush(session.user.id).catch(() => {});
         initPurchases(session.user.id).catch(() => {});
+        initReminderTaps().catch(() => {});
+        syncDateReminders().catch(() => {});
+
 
         const params = new URLSearchParams(window.location.search);
         const next = params.get("next");
