@@ -246,7 +246,9 @@ export default function Pricing() {
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-8">
-          Cancel anytime. Taxes calculated at checkout.
+          {noPurchases
+            ? "Plans are shown for information only. Cancel anytime."
+            : "Cancel anytime. Taxes calculated at checkout."}
         </p>
       </div>
     </div>
