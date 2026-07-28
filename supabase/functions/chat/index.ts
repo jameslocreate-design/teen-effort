@@ -212,7 +212,7 @@ serve(async (req) => {
 
     const prompt = `You are a creative date planner. Generate exactly 3 unique, specific date ideas based on these preferences:
 
-- Budget: ${cost || "any"}
+- Budget (total cost for two people, MUST be respected): ${cost || "any"}
 - Setting: ${location || "any"}
 - Activity Style: ${activity || "any"}
 ${funActivity ? `- Specific Activity: ${funActivity}` : ""}
