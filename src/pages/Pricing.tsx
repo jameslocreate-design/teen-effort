@@ -15,6 +15,7 @@ import {
   type BillingCycle,
 } from "@/lib/tiers";
 import { toast } from "sonner";
+import { purchasesBlocked } from "@/lib/native";
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -22,6 +23,8 @@ export default function Pricing() {
   const [checkoutPriceId, setCheckoutPriceId] = useState<string | null>(null);
   const [cycle, setCycle] = useState<BillingCycle>("monthly");
   const { isActive, tier, subscription, isCanceling, periodEnd, loading } = useSubscription(user?.id);
+  // Apple Guideline 3.1.1: no external purchase flow inside the iOS app.
+  const noPurchases = purchasesBlocked();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
