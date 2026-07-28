@@ -15,9 +15,9 @@ import {
 
 const costOptions = [
   { value: "Free", label: "Free", icon: CircleDollarSign },
-  { value: "Budget ($1-25)", label: "$", icon: Banknote },
-  { value: "Moderate ($25-75)", label: "$$", icon: Wallet },
-  { value: "Splurge ($75+)", label: "$$$", icon: Gem },
+  { value: "$25 or less", label: "$25 or less", icon: Banknote },
+  { value: "$25-$50", label: "$25–$50", icon: Wallet },
+  { value: "$50+", label: "$50+", icon: Gem },
 ];
 
 const locationOptions = [
