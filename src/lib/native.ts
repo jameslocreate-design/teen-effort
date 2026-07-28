@@ -33,6 +33,24 @@ export async function tapHaptic() {
 }
 
 /**
+ * Opens the native iOS share sheet (partner invites, date ideas). Falls back to
+ * the Web Share API, then to copying the text to the clipboard.
+ */
+export async function shareContent(opts: { title?: string; text?: string; url?: string }) {
+  if (isNative()) {
+    const { Share } = await import("@capacitor/share");
+    await Share.share({ title: opts.title, text: opts.text, url: opts.url }).catch(() => {});
+    return;
+  }
+  if (navigator.share) {
+    await navigator.share(opts).catch(() => {});
+    return;
+  }
+  await navigator.clipboard.writeText(opts.url ?? opts.text ?? "").catch(() => {});
+}
+
+
+/**
  * One-time native bootstrap: status bar styling, splash hide, hardware back
  * handling and keyboard behaviour. Safe to call on web — it exits immediately.
  */

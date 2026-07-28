@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Heart, Mail, Lock, ArrowRight, Hash, Cake, Link2 } from "lucide-react";
+import { Heart, Mail, Lock, ArrowRight, Hash, Cake, Link2, Apple } from "lucide-react";
 import { toast } from "sonner";
+import { lovable } from "@/integrations/lovable/index";
+
 
 const RESEND_COOLDOWN_SECONDS = 30;
 
@@ -30,7 +32,28 @@ const AuthPage = () => {
   const [emailOtp, setEmailOtp] = useState("");
   const [emailOtpSent, setEmailOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
+
+  const handleAppleSignIn = async () => {
+    setAppleLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("apple", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        toast.error("Couldn't sign in with Apple. Please try again.");
+        return;
+      }
+      if (result.redirected) return;
+    } catch {
+      toast.error("Couldn't sign in with Apple. Please try again.");
+    } finally {
+      setAppleLoading(false);
+    }
+  };
+
   // Password recovery state
+
   const [resetSent, setResetSent] = useState(false);
   const [resetCode, setResetCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -376,6 +399,28 @@ const AuthPage = () => {
             </Button>
           </form>
         )}
+
+        {/* Sign in with Apple */}
+        {view === "auth" && !emailOtpSent && (
+          <div className="mt-5">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs text-muted-foreground">or</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={appleLoading}
+              onClick={handleAppleSignIn}
+              className="w-full h-11 rounded-xl gap-2"
+            >
+              <Apple className="h-4 w-4" />
+              {appleLoading ? "Connecting..." : "Continue with Apple"}
+            </Button>
+          </div>
+        )}
+
 
         {/* Email OTP Verification */}
         {view === "auth" && emailOtpSent && (

@@ -16,6 +16,7 @@ import {
 } from "@/lib/tiers";
 import { toast } from "sonner";
 import { purchasesBlocked } from "@/lib/native";
+import { useNativePurchases } from "@/hooks/useNativePurchases";
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -23,8 +24,31 @@ export default function Pricing() {
   const [checkoutPriceId, setCheckoutPriceId] = useState<string | null>(null);
   const [cycle, setCycle] = useState<BillingCycle>("monthly");
   const { isActive, tier, subscription, isCanceling, periodEnd, loading } = useSubscription(user?.id);
+  const iap = useNativePurchases(user?.id);
   // Apple Guideline 3.1.1: no external purchase flow inside the iOS app.
-  const noPurchases = purchasesBlocked();
+  // When RevenueCat in-app purchases are available we sell through StoreKit instead.
+  const noPurchases = purchasesBlocked() && !iap.available;
+  const activeTier = Math.max(tier ?? 0, iap.tier);
+  const hasPlan = isActive || iap.tier > 0;
+
+  const handleIapPurchase = async (priceId: string) => {
+    try {
+      await iap.purchase(priceId);
+      toast.success("You're all set — welcome to your new plan!");
+    } catch (e: any) {
+      if (!/cancel/i.test(e?.message ?? "")) {
+        toast.error(e?.message ?? "Purchase could not be completed");
+      }
+    }
+  };
+
+  const handleRestore = async () => {
+    const restored = await iap.restore().catch(() => 0);
+    toast[restored > 0 ? "success" : "info"](
+      restored > 0 ? "Purchases restored." : "No previous purchases found.",
+    );
+  };
+
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
@@ -116,24 +140,27 @@ export default function Pricing() {
           </div>
         </div>
 
-        {isActive && (
+        {hasPlan && (
           <Card className="p-6 mb-8 border-primary/30 bg-primary/5 text-center">
             <Heart className="h-8 w-8 text-primary mx-auto mb-2" />
             <h2 className="font-display text-2xl font-semibold mb-1">
-              You're on the {TIERS.find((t) => t.level === tier)?.name ?? "Premium"} plan
+              You're on the {TIERS.find((t) => t.level === activeTier)?.name ?? "Premium"} plan
             </h2>
             <p className="text-muted-foreground mb-4">
-              Status: {subscription?.status}
+              {iap.tier > 0 && !isActive
+                ? "Managed through your Apple ID subscriptions"
+                : `Status: ${subscription?.status}`}
               {isCanceling && periodEnd && ` · access until ${new Date(periodEnd).toLocaleDateString()}`}
             </p>
-            {!noPurchases && <Button onClick={handleManageBilling}>Manage Billing</Button>}
+            {!noPurchases && !iap.available && <Button onClick={handleManageBilling}>Manage Billing</Button>}
           </Card>
         )}
 
         <div className="grid md:grid-cols-3 gap-6 items-start">
           {TIERS.map((t) => {
-            const isCurrent = isActive && tier === t.level;
-            const isDowngrade = isActive && tier > t.level;
+            const isCurrent = hasPlan && activeTier === t.level;
+            const isDowngrade = hasPlan && activeTier > t.level;
+
             const priceDisplay = cycle === "yearly" ? t.priceYearly : t.price;
             const priceId = priceIdFor(t, cycle);
             return (
@@ -181,8 +208,13 @@ export default function Pricing() {
                   <Button
                     className="w-full mb-6"
                     variant={t.highlight ? "default" : "outline"}
-                    disabled={isCurrent || isDowngrade || !user || loading}
-                    onClick={() => setCheckoutPriceId(priceId)}
+                    disabled={
+                      isCurrent || isDowngrade || !user || loading || iap.busy ||
+                      (iap.available && !iap.ready)
+                    }
+                    onClick={() =>
+                      iap.available ? handleIapPurchase(priceId) : setCheckoutPriceId(priceId)
+                    }
                   >
                     {isCurrent
                       ? "Current plan"
@@ -190,12 +222,15 @@ export default function Pricing() {
                       ? "Included in your plan"
                       : !user
                       ? "Sign in to subscribe"
-                      : isActive
+                      : iap.busy
+                      ? "Processing…"
+                      : hasPlan
                       ? `Upgrade to ${t.name}`
                       : t.trialDays
                       ? `Start ${t.trialDays}-day free trial`
                       : `Choose ${t.name}`}
                   </Button>
+
                 )}
                 <ul className="space-y-3">
                   {t.features.map((f) => (
@@ -245,11 +280,25 @@ export default function Pricing() {
           </div>
         </div>
 
+        {iap.available && (
+          <div className="mt-8 flex flex-col items-center gap-3">
+            <Button variant="ghost" onClick={handleRestore} disabled={iap.busy}>
+              Restore purchases
+            </Button>
+            <p className="text-center text-xs text-muted-foreground max-w-md">
+              Payment is charged to your Apple ID at confirmation. Subscriptions renew automatically
+              unless turned off at least 24 hours before the end of the period. Manage or cancel in
+              your Apple ID settings.
+            </p>
+          </div>
+        )}
+
         <p className="text-center text-xs text-muted-foreground mt-8">
           {noPurchases
             ? "Plans are shown for information only. Cancel anytime."
             : "Cancel anytime. Taxes calculated at checkout."}
         </p>
+
       </div>
     </div>
   );
