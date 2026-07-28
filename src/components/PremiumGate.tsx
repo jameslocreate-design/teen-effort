@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/hooks/useSubscription";
 import { tierForLevel } from "@/lib/tiers";
+import { purchasesBlocked } from "@/lib/native";
 import type { ReactNode } from "react";
 
 interface PremiumGateProps {
