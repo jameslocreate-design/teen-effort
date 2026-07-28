@@ -1,3 +1,4 @@
+import { syncDateReminders } from "@/lib/reminders";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -60,6 +61,7 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
       .eq("partner_link_id", partnerLinkId)
       .gte("date", start).lte("date", end);
     if (data) setEntries(data as CalendarEntry[]);
+    syncDateReminders().catch(() => {});
   }, [user, partnerLinkId, currentMonth]);
 
   const fetchTotalDates = useCallback(async () => {
