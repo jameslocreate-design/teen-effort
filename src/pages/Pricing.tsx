@@ -68,7 +68,7 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-background">
-      <PaymentTestModeBanner />
+      {!noPurchases && <PaymentTestModeBanner />}
       <div className="max-w-6xl mx-auto px-4 py-12 pb-24">
         <Button variant="ghost" onClick={() => navigate("/")} className="mb-6">
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
@@ -76,15 +76,18 @@ export default function Pricing() {
 
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm mb-4">
-            <Sparkles className="h-4 w-4" /> Choose your plan
+            <Sparkles className="h-4 w-4" /> {noPurchases ? "Membership plans" : "Choose your plan"}
           </div>
           <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">
-            Pick the plan that fits your love story
+            {noPurchases ? "What each membership includes" : "Pick the plan that fits your love story"}
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Every plan builds on the last. Upgrade anytime — the Soulmate tier unlocks absolutely everything.
+            {noPurchases
+              ? "Every plan builds on the last — the Soulmate tier unlocks absolutely everything."
+              : "Every plan builds on the last. Upgrade anytime — the Soulmate tier unlocks absolutely everything."}
           </p>
         </div>
+
 
         {/* Billing cycle toggle */}
         <div className="flex justify-center mb-10">
