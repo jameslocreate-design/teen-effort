@@ -377,6 +377,28 @@ const AuthPage = () => {
           </form>
         )}
 
+        {/* Sign in with Apple */}
+        {view === "auth" && !emailOtpSent && (
+          <div className="mt-5">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs text-muted-foreground">or</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={appleLoading}
+              onClick={handleAppleSignIn}
+              className="w-full h-11 rounded-xl gap-2"
+            >
+              <Apple className="h-4 w-4" />
+              {appleLoading ? "Connecting..." : "Continue with Apple"}
+            </Button>
+          </div>
+        )}
+
+
         {/* Email OTP Verification */}
         {view === "auth" && emailOtpSent && (
           <form onSubmit={handleVerifyEmailOtp} className="space-y-4">
