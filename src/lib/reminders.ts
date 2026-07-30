@@ -44,10 +44,10 @@ export async function syncDateReminders() {
   const todayIso = new Date().toISOString().split("T")[0];
   const { data: entries } = await supabase
     .from("calendar_entries")
-    .select("id, title, date, event_time, description")
+    .select("id, title, date, event_time")
     .gte("date", todayIso)
     .order("date", { ascending: true })
-    .limit(30);
+    .limit(12);
 
   if (!entries?.length) return;
 
@@ -60,37 +60,56 @@ export async function syncDateReminders() {
     const start = new Date(`${entry.date}T00:00:00`);
     start.setHours(h || 18, m || 0, 0, 0);
 
-    // 1) Evening before at 7pm
+    const name = `"${entry.title}"`;
+    const timeLabel = new Date(start).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+
+    // Short, simple one-liners across the whole day.
+    const plan: Array<{ salt: number; at: Date; title: string; body: string }> = [];
+
+    // Evening before, 7pm
     const dayBefore = new Date(start);
     dayBefore.setDate(dayBefore.getDate() - 1);
     dayBefore.setHours(19, 0, 0, 0);
+    plan.push({ salt: 1, at: dayBefore, title: "Date tomorrow 💕", body: `You have a ${name} date tomorrow at ${timeLabel}.` });
 
-    // 2) Two hours before it starts
-    const twoHours = new Date(start.getTime() - 2 * 60 * 60 * 1000);
+    // Morning of, 9am
+    const morning = new Date(start);
+    morning.setHours(9, 0, 0, 0);
+    plan.push({ salt: 2, at: morning, title: "Date today 💗", body: `You have a ${name} date today at ${timeLabel}.` });
 
-    const timeLabel = entry.event_time
-      ? new Date(start).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
-      : null;
-
-    if (dayBefore.getTime() > now) {
-      scheduled.push({
-        id: idFor(entry.id, 1),
-        title: "Date tomorrow 💕",
-        body: timeLabel ? `${entry.title} at ${timeLabel}` : entry.title,
-        schedule: { at: dayBefore, allowWhileIdle: true },
-        channelId: CHANNEL_ID,
-        extra: { path: "/", entryId: entry.id },
-      });
+    // Midday check-in, 2pm (only if the date is later in the day)
+    const midday = new Date(start);
+    midday.setHours(14, 0, 0, 0);
+    if (midday.getTime() < start.getTime()) {
+      plan.push({ salt: 3, at: midday, title: "Get ready ✨", body: `Your ${name} date is at ${timeLabel}.` });
     }
 
-    if (twoHours.getTime() > now) {
+    // 2 hours before
+    plan.push({
+      salt: 4,
+      at: new Date(start.getTime() - 2 * 60 * 60 * 1000),
+      title: "In 2 hours ⏳",
+      body: `You have a ${name} date in two hours.`,
+    });
+
+    // 30 minutes before
+    plan.push({
+      salt: 5,
+      at: new Date(start.getTime() - 30 * 60 * 1000),
+      title: "Almost time 🌹",
+      body: `Your ${name} date starts in 30 minutes.`,
+    });
+
+    // At start
+    plan.push({ salt: 6, at: start, title: "It's date time 💞", body: `Your ${name} date starts now. Have fun!` });
+
+    for (const p of plan) {
+      if (p.at.getTime() <= now) continue;
       scheduled.push({
-        id: idFor(entry.id, 2),
-        title: "Starting soon ✨",
-        body: entry.description
-          ? `${entry.title} — ${entry.description}`
-          : `${entry.title} starts in 2 hours`,
-        schedule: { at: twoHours, allowWhileIdle: true },
+        id: idFor(entry.id, p.salt),
+        title: p.title,
+        body: p.body,
+        schedule: { at: p.at, allowWhileIdle: true },
         channelId: CHANNEL_ID,
         extra: { path: "/", entryId: entry.id },
       });
@@ -99,7 +118,12 @@ export async function syncDateReminders() {
 
   if (!scheduled.length) return;
 
-  // iOS caps pending notifications at 64.
+  // iOS caps pending notifications at 64 — keep the soonest ones.
+  scheduled.sort((a, b) => {
+    const at = (a.schedule as { at: Date }).at.getTime();
+    const bt = (b.schedule as { at: Date }).at.getTime();
+    return at - bt;
+  });
   await LocalNotifications.schedule({ notifications: scheduled.slice(0, 60) as never });
 }
 
