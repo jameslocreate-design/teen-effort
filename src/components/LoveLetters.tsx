@@ -113,7 +113,7 @@ const LoveLetters = () => {
             value={newLetter}
             onChange={(e) => setNewLetter(e.target.value)}
             placeholder="Dear love..."
-            className="min-h-[120px] rounded-xl border-border bg-background font-sans text-sm resize-none"
+            className="min-h-[120px] rounded-xl border-border bg-background font-sans text-base resize-none"
           />
           <div className="flex gap-2 justify-end">
             <Button variant="ghost" size="sm" onClick={() => { setComposing(false); setNewLetter(""); }} className="font-sans text-xs">

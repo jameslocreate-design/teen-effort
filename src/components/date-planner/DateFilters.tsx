@@ -191,7 +191,7 @@ const DateFilters = ({ filters, onFilterChange }: DateFiltersProps) => {
           placeholder="Or type custom time, e.g. '6pm - 9pm' or '3 hours'"
           value={filters.timeRange && !timePresets.some(p => p.value === filters.timeRange) ? filters.timeRange : ""}
           onChange={(e) => onFilterChange("timeRange")(e.target.value || null)}
-          className="rounded-2xl border-border bg-card text-sm font-sans"
+          className="rounded-2xl border-border bg-card text-base font-sans"
         />
       </div>
     </div>
