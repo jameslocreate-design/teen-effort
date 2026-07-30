@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { registerPush } from "@/lib/push";
-import { syncDateReminders, initReminderTaps } from "@/lib/reminders";
+import { syncDateReminders, initReminderTaps, startPartnerActivityWatch, stopPartnerActivityWatch } from "@/lib/reminders";
 import { initPurchases, logOutPurchases } from "@/lib/revenuecat";
 
 
@@ -31,6 +31,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         initPurchases(session.user.id).catch(() => {});
         initReminderTaps().catch(() => {});
         syncDateReminders().catch(() => {});
+        startPartnerActivityWatch(session.user.id).catch(() => {});
 
 
         const params = new URLSearchParams(window.location.search);
@@ -43,10 +44,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => handleSession(session));
     supabase.auth.getSession().then(({ data: { session } }) => handleSession(session));
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      stopPartnerActivityWatch();
+    };
   }, []);
 
   const signOut = async () => {
+    stopPartnerActivityWatch();
     await logOutPurchases().catch(() => {});
     await supabase.auth.signOut();
   };
