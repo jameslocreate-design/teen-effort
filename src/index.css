@@ -269,3 +269,20 @@ body.is-ios {
   padding-top: env(safe-area-inset-top, 0px);
 }
 
+
+/* Prevent iOS/mobile Safari from zooming (and thus reflowing the whole app)
+   when focusing a text field. Any font-size below 16px triggers auto-zoom. */
+@media (max-width: 1024px) {
+  input,
+  textarea,
+  select,
+  [contenteditable="true"] {
+    font-size: 16px !important;
+  }
+}
+
+/* Keep the layout anchored while the on-screen keyboard is open */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
