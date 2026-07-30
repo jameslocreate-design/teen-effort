@@ -12,7 +12,7 @@ function supabaseForUser(ctx: ToolContext) {
 export default defineTool({
   name: "list_saved_date_ideas",
   title: "List saved date ideas",
-  description: "List date ideas the signed-in user has bookmarked in Midnight & Rose.",
+  description: "List date ideas the signed-in user has bookmarked in Teen Effort.",
   inputSchema: {
     limit: z.number().int().min(1).max(50).optional().describe("Max ideas to return (default 20)."),
   },

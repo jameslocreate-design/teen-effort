@@ -11,9 +11,9 @@
   },
   "mcp": {
     "server": {
-      "name": "midnight-and-rose-mcp",
+      "name": "teen-effort-mcp",
       "version": "0.1.0",
-      "title": "Midnight & Rose"
+      "title": "Teen Effort"
     },
     "tools": [
       {
@@ -43,7 +43,7 @@
       {
         "name": "list_saved_date_ideas",
         "title": "List saved date ideas",
-        "description": "List date ideas the signed-in user has bookmarked in Midnight & Rose.",
+        "description": "List date ideas the signed-in user has bookmarked in Teen Effort.",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,
