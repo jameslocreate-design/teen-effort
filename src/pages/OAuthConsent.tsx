@@ -100,7 +100,7 @@ export default function OAuthConsent() {
       <div className="card-premium max-w-md w-full p-8 space-y-6">
         <div className="flex flex-col items-center gap-2 text-center">
           <Heart className="h-8 w-8 text-primary" />
-          <h1 className="text-2xl font-serif">Connect {clientName} to Midnight &amp; Rose</h1>
+          <h1 className="text-2xl font-serif">Connect {clientName} to Teen Effort</h1>
           <p className="text-sm text-muted-foreground">
             {clientName} will be able to call this app's enabled tools while you are signed in.
           </p>
