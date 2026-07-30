@@ -148,7 +148,7 @@ const GiftPlanner = () => {
             placeholder="Tell us about your partner's interests — favorite band, movie, hobby, sport, inside jokes…"
             value={filters.personalization || ""}
             onChange={(e) => updateFilter("personalization")(e.target.value || null)}
-            className="rounded-2xl border-border bg-card text-sm min-h-[80px] resize-none font-sans"
+            className="rounded-2xl border-border bg-card text-base min-h-[80px] resize-none font-sans"
           />
           <p className="text-xs text-muted-foreground font-sans">
             e.g. "She loves Taylor Swift, hiking, and watercolor painting"
