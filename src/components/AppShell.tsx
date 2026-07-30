@@ -301,7 +301,7 @@ const AppShell = () => {
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-60 border-r border-border bg-card/40 flex-shrink-0">
         <div className="px-5 py-5 flex items-center gap-3 border-b border-border">
-          <h1 className="text-lg font-display italic text-primary tracking-tight">Midnight & Rose</h1>
+          <h1 className="text-lg font-display italic text-primary tracking-tight">Teen Effort</h1>
         </div>
         <SidebarProfile />
         <div className="flex-1 overflow-y-auto px-2">
@@ -327,7 +327,7 @@ const AppShell = () => {
             style={{ animationName: "slideInLeft" }}
           >
             <div className="px-5 py-5 flex items-center justify-between border-b border-border">
-              <h1 className="text-lg font-display italic text-primary tracking-tight">Midnight & Rose</h1>
+              <h1 className="text-lg font-display italic text-primary tracking-tight">Teen Effort</h1>
               <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)} className="h-8 w-8 text-muted-foreground">
                 <X className="h-4 w-4" />
               </Button>
@@ -355,7 +355,7 @@ const AppShell = () => {
             <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)} className="h-8 w-8 text-muted-foreground">
               <Menu className="h-5 w-5" />
             </Button>
-            <h1 className="text-base font-display italic text-primary">Midnight & Rose</h1>
+            <h1 className="text-base font-display italic text-primary">Teen Effort</h1>
           </div>
           <div className="flex items-center gap-1">
             <ThemeToggle />

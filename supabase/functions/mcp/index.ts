@@ -49,7 +49,7 @@ function supabaseForUser2(ctx) {
 var list_saved_date_ideas_default = defineTool2({
   name: "list_saved_date_ideas",
   title: "List saved date ideas",
-  description: "List date ideas the signed-in user has bookmarked in Midnight & Rose.",
+  description: "List date ideas the signed-in user has bookmarked in Teen Effort.",
   inputSchema: {
     limit: z2.number().int().min(1).max(50).optional().describe("Max ideas to return (default 20).")
   },
@@ -135,10 +135,10 @@ var add_bucket_list_item_default = defineTool4({
 // src/lib/mcp/index.ts
 var projectRef = "znvyttxbxkvtyegjiwxj";
 var mcp_default = defineMcp({
-  name: "midnight-and-rose-mcp",
-  title: "Midnight & Rose",
+  name: "teen-effort-mcp",
+  title: "Teen Effort",
   version: "0.1.0",
-  instructions: "Tools for the Midnight & Rose date-planning app. Use these to read the signed-in user's upcoming planned dates, saved date ideas, and shared couple bucket list, or to add a new bucket list item. All tools act as the authenticated user.",
+  instructions: "Tools for the Teen Effort date-planning app. Use these to read the signed-in user's upcoming planned dates, saved date ideas, and shared couple bucket list, or to add a new bucket list item. All tools act as the authenticated user.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated"
