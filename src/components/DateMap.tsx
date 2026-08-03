@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { MapPin, Star, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { getCurrentCoords } from "@/lib/geo";
+
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
