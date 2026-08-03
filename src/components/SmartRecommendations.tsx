@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { generateDateIdeas, UsageLimitError, type DateIdea, type DateFilters } from "@/lib/date-planner";
 import { notifyUsageUpdated } from "@/hooks/useUsage";
+import { getCurrentCoords } from "@/lib/geo";
+
 import DateIdeaCard from "@/components/DateIdeaCard";
 import { toast } from "sonner";
 
