@@ -54,16 +54,12 @@ const SwipeDates = () => {
         timeRange: null, cuisine: null, latitude: null, longitude: null,
         funActivity: null, mood: null,
       };
-      // Try to get location
-      if (navigator.geolocation) {
-        try {
-          const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
-            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
-          );
-          filters.latitude = pos.coords.latitude;
-          filters.longitude = pos.coords.longitude;
-        } catch {}
-      }
+      try {
+        const coords = await getCurrentCoords({ timeout: 8000 });
+        filters.latitude = coords.latitude;
+        filters.longitude = coords.longitude;
+      } catch {}
+
       const newIdeas = await generateDateIdeas(filters);
       setIdeas(newIdeas);
       notifyUsageUpdated("date_ideas");
