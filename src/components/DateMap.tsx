@@ -40,11 +40,11 @@ const DateMap = () => {
   const markersRef = useRef<L.LayerGroup | null>(null);
 
   useEffect(() => {
-    navigator.geolocation?.getCurrentPosition(
-      (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
-      () => setUserLocation([39.8283, -98.5795])
-    );
+    getCurrentCoords({ timeout: 10000 })
+      .then((c) => setUserLocation([c.latitude, c.longitude]))
+      .catch(() => setUserLocation([39.8283, -98.5795]));
   }, []);
+
 
   useEffect(() => {
     if (!user) return;
