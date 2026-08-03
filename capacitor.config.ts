@@ -19,12 +19,19 @@ const config: CapacitorConfig = {
         },
       }
     : {}),
+  /**
+   * Location: after `npx cap add ios`, add these keys to ios/App/App/Info.plist
+   * or the location prompt never appears:
+   *   NSLocationWhenInUseUsageDescription =
+   *     "Teen Effort uses your location to suggest date ideas and venues nearby."
+   */
   ios: {
     contentInset: "always",
     backgroundColor: "#0a0c10",
     preferredContentMode: "mobile",
     scrollEnabled: true,
   },
+
   plugins: {
     SplashScreen: {
       launchShowDuration: 2000,

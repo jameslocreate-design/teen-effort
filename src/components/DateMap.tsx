@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { MapPin, Star, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { getCurrentCoords } from "@/lib/geo";
+
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -38,11 +40,11 @@ const DateMap = () => {
   const markersRef = useRef<L.LayerGroup | null>(null);
 
   useEffect(() => {
-    navigator.geolocation?.getCurrentPosition(
-      (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
-      () => setUserLocation([39.8283, -98.5795])
-    );
+    getCurrentCoords({ timeout: 10000 })
+      .then((c) => setUserLocation([c.latitude, c.longitude]))
+      .catch(() => setUserLocation([39.8283, -98.5795]));
   }, []);
+
 
   useEffect(() => {
     if (!user) return;
