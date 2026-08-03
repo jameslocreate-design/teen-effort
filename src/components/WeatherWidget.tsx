@@ -86,13 +86,11 @@ const WeatherWidget = () => {
   }, []);
 
   useEffect(() => {
-    if (!navigator.geolocation) { setLoading(false); return; }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
-      () => setLoading(false),
-      { timeout: 10000 }
-    );
+    getCurrentCoords({ timeout: 10000 })
+      .then((c) => fetchWeather(c.latitude, c.longitude))
+      .catch(() => setLoading(false));
   }, [fetchWeather]);
+
 
   if (loading) {
     return (
