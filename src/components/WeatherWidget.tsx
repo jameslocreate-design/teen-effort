@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Cloud, Sun, CloudRain, Snowflake, Wind, Thermometer, Droplets } from "lucide-react";
+import { getCurrentCoords } from "@/lib/geo";
+
 
 interface WeatherData {
   temp: number;
