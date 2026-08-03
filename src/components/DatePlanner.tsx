@@ -15,6 +15,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { purchasesBlocked } from "@/lib/native";
+import { getCurrentCoords } from "@/lib/geo";
+
 import { toast } from "sonner";
 import { format } from "date-fns";
 
