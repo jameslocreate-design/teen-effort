@@ -107,15 +107,16 @@ const AuthPage = () => {
           },
         });
         if (error) throw error;
-        // Verification temporarily disabled: if the account is auto-confirmed,
-        // signUp returns a session and the user is signed in immediately.
+        // Email verification is enabled: signUp returns no session until the
+        // user confirms via the 6-digit code (or the link in the same email).
         if (data.session) {
           toast.success("Account created! You're signed in.");
         } else {
           setEmailOtpSent(true);
           setSignupResendIn(RESEND_COOLDOWN_SECONDS);
-          toast.success("We sent a 6-digit code to your email");
+          toast.success("Check your email for your verification code");
         }
+
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
