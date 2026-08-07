@@ -32,9 +32,9 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         runtimeCaching: [
           {
-            urlPattern: ({ request, url }) =>
+            urlPattern: ({ request, url, sameOrigin }) =>
               request.mode === "navigate" &&
-              url.origin === self.location.origin &&
+              sameOrigin &&
               !url.pathname.startsWith("/~oauth") &&
               !url.pathname.startsWith("/.lovable") &&
               !url.pathname.startsWith("/functions/v1/mcp"),
@@ -49,8 +49,8 @@ export default defineConfig(({ mode }) => ({
             },
           },
           {
-            urlPattern: ({ request, url }) =>
-              url.origin === self.location.origin &&
+            urlPattern: ({ request, sameOrigin }) =>
+              sameOrigin &&
               ["script", "style", "font", "image"].includes(request.destination),
             handler: "CacheFirst",
             options: {
