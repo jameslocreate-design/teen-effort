@@ -5,8 +5,8 @@ const MONTHS = [
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
-const ITEM_HEIGHT = 36;
-const VISIBLE = 5; // must be odd
+const ITEM_HEIGHT = 32;
+const VISIBLE = 3; // must be odd
 const PAD = (VISIBLE - 1) / 2;
 
 interface WheelProps {
