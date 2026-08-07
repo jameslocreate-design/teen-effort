@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Cloud, Sun, CloudRain, Snowflake, Wind, Thermometer, Droplets } from "lucide-react";
-import { getCurrentCoords } from "@/lib/geo";
+import { getCurrentCoords, LOCATION_READY_EVENT } from "@/lib/geo";
 
 
 interface WeatherData {
@@ -88,9 +88,15 @@ const WeatherWidget = () => {
   }, []);
 
   useEffect(() => {
-    getCurrentCoords({ timeout: 10000 })
-      .then((c) => fetchWeather(c.latitude, c.longitude))
-      .catch(() => setLoading(false));
+    const loadWeather = () => {
+      setLoading(true);
+      getCurrentCoords({ timeout: 12000, enableHighAccuracy: false })
+        .then((c) => fetchWeather(c.latitude, c.longitude))
+        .catch(() => setLoading(false));
+    };
+    loadWeather();
+    window.addEventListener(LOCATION_READY_EVENT, loadWeather);
+    return () => window.removeEventListener(LOCATION_READY_EVENT, loadWeather);
   }, [fetchWeather]);
 
 

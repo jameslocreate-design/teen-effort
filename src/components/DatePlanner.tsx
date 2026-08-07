@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { purchasesBlocked } from "@/lib/native";
-import { getCurrentCoords } from "@/lib/geo";
+import { getCurrentCoords, LOCATION_READY_EVENT } from "@/lib/geo";
 
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -55,17 +55,18 @@ const DatePlanner = () => {
   useEffect(() => { fetchPartnerLink(); }, [fetchPartnerLink]);
 
   useEffect(() => {
-    setLocationStatus("loading");
-    getCurrentCoords({ enableHighAccuracy: true, timeout: 15000 })
-      .then((coords) => {
-        setFilters(prev => ({ ...prev, latitude: coords.latitude, longitude: coords.longitude }));
-        setLocationStatus("granted");
-        console.log("Location detected:", coords.latitude, coords.longitude, "accuracy:", coords.accuracy, "m");
-      })
-      .catch((err) => {
-        console.warn("Geolocation error:", err);
-        setLocationStatus("denied");
-      });
+    const loadLocation = () => {
+      setLocationStatus("loading");
+      getCurrentCoords({ enableHighAccuracy: false, timeout: 12000 })
+        .then((coords) => {
+          setFilters(prev => ({ ...prev, latitude: coords.latitude, longitude: coords.longitude }));
+          setLocationStatus("granted");
+        })
+        .catch(() => setLocationStatus("denied"));
+    };
+    loadLocation();
+    window.addEventListener(LOCATION_READY_EVENT, loadLocation);
+    return () => window.removeEventListener(LOCATION_READY_EVENT, loadLocation);
   }, []);
 
 
