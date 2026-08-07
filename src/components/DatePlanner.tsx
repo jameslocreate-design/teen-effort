@@ -14,8 +14,13 @@ import { notifyUsageUpdated } from "@/hooks/useUsage";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { purchasesBlocked } from "@/lib/native";
-import { getCurrentCoords, LOCATION_READY_EVENT } from "@/lib/geo";
+import { isNative, purchasesBlocked } from "@/lib/native";
+import {
+  checkLocationPermission,
+  getCurrentCoords,
+  LOCATION_READY_EVENT,
+  requestLocationAccess,
+} from "@/lib/geo";
 
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -35,7 +40,7 @@ const DatePlanner = () => {
   const [hasGenerated, setHasGenerated] = useState(false);
   const [partnerLinkId, setPartnerLinkId] = useState<string | null>(null);
   const [savingIndex, setSavingIndex] = useState<number | null>(null);
-  const [locationStatus, setLocationStatus] = useState<"idle" | "loading" | "granted" | "denied">("idle");
+  const [locationStatus, setLocationStatus] = useState<"idle" | "loading" | "granted" | "needed" | "unavailable">("idle");
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [selectedIdea, setSelectedIdea] = useState<DateIdea | null>(null);
   const [selectedIdeaIndex, setSelectedIdeaIndex] = useState<number | null>(null);
@@ -54,20 +59,43 @@ const DatePlanner = () => {
 
   useEffect(() => { fetchPartnerLink(); }, [fetchPartnerLink]);
 
+  const loadLocation = useCallback(async () => {
+    setLocationStatus("loading");
+    try {
+      const coords = await getCurrentCoords({ enableHighAccuracy: false, timeout: 12000 });
+      setFilters(prev => ({ ...prev, latitude: coords.latitude, longitude: coords.longitude }));
+      setLocationStatus("granted");
+    } catch {
+      const permission = await checkLocationPermission();
+      setLocationStatus(permission === "granted" ? "unavailable" : "needed");
+    }
+  }, []);
+
   useEffect(() => {
-    const loadLocation = () => {
-      setLocationStatus("loading");
-      getCurrentCoords({ enableHighAccuracy: false, timeout: 12000 })
-        .then((coords) => {
-          setFilters(prev => ({ ...prev, latitude: coords.latitude, longitude: coords.longitude }));
-          setLocationStatus("granted");
-        })
-        .catch(() => setLocationStatus("denied"));
+    const initializeLocation = async () => {
+      if (isNative() && await checkLocationPermission() !== "granted") {
+        setLocationStatus("needed");
+        return;
+      }
+      await loadLocation();
     };
-    loadLocation();
+    initializeLocation();
     window.addEventListener(LOCATION_READY_EVENT, loadLocation);
     return () => window.removeEventListener(LOCATION_READY_EVENT, loadLocation);
-  }, []);
+  }, [loadLocation]);
+
+  const retryLocation = async () => {
+    setLocationStatus("loading");
+    if (isNative() && await checkLocationPermission() !== "granted") {
+      const granted = await requestLocationAccess();
+      if (!granted) {
+        const permission = await checkLocationPermission();
+        setLocationStatus(permission === "granted" ? "unavailable" : "needed");
+        return;
+      }
+    }
+    await loadLocation();
+  };
 
 
   const updateFilter = (key: keyof DateFiltersType) => (value: FilterValue) => {
@@ -167,12 +195,18 @@ const DatePlanner = () => {
         </p>
       </div>
 
-      <div className="flex items-center gap-2 text-xs text-muted-foreground font-sans">
+      <div className="flex min-h-9 items-center gap-2 text-xs text-muted-foreground font-sans">
         <MapPin className="h-3.5 w-3.5" />
         {locationStatus === "loading" && "Detecting location..."}
         {locationStatus === "granted" && <span className="text-primary">Location detected — dates will be nearby</span>}
-        {locationStatus === "denied" && <span>Location unavailable — enable location for local suggestions</span>}
+        {locationStatus === "needed" && <span>Location access is needed for nearby suggestions</span>}
+        {locationStatus === "unavailable" && <span>Couldn’t determine your location</span>}
         {locationStatus === "idle" && "Waiting for location..."}
+        {(locationStatus === "needed" || locationStatus === "unavailable") && (
+          <Button variant="ghost" size="sm" className="ml-auto h-9 px-3" onClick={retryLocation}>
+            {locationStatus === "needed" ? "Allow" : "Retry"}
+          </Button>
+        )}
       </div>
 
       <WeatherWidget />
