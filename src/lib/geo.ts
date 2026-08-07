@@ -92,3 +92,18 @@ export async function getCurrentCoords(opts?: {
     accuracy: pos.coords.accuracy,
   };
 }
+
+/**
+ * Opens the OS settings screen for the app so a user who previously tapped
+ * "Don't Allow" can re-enable location (iOS never re-prompts after a denial).
+ */
+export async function openLocationSettings(): Promise<boolean> {
+  if (!isNative()) return false;
+  try {
+    const { App } = await import("@capacitor/app");
+    await App.openUrl({ url: "app-settings:" });
+    return true;
+  } catch {
+    return false;
+  }
+}
