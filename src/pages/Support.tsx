@@ -7,8 +7,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const SUPPORT_EMAIL = "support@teeneffort.app";
-const SAFETY_EMAIL = "safety@teeneffort.app";
+const SUPPORT_EMAIL = "support.teeneffort@gmail.com";
+const SAFETY_EMAIL = "support.teeneffort@gmail.com";
 
 const faqs = [
   {
