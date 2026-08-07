@@ -368,21 +368,15 @@ const AuthPage = () => {
             </div>
             {isSignUp && (
               <div className="space-y-1">
-                <div className="relative">
-                  <Cake className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="date"
-                    placeholder="Date of birth"
-                    value={dob}
-                    onChange={(e) => setDob(e.target.value)}
-                    max={new Date().toISOString().split("T")[0]}
-                    className="pl-10 bg-secondary/50 border-border"
-                    required
-                  />
+                <div className="flex items-center gap-2 px-1 text-xs uppercase tracking-wide text-muted-foreground">
+                  <Cake className="h-3.5 w-3.5" />
+                  Date of birth
                 </div>
+                <DateOfBirthWheel value={dob} onChange={setDob} />
                 <p className="text-[11px] text-muted-foreground px-1">You must be 13 or older to use this app.</p>
               </div>
             )}
+
             {!isSignUp && (
               <div className="flex justify-end">
                 <button
