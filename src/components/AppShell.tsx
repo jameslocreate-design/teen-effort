@@ -18,6 +18,7 @@ import PartnerView from "@/components/PartnerView";
 import BucketList from "@/components/BucketList";
 import AskTheExpert from "@/components/AskTheExpert";
 import OnboardingTour from "@/components/OnboardingTour";
+import LocationPermissionPrompt from "@/components/LocationPermissionPrompt";
 import DateRoulette from "@/components/DateRoulette";
 import PhotoJournal from "@/components/PhotoJournal";
 import DateStats from "@/components/DateStats";
@@ -297,6 +298,8 @@ const AppShell = () => {
   return (
     <div className="min-h-screen bg-background flex">
       {showOnboarding && <OnboardingTour onComplete={handleOnboardingComplete} />}
+      
+
 
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-60 border-r border-border bg-card/40 flex-shrink-0">
@@ -367,6 +370,7 @@ const AppShell = () => {
 
         {/* Content */}
         <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
+          <LocationPermissionPrompt />
           <div className="mx-auto max-w-3xl px-4 sm:px-6 py-6 sm:py-8">
             {activeTab === "planner" && <><DateStreak /><DatePlanner /></>}
             {activeTab === "smart" && <PremiumGate feature="Smart Recommendations" minTier={2} description="Get personalized date ideas based on your history and preferences."><SmartRecommendations /></PremiumGate>}
