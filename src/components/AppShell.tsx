@@ -18,6 +18,7 @@ import PartnerView from "@/components/PartnerView";
 import BucketList from "@/components/BucketList";
 import AskTheExpert from "@/components/AskTheExpert";
 import OnboardingTour from "@/components/OnboardingTour";
+import LocationPermissionPrompt from "@/components/LocationPermissionPrompt";
 import DateRoulette from "@/components/DateRoulette";
 import PhotoJournal from "@/components/PhotoJournal";
 import DateStats from "@/components/DateStats";
@@ -297,6 +298,8 @@ const AppShell = () => {
   return (
     <div className="min-h-screen bg-background flex">
       {showOnboarding && <OnboardingTour onComplete={handleOnboardingComplete} />}
+      <div className="fixed top-0 left-0 right-0 z-40 pointer-events-none [&>*]:pointer-events-auto safe-area-top" />
+
 
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-60 border-r border-border bg-card/40 flex-shrink-0">
