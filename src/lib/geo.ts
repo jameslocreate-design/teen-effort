@@ -6,6 +6,51 @@ export interface Coords {
   accuracy?: number;
 }
 
+export type LocationPermission = "granted" | "denied" | "prompt" | "unknown";
+
+/** Reads the current location permission without triggering a prompt. */
+export async function checkLocationPermission(): Promise<LocationPermission> {
+  if (isNative()) {
+    try {
+      const { Geolocation } = await import("@capacitor/geolocation");
+      const perm = await Geolocation.checkPermissions();
+      if (perm.location === "granted") return "granted";
+      if (perm.location === "denied") return "denied";
+      return "prompt";
+    } catch {
+      return "unknown";
+    }
+  }
+  if (!navigator.permissions?.query) return "unknown";
+  try {
+    const status = await navigator.permissions.query({ name: "geolocation" as PermissionName });
+    return status.state as LocationPermission;
+  } catch {
+    return "unknown";
+  }
+}
+
+/**
+ * Explicitly asks the user for location access (shows the iOS system prompt).
+ * Returns true when access is granted.
+ */
+export async function requestLocationAccess(): Promise<boolean> {
+  if (isNative()) {
+    const { Geolocation } = await import("@capacitor/geolocation");
+    let perm = await Geolocation.checkPermissions();
+    if (perm.location !== "granted") {
+      perm = await Geolocation.requestPermissions({ permissions: ["location"] });
+    }
+    return perm.location === "granted";
+  }
+  try {
+    await getCurrentCoords({ timeout: 10000 });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Gets the current location. On native iOS/Android we use the Capacitor
  * Geolocation plugin (which prompts with the Info.plist usage strings and works
