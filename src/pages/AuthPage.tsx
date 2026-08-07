@@ -217,8 +217,8 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="h-[100dvh] overflow-hidden bg-background flex items-center justify-center px-4 safe-area-top">
-      <div className="w-full max-w-sm space-y-5 max-h-full overflow-y-auto overscroll-contain no-scrollbar py-4">
+    <div className="fixed inset-0 overflow-hidden overscroll-none bg-background flex items-center justify-center px-4 safe-area-top">
+      <div className="w-full max-w-sm space-y-4 max-h-full overflow-hidden py-2">
         <div className="text-center space-y-2">
           <div className="mx-auto h-12 w-12 rounded-2xl bg-primary/15 flex items-center justify-center glow-md">
             <Heart className="h-6 w-6 text-primary" />
