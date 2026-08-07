@@ -1,35 +1,72 @@
-import { useEffect, useState } from "react";
-import { MapPin, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { MapPin, Settings, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { isNative } from "@/lib/native";
-import { checkLocationPermission, requestLocationAccess } from "@/lib/geo";
+import {
+  checkLocationPermission,
+  openLocationSettings,
+  requestLocationAccess,
+  type LocationPermission,
+} from "@/lib/geo";
 import { toast } from "sonner";
 
 const DISMISS_KEY = "location-prompt-dismissed";
+const DENIED_DISMISS_KEY = "location-denied-hint-dismissed";
 
 /**
  * Native-only nudge that explains why we need location before the iOS system
  * dialog appears (Apple requires context, and a cold prompt gets denied).
+ * If the user already denied, iOS will never prompt again, so we show a
+ * "Open Settings" hint instead and re-check when the app returns to foreground.
  */
 const LocationPermissionPrompt = () => {
-  const [show, setShow] = useState(false);
+  const [state, setState] = useState<LocationPermission | null>(null);
   const [busy, setBusy] = useState(false);
+  const [hidden, setHidden] = useState(false);
+
+  const refresh = useCallback(async () => {
+    const next = await checkLocationPermission();
+    setState(next);
+    if (next === "granted") setHidden(true);
+    return next;
+  }, []);
 
   useEffect(() => {
     if (!isNative()) return;
-    if (localStorage.getItem(DISMISS_KEY) === "1") return;
     let cancelled = false;
-    checkLocationPermission().then((state) => {
-      if (!cancelled && state !== "granted") setShow(true);
+    let remove: (() => void) | undefined;
+
+    checkLocationPermission().then((next) => {
+      if (cancelled) return;
+      setState(next);
     });
+
+    // Coming back from Settings should pick up a newly granted permission.
+    import("@capacitor/app")
+      .then(({ App }) =>
+        App.addListener("appStateChange", ({ isActive }) => {
+          if (isActive) refresh();
+        })
+      )
+      .then((handle) => {
+        remove = () => handle.remove();
+      })
+      .catch(() => {});
+
     return () => {
       cancelled = true;
+      remove?.();
     };
-  }, []);
+  }, [refresh]);
 
   const dismiss = () => {
     localStorage.setItem(DISMISS_KEY, "1");
-    setShow(false);
+    setHidden(true);
+  };
+
+  const dismissDeniedHint = () => {
+    localStorage.setItem(DENIED_DISMISS_KEY, "1");
+    setHidden(true);
   };
 
   const allow = async () => {
@@ -38,17 +75,29 @@ const LocationPermissionPrompt = () => {
       const granted = await requestLocationAccess();
       if (granted) {
         toast.success("Location enabled — nearby date ideas unlocked");
-        dismiss();
+        localStorage.setItem(DISMISS_KEY, "1");
+        setState("granted");
+        setHidden(true);
       } else {
-        toast.error("Location is off. Enable it in Settings › Teen Effort › Location.");
-        dismiss();
+        setState("denied");
       }
     } finally {
       setBusy(false);
     }
   };
 
-  if (!show) return null;
+  const openSettings = async () => {
+    const opened = await openLocationSettings();
+    if (!opened) {
+      toast.error("Open Settings › Teen Effort › Location to turn it on.");
+    }
+  };
+
+  if (!isNative() || hidden || state === null || state === "granted") return null;
+
+  const denied = state === "denied";
+  if (denied && localStorage.getItem(DENIED_DISMISS_KEY) === "1") return null;
+  if (!denied && localStorage.getItem(DISMISS_KEY) === "1") return null;
 
   return (
     <div className="mx-4 mt-4 rounded-2xl border border-primary/30 bg-primary/10 p-4 flex items-start gap-3">
@@ -56,23 +105,38 @@ const LocationPermissionPrompt = () => {
         <MapPin className="h-4 w-4 text-primary" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-foreground">Allow location access</p>
+        <p className="text-sm font-medium text-foreground">
+          {denied ? "Location is turned off" : "Allow location access"}
+        </p>
         <p className="text-xs text-muted-foreground mt-0.5">
-          We use your location to find date spots and weather near you. Nothing is shared with
-          anyone else.
+          {denied
+            ? "Teen Effort can't see your location, so date ideas won't be nearby. Turn it back on in Settings › Teen Effort › Location."
+            : "We use your location to find date spots and weather near you. Nothing is shared with anyone else."}
         </p>
         <div className="mt-3 flex gap-2">
-          <Button size="sm" onClick={allow} disabled={busy} className="h-9 rounded-xl">
-            {busy ? "Requesting..." : "Allow location"}
-          </Button>
-          <Button size="sm" variant="ghost" onClick={dismiss} className="h-9 rounded-xl">
+          {denied ? (
+            <Button size="sm" onClick={openSettings} className="h-9 rounded-xl gap-1.5">
+              <Settings className="h-3.5 w-3.5" />
+              Open Settings
+            </Button>
+          ) : (
+            <Button size="sm" onClick={allow} disabled={busy} className="h-9 rounded-xl">
+              {busy ? "Requesting..." : "Allow location"}
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={denied ? dismissDeniedHint : dismiss}
+            className="h-9 rounded-xl"
+          >
             Not now
           </Button>
         </div>
       </div>
       <button
         type="button"
-        onClick={dismiss}
+        onClick={denied ? dismissDeniedHint : dismiss}
         aria-label="Dismiss location prompt"
         className="text-muted-foreground hover:text-foreground p-1"
       >
