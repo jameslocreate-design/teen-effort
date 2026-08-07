@@ -217,11 +217,11 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="w-full max-w-sm space-y-8">
-        <div className="text-center space-y-3">
-          <div className="mx-auto h-14 w-14 rounded-2xl bg-primary/15 flex items-center justify-center glow-md">
-            <Heart className="h-7 w-7 text-primary" />
+    <div className="h-[100dvh] overflow-hidden bg-background flex items-center justify-center px-4 safe-area-top">
+      <div className="w-full max-w-sm space-y-5 max-h-full overflow-y-auto overscroll-contain no-scrollbar py-4">
+        <div className="text-center space-y-2">
+          <div className="mx-auto h-12 w-12 rounded-2xl bg-primary/15 flex items-center justify-center glow-md">
+            <Heart className="h-6 w-6 text-primary" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">Date Planner</h1>
           <p className="text-sm text-muted-foreground">
