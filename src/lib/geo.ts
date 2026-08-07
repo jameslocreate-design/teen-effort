@@ -41,7 +41,12 @@ export async function requestLocationAccess(): Promise<boolean> {
     if (perm.location !== "granted") {
       perm = await Geolocation.requestPermissions({ permissions: ["location"] });
     }
-    return perm.location === "granted";
+    const granted = perm.location === "granted";
+    if (granted) {
+      // Warm the cache so the rest of the app doesn't re-request.
+      getCurrentCoords({ timeout: 15000 }).catch(() => {});
+    }
+    return granted;
   }
   try {
     await getCurrentCoords({ timeout: 10000 });
@@ -51,18 +56,43 @@ export async function requestLocationAccess(): Promise<boolean> {
   }
 }
 
+// A single in-flight request shared by every caller, plus a short-lived cache.
+// Without this, each widget (map, weather, planner, swipe, recommendations)
+// fires its own lookup and iOS ends up queuing prompt after prompt.
+const CACHE_MS = 5 * 60 * 1000;
+let cached: { coords: Coords; at: number } | null = null;
+let inFlight: Promise<Coords> | null = null;
+
 /**
  * Gets the current location. On native iOS/Android we use the Capacitor
  * Geolocation plugin (which prompts with the Info.plist usage strings and works
  * reliably inside WKWebView); on web we fall back to navigator.geolocation.
+ * Concurrent callers share one lookup, and results are cached for 5 minutes.
  */
 export async function getCurrentCoords(opts?: {
   timeout?: number;
   enableHighAccuracy?: boolean;
 }): Promise<Coords> {
+  if (cached && Date.now() - cached.at < CACHE_MS) return cached.coords;
+  if (inFlight) return inFlight;
+
   const timeout = opts?.timeout ?? 10000;
   const enableHighAccuracy = opts?.enableHighAccuracy ?? true;
 
+  inFlight = (async () => {
+    const coords = await lookup(timeout, enableHighAccuracy);
+    cached = { coords, at: Date.now() };
+    return coords;
+  })();
+
+  try {
+    return await inFlight;
+  } finally {
+    inFlight = null;
+  }
+}
+
+async function lookup(timeout: number, enableHighAccuracy: boolean): Promise<Coords> {
   if (isNative()) {
     const { Geolocation } = await import("@capacitor/geolocation");
     let perm = await Geolocation.checkPermissions();
@@ -70,12 +100,25 @@ export async function getCurrentCoords(opts?: {
       perm = await Geolocation.requestPermissions({ permissions: ["location"] });
     }
     if (perm.location !== "granted") throw new Error("Location permission denied");
-    const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy, timeout });
-    return {
-      latitude: pos.coords.latitude,
-      longitude: pos.coords.longitude,
-      accuracy: pos.coords.accuracy,
-    };
+    try {
+      const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy, timeout });
+      return {
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude,
+        accuracy: pos.coords.accuracy,
+      };
+    } catch {
+      // High accuracy can hang indefinitely indoors on iOS — retry coarse.
+      const pos = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: false,
+        timeout: Math.max(timeout, 20000),
+      });
+      return {
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude,
+        accuracy: pos.coords.accuracy,
+      };
+    }
   }
 
   if (!navigator.geolocation) throw new Error("Geolocation unavailable");
@@ -83,7 +126,7 @@ export async function getCurrentCoords(opts?: {
     navigator.geolocation.getCurrentPosition(resolve, reject, {
       enableHighAccuracy,
       timeout,
-      maximumAge: 0,
+      maximumAge: CACHE_MS,
     })
   );
   return {
@@ -92,6 +135,7 @@ export async function getCurrentCoords(opts?: {
     accuracy: pos.coords.accuracy,
   };
 }
+
 
 /**
  * Opens the OS settings screen for the app so a user who previously tapped
