@@ -100,8 +100,10 @@ export async function getCurrentCoords(opts?: {
 export async function openLocationSettings(): Promise<boolean> {
   if (!isNative()) return false;
   try {
-    const { App } = await import("@capacitor/app");
-    await App.openUrl({ url: "app-settings:" });
+    // iOS honours the app-settings: scheme from the WKWebView when opened
+    // in the system browser target.
+    const opened = window.open("app-settings:", "_system");
+    if (!opened) window.location.href = "app-settings:";
     return true;
   } catch {
     return false;
