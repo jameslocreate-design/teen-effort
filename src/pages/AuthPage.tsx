@@ -132,7 +132,7 @@ const AuthPage = () => {
         } catch {}
         setEmailOtpSent(true);
         setSignupResendIn(RESEND_COOLDOWN_SECONDS);
-        toast.info("Please verify your email — we just sent you a new 6-digit code.");
+        toast.info("Please verify your email — we just sent you a new verification code.");
       } else {
         toast.error(msg);
       }
@@ -143,7 +143,7 @@ const AuthPage = () => {
 
   const handleVerifyEmailOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (emailOtp.length < 6) return toast.error("Please enter the 6-digit code");
+    if (emailOtp.length < 6) return toast.error("Please enter the code from your email");
     setLoading(true);
     try {
       const { error } = await supabase.auth.verifyOtp({ email, token: emailOtp, type: "signup" });
@@ -185,7 +185,7 @@ const AuthPage = () => {
       if (error) throw error;
       setResetSent(true);
       setResetResendIn(RESEND_COOLDOWN_SECONDS);
-      toast.success("Check your email for a 6-digit reset code");
+      toast.success("Check your email for a reset code");
     } catch (err: any) {
       toast.error(err.message || "Failed to send reset email");
     } finally {
@@ -195,7 +195,7 @@ const AuthPage = () => {
 
   const handleVerifyResetCode = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (resetCode.length < 6) return toast.error("Enter the 6-digit code");
+    if (resetCode.length < 6) return toast.error("Enter the code");
     if (newPassword.length < 6) return toast.error("Password must be at least 6 characters");
     if (newPassword !== confirmPassword) return toast.error("Passwords don't match");
     setLoading(true);
@@ -249,7 +249,7 @@ const AuthPage = () => {
         {view === "forgot" && !resetSent && (
           <form onSubmit={handleSendResetCode} className="space-y-4">
             <p className="text-sm text-muted-foreground text-center">
-              Enter your email and we'll send you a 6-digit code to reset your password.
+              Enter your email and we'll send you a verification code to reset your password.
             </p>
             <div className="relative">
               <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -280,18 +280,18 @@ const AuthPage = () => {
         {view === "forgot" && resetSent && (
           <form onSubmit={handleVerifyResetCode} className="space-y-4">
             <p className="text-sm text-muted-foreground text-center">
-              Enter the 6-digit code sent to <span className="text-foreground font-medium">{email}</span> and choose a new password.
+              Enter the code sent to <span className="text-foreground font-medium">{email}</span> and choose a new password.
             </p>
             <div className="relative">
               <Hash className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
-                placeholder="6-digit code"
+                placeholder="Verification code"
                 value={resetCode}
-                onChange={(e) => setResetCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                onChange={(e) => setResetCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
                 className="pl-10 bg-secondary/50 border-border text-center tracking-widest text-lg"
                 required
-                maxLength={6}
+                maxLength={8}
               />
             </div>
             <div className="relative">
@@ -423,18 +423,18 @@ const AuthPage = () => {
         {view === "auth" && emailOtpSent && (
           <form onSubmit={handleVerifyEmailOtp} className="space-y-4">
             <p className="text-sm text-muted-foreground text-center">
-              Enter the 6-digit code sent to <span className="text-foreground font-medium">{email}</span>
+              Enter the code sent to <span className="text-foreground font-medium">{email}</span>
             </p>
             <div className="relative">
               <Hash className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
-                placeholder="6-digit code"
+                placeholder="Verification code"
                 value={emailOtp}
-                onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, "").slice(0, 8))}
                 className="pl-10 bg-secondary/50 border-border text-center tracking-widest text-lg"
                 required
-                maxLength={6}
+                maxLength={8}
               />
             </div>
             <Button type="submit" disabled={loading} className="w-full h-11 rounded-xl">
