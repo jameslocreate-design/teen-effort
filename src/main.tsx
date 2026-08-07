@@ -1,10 +1,8 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import { initNative } from "./lib/native";
-import { registerAppServiceWorker } from "./lib/registerAppServiceWorker";
 import "./index.css";
 
-void registerAppServiceWorker();
 void initNative();
 
 const root = document.getElementById("root");
