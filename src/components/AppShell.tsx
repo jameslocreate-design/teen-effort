@@ -298,7 +298,7 @@ const AppShell = () => {
   return (
     <div className="min-h-screen bg-background flex">
       {showOnboarding && <OnboardingTour onComplete={handleOnboardingComplete} />}
-      <div className="fixed top-0 left-0 right-0 z-40 pointer-events-none [&>*]:pointer-events-auto safe-area-top" />
+      
 
 
       {/* Desktop Sidebar */}
@@ -370,6 +370,7 @@ const AppShell = () => {
 
         {/* Content */}
         <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
+          <LocationPermissionPrompt />
           <div className="mx-auto max-w-3xl px-4 sm:px-6 py-6 sm:py-8">
             {activeTab === "planner" && <><DateStreak /><DatePlanner /></>}
             {activeTab === "smart" && <PremiumGate feature="Smart Recommendations" minTier={2} description="Get personalized date ideas based on your history and preferences."><SmartRecommendations /></PremiumGate>}
