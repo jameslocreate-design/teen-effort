@@ -92,3 +92,20 @@ export async function getCurrentCoords(opts?: {
     accuracy: pos.coords.accuracy,
   };
 }
+
+/**
+ * Opens the OS settings screen for the app so a user who previously tapped
+ * "Don't Allow" can re-enable location (iOS never re-prompts after a denial).
+ */
+export async function openLocationSettings(): Promise<boolean> {
+  if (!isNative()) return false;
+  try {
+    // iOS honours the app-settings: scheme from the WKWebView when opened
+    // in the system browser target.
+    const opened = window.open("app-settings:", "_system");
+    if (!opened) window.location.href = "app-settings:";
+    return true;
+  } catch {
+    return false;
+  }
+}
