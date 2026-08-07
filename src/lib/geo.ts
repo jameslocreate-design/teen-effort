@@ -8,6 +8,8 @@ export interface Coords {
 
 export type LocationPermission = "granted" | "denied" | "prompt" | "unknown";
 
+export const LOCATION_READY_EVENT = "teen-effort:location-ready";
+
 /** Reads the current location permission without triggering a prompt. */
 export async function checkLocationPermission(): Promise<LocationPermission> {
   if (isNative()) {
@@ -36,17 +38,29 @@ export async function checkLocationPermission(): Promise<LocationPermission> {
  */
 export async function requestLocationAccess(): Promise<boolean> {
   if (isNative()) {
-    const { Geolocation } = await import("@capacitor/geolocation");
-    let perm = await Geolocation.checkPermissions();
-    if (perm.location !== "granted") {
-      perm = await Geolocation.requestPermissions({ permissions: ["location"] });
-    }
-    const granted = perm.location === "granted";
-    if (granted) {
-      // Warm the cache so the rest of the app doesn't re-request.
-      getCurrentCoords({ timeout: 15000 }).catch(() => {});
-    }
-    return granted;
+    if (permissionRequest) return permissionRequest;
+    permissionRequest = (async () => {
+      try {
+        const { Geolocation } = await import("@capacitor/geolocation");
+        let perm = await Geolocation.checkPermissions();
+        if (perm.location !== "granted") {
+          perm = await Geolocation.requestPermissions({ permissions: ["location"] });
+        }
+        if (perm.location !== "granted") return false;
+
+        // Resolve one real position before telling the UI location is ready.
+        // Coarse accuracy is fast and sufficient for nearby venue suggestions.
+        await getCurrentCoords({ timeout: 12000, enableHighAccuracy: false });
+        window.dispatchEvent(new CustomEvent(LOCATION_READY_EVENT));
+        return true;
+      } catch (error) {
+        console.warn("Location access failed:", error);
+        return false;
+      } finally {
+        permissionRequest = null;
+      }
+    })();
+    return permissionRequest;
   }
   try {
     await getCurrentCoords({ timeout: 10000 });
@@ -62,6 +76,7 @@ export async function requestLocationAccess(): Promise<boolean> {
 const CACHE_MS = 5 * 60 * 1000;
 let cached: { coords: Coords; at: number } | null = null;
 let inFlight: Promise<Coords> | null = null;
+let permissionRequest: Promise<boolean> | null = null;
 
 /**
  * Gets the current location. On native iOS/Android we use the Capacitor
@@ -95,13 +110,16 @@ export async function getCurrentCoords(opts?: {
 async function lookup(timeout: number, enableHighAccuracy: boolean): Promise<Coords> {
   if (isNative()) {
     const { Geolocation } = await import("@capacitor/geolocation");
-    let perm = await Geolocation.checkPermissions();
+    const perm = await Geolocation.checkPermissions();
     if (perm.location !== "granted") {
-      perm = await Geolocation.requestPermissions({ permissions: ["location"] });
+      throw new Error(perm.location === "denied" ? "Location permission denied" : "Location permission required");
     }
-    if (perm.location !== "granted") throw new Error("Location permission denied");
     try {
-      const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy, timeout });
+      const pos = await Geolocation.getCurrentPosition({
+        enableHighAccuracy,
+        timeout,
+        maximumAge: CACHE_MS,
+      });
       return {
         latitude: pos.coords.latitude,
         longitude: pos.coords.longitude,
@@ -109,9 +127,11 @@ async function lookup(timeout: number, enableHighAccuracy: boolean): Promise<Coo
       };
     } catch {
       // High accuracy can hang indefinitely indoors on iOS — retry coarse.
+      if (!enableHighAccuracy) throw new Error("Unable to determine location");
       const pos = await Geolocation.getCurrentPosition({
         enableHighAccuracy: false,
-        timeout: Math.max(timeout, 20000),
+        timeout: Math.max(timeout, 12000),
+        maximumAge: CACHE_MS,
       });
       return {
         latitude: pos.coords.latitude,

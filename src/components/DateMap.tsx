@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { MapPin, Star, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { getCurrentCoords } from "@/lib/geo";
+import { getCurrentCoords, LOCATION_READY_EVENT } from "@/lib/geo";
 
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -40,9 +40,14 @@ const DateMap = () => {
   const markersRef = useRef<L.LayerGroup | null>(null);
 
   useEffect(() => {
-    getCurrentCoords({ timeout: 10000 })
-      .then((c) => setUserLocation([c.latitude, c.longitude]))
-      .catch(() => setUserLocation([39.8283, -98.5795]));
+    const loadLocation = () => {
+      getCurrentCoords({ timeout: 12000, enableHighAccuracy: false })
+        .then((c) => setUserLocation([c.latitude, c.longitude]))
+        .catch(() => setUserLocation((current) => current ?? [39.8283, -98.5795]));
+    };
+    loadLocation();
+    window.addEventListener(LOCATION_READY_EVENT, loadLocation);
+    return () => window.removeEventListener(LOCATION_READY_EVENT, loadLocation);
   }, []);
 
 

@@ -79,7 +79,13 @@ const LocationPermissionPrompt = () => {
         setState("granted");
         setHidden(true);
       } else {
-        setState("denied");
+        const next = await checkLocationPermission();
+        setState(next);
+        toast.error(
+          next === "granted"
+            ? "Location is allowed, but your position could not be found. Check that Location Services are on."
+            : "Location was not enabled."
+        );
       }
     } finally {
       setBusy(false);
