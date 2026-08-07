@@ -16,6 +16,7 @@ import Terms from "./pages/Terms";
 import ResetPassword from "./pages/ResetPassword";
 import Unsubscribe from "./pages/Unsubscribe";
 import OAuthConsent from "./pages/OAuthConsent";
+import Support from "./pages/Support";
 
 const queryClient = new QueryClient();
 
