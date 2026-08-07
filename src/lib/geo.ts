@@ -10,12 +10,24 @@ export type LocationPermission = "granted" | "denied" | "prompt" | "unknown";
 
 export const LOCATION_READY_EVENT = "teen-effort:location-ready";
 
+const withTimeout = <T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> =>
+  Promise.race([
+    promise,
+    new Promise<T>((_, reject) => {
+      window.setTimeout(() => reject(new Error(message)), timeoutMs);
+    }),
+  ]);
+
 /** Reads the current location permission without triggering a prompt. */
 export async function checkLocationPermission(): Promise<LocationPermission> {
   if (isNative()) {
     try {
       const { Geolocation } = await import("@capacitor/geolocation");
-      const perm = await Geolocation.checkPermissions();
+      const perm = await withTimeout(
+        Geolocation.checkPermissions(),
+        5000,
+        "Location permission check timed out"
+      );
       if (perm.location === "granted") return "granted";
       if (perm.location === "denied") return "denied";
       return "prompt";
@@ -42,9 +54,17 @@ export async function requestLocationAccess(): Promise<boolean> {
     permissionRequest = (async () => {
       try {
         const { Geolocation } = await import("@capacitor/geolocation");
-        let perm = await Geolocation.checkPermissions();
+        let perm = await withTimeout(
+          Geolocation.checkPermissions(),
+          5000,
+          "Location permission check timed out"
+        );
         if (perm.location !== "granted") {
-          perm = await Geolocation.requestPermissions({ permissions: ["location"] });
+          perm = await withTimeout(
+            Geolocation.requestPermissions({ permissions: ["location"] }),
+            12000,
+            "Location permission request timed out"
+          );
         }
         if (perm.location !== "granted") return false;
 
@@ -110,16 +130,24 @@ export async function getCurrentCoords(opts?: {
 async function lookup(timeout: number, enableHighAccuracy: boolean): Promise<Coords> {
   if (isNative()) {
     const { Geolocation } = await import("@capacitor/geolocation");
-    const perm = await Geolocation.checkPermissions();
+    const perm = await withTimeout(
+      Geolocation.checkPermissions(),
+      5000,
+      "Location permission check timed out"
+    );
     if (perm.location !== "granted") {
       throw new Error(perm.location === "denied" ? "Location permission denied" : "Location permission required");
     }
     try {
-      const pos = await Geolocation.getCurrentPosition({
-        enableHighAccuracy,
-        timeout,
-        maximumAge: CACHE_MS,
-      });
+      const pos = await withTimeout(
+        Geolocation.getCurrentPosition({
+          enableHighAccuracy,
+          timeout,
+          maximumAge: CACHE_MS,
+        }),
+        timeout + 2000,
+        "Location lookup timed out"
+      );
       return {
         latitude: pos.coords.latitude,
         longitude: pos.coords.longitude,
@@ -128,11 +156,16 @@ async function lookup(timeout: number, enableHighAccuracy: boolean): Promise<Coo
     } catch {
       // High accuracy can hang indefinitely indoors on iOS — retry coarse.
       if (!enableHighAccuracy) throw new Error("Unable to determine location");
-      const pos = await Geolocation.getCurrentPosition({
-        enableHighAccuracy: false,
-        timeout: Math.max(timeout, 12000),
-        maximumAge: CACHE_MS,
-      });
+      const retryTimeout = Math.max(timeout, 12000);
+      const pos = await withTimeout(
+        Geolocation.getCurrentPosition({
+          enableHighAccuracy: false,
+          timeout: retryTimeout,
+          maximumAge: CACHE_MS,
+        }),
+        retryTimeout + 2000,
+        "Location lookup timed out"
+      );
       return {
         latitude: pos.coords.latitude,
         longitude: pos.coords.longitude,
