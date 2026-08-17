@@ -24,17 +24,17 @@ const DateResults = ({ ideas, partnerLinkId, savingIndex, onAddToCalendar, onSav
         Your Date Ideas
       </h2>
       {ideas.map((idea, i) => (
-        <div key={i} className="relative">
+        <div key={i} className="space-y-2">
           <DateIdeaCard idea={idea} index={i} />
           {partnerLinkId && (
-            <div className="absolute top-3 right-3 flex gap-1.5">
+            <div className="flex flex-wrap gap-2">
               {onSaveForLater && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => onSaveForLater(idea, i)}
                   disabled={savingForLaterIndex === i}
-                  className="rounded-lg text-xs gap-1"
+                  className="rounded-lg text-xs gap-1.5 flex-1 min-w-[120px]"
                 >
                   <Bookmark className="h-3.5 w-3.5" />
                   {savingForLaterIndex === i ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
@@ -45,15 +45,16 @@ const DateResults = ({ ideas, partnerLinkId, savingIndex, onAddToCalendar, onSav
                 size="sm"
                 onClick={() => onAddToCalendar(idea, i)}
                 disabled={savingIndex === i}
-                className="rounded-lg text-xs gap-1"
+                className="rounded-lg text-xs gap-1.5 flex-1 min-w-[120px]"
               >
                 <CalendarPlus className="h-3.5 w-3.5" />
-                {savingIndex === i ? "Saving..." : "Calendar"}
+                {savingIndex === i ? "Saving..." : "Add to Calendar"}
               </Button>
             </div>
           )}
         </div>
       ))}
+
       <Button variant="outline" onClick={onGenerateMore} className="w-full rounded-xl">
         <Sparkles className="h-4 w-4" />
         Generate More
