@@ -36,7 +36,19 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
 
+  // The Apple OAuth handoff (/~oauth/initiate) is served by Lovable hosting, so it
+  // only exists on published/preview domains — not the in-editor dev sandbox.
+  const appleAuthAvailable = (() => {
+    if (isNative()) return true;
+    const host = window.location.hostname;
+    return host.endsWith(".lovable.app") || host.endsWith("teeneffort.app");
+  })();
+
   const handleAppleSignIn = async () => {
+    if (!appleAuthAvailable) {
+      toast.error("Apple sign-in only works on the published app, not in the editor preview.");
+      return;
+    }
     setAppleLoading(true);
     try {
       const result = await lovable.auth.signInWithOAuth("apple", {
@@ -53,6 +65,7 @@ const AuthPage = () => {
       setAppleLoading(false);
     }
   };
+
 
   // Password recovery state
 
