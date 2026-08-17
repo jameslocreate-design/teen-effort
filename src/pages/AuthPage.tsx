@@ -412,7 +412,7 @@ const AuthPage = () => {
         )}
 
         {/* Sign in with Apple */}
-        {view === "auth" && !emailOtpSent && (
+        {view === "auth" && !emailOtpSent && appleAuthAvailable && (
           <div className="mt-5">
             <div className="flex items-center gap-3 mb-4">
               <div className="h-px flex-1 bg-border" />
