@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Heart, Mail, Lock, ArrowRight, Hash, Cake, Link2, Apple } from "lucide-react";
 import { toast } from "sonner";
 import { lovable } from "@/integrations/lovable/index";
+import { isNative } from "@/lib/native";
 import DateOfBirthWheel from "@/components/DateOfBirthWheel";
 
 
