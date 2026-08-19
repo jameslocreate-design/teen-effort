@@ -17,6 +17,8 @@ import {
 import { toast } from "sonner";
 import { purchasesBlocked } from "@/lib/native";
 import { useNativePurchases } from "@/hooks/useNativePurchases";
+import { isTestStoreKey } from "@/lib/revenuecat";
+
 
 export default function Pricing() {
   const navigate = useNavigate();
