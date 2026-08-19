@@ -108,17 +108,26 @@ export async function getPackages() {
 export async function purchaseByPriceId(priceId: string): Promise<number> {
   if (!iapAvailable()) throw new Error("In-app purchases aren't available here.");
   const productId = APP_STORE_PRODUCT_IDS[priceId];
-  if (!productId) throw new Error("This plan isn't available on iOS yet.");
 
   const { Purchases } = await sdk();
   const packages = await getPackages();
-  const pkg = packages.find((p: any) => p.product?.identifier === productId);
+  if (packages.length === 0) {
+    throw new Error("No subscriptions are configured yet. Please try again later.");
+  }
+
+  // Match on the store product id first, then on the RevenueCat package
+  // identifier (Test Store products use different identifiers).
+  const pkg =
+    packages.find((p: any) => p.product?.identifier === productId) ??
+    packages.find((p: any) => p.identifier === priceId) ??
+    packages.find((p: any) => String(p.product?.identifier ?? "").includes(priceId.split("_")[0]));
   if (!pkg) throw new Error("This plan isn't available on the App Store yet.");
 
   const { customerInfo } = await Purchases.purchasePackage({ aPackage: pkg });
   const active = Object.keys(customerInfo.entitlements.active ?? {});
   return active.reduce((max, id) => Math.max(max, ENTITLEMENT_TIERS[id] ?? 0), 0);
 }
+
 
 /** Apple requires a visible "Restore Purchases" action. */
 export async function restorePurchases(): Promise<number> {
