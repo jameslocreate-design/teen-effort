@@ -114,6 +114,13 @@ export default function Pricing() {
           </p>
         </div>
 
+        {iap.available && isTestStoreKey() && (
+          <div className="mb-8 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-center text-xs text-muted-foreground">
+            Sandbox mode — purchases run against the RevenueCat Test Store and no real charge is made.
+          </div>
+        )}
+
+
 
         {/* Billing cycle toggle */}
         <div className="flex justify-center mb-10">
