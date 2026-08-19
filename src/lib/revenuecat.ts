@@ -9,7 +9,7 @@ import { isIOS, isNative } from "@/lib/native";
  *
  * Override per-environment with `VITE_REVENUECAT_IOS_KEY`.
  */
-const FALLBACK_SDK_KEY = "test_yJpsjagChEWXzwIgNkhmyALgDNp";
+const FALLBACK_SDK_KEY = "appl_kIFQhizreANRdjaodstcwVfzVgU";
 
 export const IOS_PUBLIC_SDK_KEY =
   ((import.meta.env.VITE_REVENUECAT_IOS_KEY as string | undefined) || FALLBACK_SDK_KEY).trim();
