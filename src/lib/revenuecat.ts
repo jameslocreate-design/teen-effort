@@ -3,14 +3,19 @@ import { isIOS, isNative } from "@/lib/native";
 /**
  * RevenueCat configuration.
  *
- * Fill `IOS_PUBLIC_SDK_KEY` with the *public* Apple SDK key from
- * RevenueCat → Project settings → API keys (it starts with `appl_` and is safe
- * to ship in the client bundle). Until it is filled in, every helper below is a
- * no-op and the app falls back to the read-only "plans are informational"
- * screen we already show on iOS.
+ * Keys are *public* SDK keys and are safe to ship in the client bundle:
+ *  - `appl_…` → real Apple App Store purchases (production)
+ *  - `test_…` → RevenueCat Test Store (sandbox products, no StoreKit)
+ *
+ * Override per-environment with `VITE_REVENUECAT_IOS_KEY`.
  */
+const FALLBACK_SDK_KEY = "test_yJpsjagChEWXzwIgNkhmyALgDNp";
+
 export const IOS_PUBLIC_SDK_KEY =
-  (import.meta.env.VITE_REVENUECAT_IOS_KEY as string | undefined) ?? "";
+  ((import.meta.env.VITE_REVENUECAT_IOS_KEY as string | undefined) || FALLBACK_SDK_KEY).trim();
+
+/** True when the configured key targets RevenueCat's Test Store, not the App Store. */
+export const isTestStoreKey = () => IOS_PUBLIC_SDK_KEY.startsWith("test_");
 
 /**
  * App Store Connect product identifiers, keyed by the same Stripe price
@@ -34,8 +39,11 @@ export const ENTITLEMENT_TIERS: Record<string, number> = {
   soulmate: 3,
 };
 
+const VALID_KEY = /^(appl_|test_)/.test(IOS_PUBLIC_SDK_KEY) && IOS_PUBLIC_SDK_KEY.length > 10;
+
 /** True when in-app purchases can actually run (native iOS + key configured). */
-export const iapAvailable = () => isNative() && isIOS() && IOS_PUBLIC_SDK_KEY.length > 0;
+export const iapAvailable = () => isNative() && isIOS() && VALID_KEY;
+
 
 let configured = false;
 
