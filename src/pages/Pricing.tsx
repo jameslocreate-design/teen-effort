@@ -17,6 +17,8 @@ import {
 import { toast } from "sonner";
 import { purchasesBlocked } from "@/lib/native";
 import { useNativePurchases } from "@/hooks/useNativePurchases";
+import { isTestStoreKey } from "@/lib/revenuecat";
+
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -111,6 +113,13 @@ export default function Pricing() {
               : "Every plan builds on the last. Upgrade anytime — the Soulmate tier unlocks absolutely everything."}
           </p>
         </div>
+
+        {iap.available && isTestStoreKey() && (
+          <div className="mb-8 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-center text-xs text-muted-foreground">
+            Sandbox mode — purchases run against the RevenueCat Test Store and no real charge is made.
+          </div>
+        )}
+
 
 
         {/* Billing cycle toggle */}

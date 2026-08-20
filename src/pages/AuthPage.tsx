@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Heart, Mail, Lock, ArrowRight, Hash, Cake, Link2, Apple } from "lucide-react";
 import { toast } from "sonner";
 import { lovable } from "@/integrations/lovable/index";
+import { isNative } from "@/lib/native";
 import DateOfBirthWheel from "@/components/DateOfBirthWheel";
 
 
@@ -36,7 +37,19 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
 
+  // The Apple OAuth handoff (/~oauth/initiate) is served by Lovable hosting, so it
+  // only exists on published/preview domains — not the in-editor dev sandbox.
+  const appleAuthAvailable = (() => {
+    if (isNative()) return true;
+    const host = window.location.hostname;
+    return host.endsWith(".lovable.app") || host.endsWith("teeneffort.app");
+  })();
+
   const handleAppleSignIn = async () => {
+    if (!appleAuthAvailable) {
+      toast.error("Apple sign-in only works on the published app, not in the editor preview.");
+      return;
+    }
     setAppleLoading(true);
     try {
       const result = await lovable.auth.signInWithOAuth("apple", {
@@ -53,6 +66,7 @@ const AuthPage = () => {
       setAppleLoading(false);
     }
   };
+
 
   // Password recovery state
 
@@ -398,7 +412,7 @@ const AuthPage = () => {
         )}
 
         {/* Sign in with Apple */}
-        {view === "auth" && !emailOtpSent && (
+        {view === "auth" && !emailOtpSent && appleAuthAvailable && (
           <div className="mt-5">
             <div className="flex items-center gap-3 mb-4">
               <div className="h-px flex-1 bg-border" />
