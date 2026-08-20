@@ -24,13 +24,31 @@ export const isTestStoreKey = () => IOS_PUBLIC_SDK_KEY.startsWith("test_");
  * and attach them to the matching RevenueCat entitlement.
  */
 export const APP_STORE_PRODUCT_IDS: Record<string, string> = {
-  spark_monthly: "com.teeneffort.spark.monthly",
-  spark_yearly: "com.teeneffort.spark.yearly",
-  romance_monthly: "com.teeneffort.romance.monthly",
-  romance_yearly: "com.teeneffort.romance.yearly",
-  soulmate_monthly: "com.teeneffort.soulmate.monthly",
-  soulmate_yearly: "com.teeneffort.soulmate.yearly",
+  // Production App Store products (must match App Store Connect exactly).
+  spark_monthly: "com.teeneffort.app.spark.monthly.v2",
+  romance_monthly: "com.teeneffort.app.romance.monthly.v2",
+  soulmate_monthly: "com.teeneffort.app.soulmate.monthly.v2",
+  // NOTE: yearly products are not created in RevenueCat yet; leave unmapped
+  // so the UI shows "not available" until they are added.
 };
+
+// RevenueCat Test Store uses generic product IDs.
+const TEST_STORE_PRODUCT_IDS: Record<string, string> = {
+  spark_monthly: "monthly",
+  romance_monthly: "monthly",
+  soulmate_monthly: "monthly",
+  spark_yearly: "yearly",
+  romance_yearly: "yearly",
+  soulmate_yearly: "yearly",
+};
+
+/** Resolve the App Store / Test Store product ID for a given price lookup key. */
+export function appStoreProductId(priceId: string): string | undefined {
+  if (isTestStoreKey()) {
+    return TEST_STORE_PRODUCT_IDS[priceId];
+  }
+  return APP_STORE_PRODUCT_IDS[priceId];
+}
 
 /** RevenueCat entitlement identifier → tier level used across the app. */
 export const ENTITLEMENT_TIERS: Record<string, number> = {
