@@ -24,13 +24,31 @@ export const isTestStoreKey = () => IOS_PUBLIC_SDK_KEY.startsWith("test_");
  * and attach them to the matching RevenueCat entitlement.
  */
 export const APP_STORE_PRODUCT_IDS: Record<string, string> = {
-  spark_monthly: "com.teeneffort.spark.monthly",
-  spark_yearly: "com.teeneffort.spark.yearly",
-  romance_monthly: "com.teeneffort.romance.monthly",
-  romance_yearly: "com.teeneffort.romance.yearly",
-  soulmate_monthly: "com.teeneffort.soulmate.monthly",
-  soulmate_yearly: "com.teeneffort.soulmate.yearly",
+  // Production App Store products (must match App Store Connect exactly).
+  spark_monthly: "com.teeneffort.app.spark.monthly.v2",
+  romance_monthly: "com.teeneffort.app.romance.monthly.v2",
+  soulmate_monthly: "com.teeneffort.app.soulmate.monthly.v2",
+  // NOTE: yearly products are not created in RevenueCat yet; leave unmapped
+  // so the UI shows "not available" until they are added.
 };
+
+// RevenueCat Test Store uses generic product IDs.
+const TEST_STORE_PRODUCT_IDS: Record<string, string> = {
+  spark_monthly: "monthly",
+  romance_monthly: "monthly",
+  soulmate_monthly: "monthly",
+  spark_yearly: "yearly",
+  romance_yearly: "yearly",
+  soulmate_yearly: "yearly",
+};
+
+/** Resolve the App Store / Test Store product ID for a given price lookup key. */
+export function appStoreProductId(priceId: string): string | undefined {
+  if (isTestStoreKey()) {
+    return TEST_STORE_PRODUCT_IDS[priceId];
+  }
+  return APP_STORE_PRODUCT_IDS[priceId];
+}
 
 /** RevenueCat entitlement identifier → tier level used across the app. */
 export const ENTITLEMENT_TIERS: Record<string, number> = {
@@ -107,7 +125,7 @@ export async function getPackages() {
  */
 export async function purchaseByPriceId(priceId: string): Promise<number> {
   if (!iapAvailable()) throw new Error("In-app purchases aren't available here.");
-  const productId = APP_STORE_PRODUCT_IDS[priceId];
+  const productId = appStoreProductId(priceId);
 
   const { Purchases } = await sdk();
   const packages = await getPackages();
@@ -118,7 +136,7 @@ export async function purchaseByPriceId(priceId: string): Promise<number> {
   // Match on the store product id first, then on the RevenueCat package
   // identifier (Test Store products use different identifiers).
   const pkg =
-    packages.find((p: any) => p.product?.identifier === productId) ??
+    packages.find((p: any) => productId && p.product?.identifier === productId) ??
     packages.find((p: any) => p.identifier === priceId) ??
     packages.find((p: any) => String(p.product?.identifier ?? "").includes(priceId.split("_")[0]));
   if (!pkg) throw new Error("This plan isn't available on the App Store yet.");
