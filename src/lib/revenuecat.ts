@@ -106,18 +106,39 @@ export async function currentIapTier(): Promise<number> {
   }
 }
 
-/** All packages offered by the current RevenueCat offering. */
+/** All packages offered by RevenueCat (current offering first, then any other). */
 export async function getPackages() {
   if (!iapAvailable()) return [];
   const { Purchases } = await sdk();
-  try {
-    const offerings = await Purchases.getOfferings();
-    return offerings.current?.availablePackages ?? [];
-  } catch {
-    return [];
-  }
+  const offerings = await Purchases.getOfferings();
+  const current = offerings.current?.availablePackages ?? [];
+  if (current.length > 0) return current;
+  // Fall back to every package in every offering, in case no offering is
+  // marked as "current" in the RevenueCat dashboard.
+  const all = Object.values(offerings.all ?? {}).flatMap(
+    (o: any) => o?.availablePackages ?? []
+  );
+  return all;
 }
 
+/** Human-readable diagnostics for why purchasing may be unavailable. */
+export async function purchaseDiagnostics() {
+  if (!iapAvailable()) return { ok: false, reason: "IAP not available on this build." };
+  const { Purchases } = await sdk();
+  try {
+    const offerings = await Purchases.getOfferings();
+    const offeringIds = Object.keys(offerings.all ?? {});
+    const packages = await getPackages();
+    return {
+      ok: packages.length > 0,
+      currentOffering: offerings.current?.identifier ?? null,
+      offerings: offeringIds,
+      products: packages.map((p: any) => p.product?.identifier),
+    };
+  } catch (e: any) {
+    return { ok: false, reason: e?.message ?? String(e) };
+  }
+}
 
 /**
  * Buys the package matching a price lookup key (e.g. `romance_monthly`).
@@ -128,9 +149,14 @@ export async function purchaseByPriceId(priceId: string): Promise<number> {
   const productId = appStoreProductId(priceId);
 
   const { Purchases } = await sdk();
-  const packages = await getPackages();
-  if (packages.length === 0) {
-    throw new Error("No subscriptions are configured yet. Please try again later.");
+
+  let packages: any[] = [];
+  try {
+    packages = await getPackages();
+  } catch (e: any) {
+    throw new Error(
+      `Couldn't load subscriptions from the App Store: ${e?.message ?? e}`
+    );
   }
 
   // Match on the store product id first, then on the RevenueCat package
@@ -138,12 +164,41 @@ export async function purchaseByPriceId(priceId: string): Promise<number> {
   const pkg =
     packages.find((p: any) => productId && p.product?.identifier === productId) ??
     packages.find((p: any) => p.identifier === priceId) ??
-    packages.find((p: any) => String(p.product?.identifier ?? "").includes(priceId.split("_")[0]));
-  if (!pkg) throw new Error("This plan isn't available on the App Store yet.");
+    packages.find((p: any) =>
+      String(p.product?.identifier ?? "").includes(priceId.split("_")[0])
+    );
 
-  const { customerInfo } = await Purchases.purchasePackage({ aPackage: pkg });
-  const active = Object.keys(customerInfo.entitlements.active ?? {});
-  return active.reduce((max, id) => Math.max(max, ENTITLEMENT_TIERS[id] ?? 0), 0);
+  if (pkg) {
+    const { customerInfo } = await Purchases.purchasePackage({ aPackage: pkg });
+    const active = Object.keys(customerInfo.entitlements.active ?? {});
+    return active.reduce((max, id) => Math.max(max, ENTITLEMENT_TIERS[id] ?? 0), 0);
+  }
+
+  // No matching package (or no offerings at all): buy the raw store product
+  // directly. This works even when RevenueCat has no "current" offering set.
+  if (productId) {
+    try {
+      const { products } = await Purchases.getProducts({
+        productIdentifiers: [productId],
+      });
+      const product = products?.[0];
+      if (product) {
+        const { customerInfo } = await Purchases.purchaseStoreProduct({ product });
+        const active = Object.keys(customerInfo.entitlements.active ?? {});
+        return active.reduce((max, id) => Math.max(max, ENTITLEMENT_TIERS[id] ?? 0), 0);
+      }
+    } catch (e: any) {
+      throw new Error(
+        `App Store couldn't load "${productId}": ${e?.message ?? e}`
+      );
+    }
+  }
+
+  throw new Error(
+    packages.length === 0
+      ? `No subscription products found for this plan${productId ? ` (${productId})` : ""}. Check that the product is approved in App Store Connect and attached to a RevenueCat offering.`
+      : "This plan isn't available on the App Store yet."
+  );
 }
 
 
