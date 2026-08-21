@@ -222,7 +222,7 @@ export default function Pricing() {
                     variant={t.highlight ? "default" : "outline"}
                     disabled={
                       isCurrent || isDowngrade || !user || loading || iap.busy ||
-                      (iap.available && !iap.ready)
+                      (iap.available && !iap.ready) || iapMissing
                     }
                     onClick={() =>
                       iap.available ? handleIapPurchase(priceId) : setCheckoutPriceId(priceId)
@@ -236,11 +236,16 @@ export default function Pricing() {
                       ? "Sign in to subscribe"
                       : iap.busy
                       ? "Processing…"
+                      : iap.available && !iap.ready
+                      ? "Loading plans…"
+                      : iapMissing
+                      ? "Not available yet"
                       : hasPlan
                       ? `Upgrade to ${t.name}`
                       : t.trialDays
                       ? `Start ${t.trialDays}-day free trial`
                       : `Choose ${t.name}`}
+
                   </Button>
 
                 )}
