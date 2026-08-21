@@ -15,6 +15,23 @@ interface SubscriptionRow {
 export function useSubscription(userId: string | null | undefined) {
   const [subscription, setSubscription] = useState<SubscriptionRow | null>(null);
   const [loading, setLoading] = useState(true);
+  const [iapTier, setIapTier] = useState(0);
+
+  // App Store (RevenueCat) entitlements, native iOS only.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { iapAvailable, initPurchases, currentIapTier } = await import("@/lib/revenuecat");
+      if (!iapAvailable()) return;
+      await initPurchases(userId ?? undefined);
+      const t = await currentIapTier();
+      if (!cancelled) setIapTier(t);
+    })().catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
 
   useEffect(() => {
     if (!userId) {
@@ -80,9 +97,12 @@ export function useSubscription(userId: string | null | undefined) {
     premium_yearly: 3,
   };
 
-  const tier = isActive && subscription?.price_id
+  const stripeTier = isActive && subscription?.price_id
     ? (PRICE_TIERS[subscription.price_id] ?? 1)
     : 0;
+  // On native iOS, entitlements bought through the App Store also grant access.
+  const tier = Math.max(stripeTier, iapTier);
+
 
   const isPastDue = subscription?.status === "past_due";
   const isTrialing = subscription?.status === "trialing";

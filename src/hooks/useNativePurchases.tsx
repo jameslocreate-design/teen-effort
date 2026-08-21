@@ -5,6 +5,8 @@ import {
   currentIapTier,
   purchaseByPriceId,
   restorePurchases,
+  getPackages,
+  findPackage,
 } from "@/lib/revenuecat";
 
 /**
@@ -17,15 +19,20 @@ export function useNativePurchases(userId?: string | null) {
   const [ready, setReady] = useState(false);
   const [tier, setTier] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [packages, setPackages] = useState<any[]>([]);
 
   useEffect(() => {
     if (!available) return;
     let cancelled = false;
     (async () => {
       await initPurchases(userId ?? undefined);
-      const t = await currentIapTier();
+      const [t, pkgs] = await Promise.all([
+        currentIapTier(),
+        getPackages().catch(() => []),
+      ]);
       if (!cancelled) {
         setTier(t);
+        setPackages(pkgs);
         setReady(true);
       }
     })();
@@ -56,5 +63,20 @@ export function useNativePurchases(userId?: string | null) {
     }
   }, []);
 
-  return { available, ready, tier, busy, purchase, restore };
+  /** True when RevenueCat actually offers this plan on the store. */
+  const hasProduct = useCallback(
+    (priceId: string) => !!findPackage(packages, priceId),
+    [packages],
+  );
+
+  /** Apple-localized price string for a plan, if the product loaded. */
+  const storePrice = useCallback(
+    (priceId: string): string | null => {
+      const pkg: any = findPackage(packages, priceId);
+      return pkg?.product?.priceString ?? null;
+    },
+    [packages],
+  );
+
+  return { available, ready, tier, busy, packages, purchase, restore, hasProduct, storePrice };
 }

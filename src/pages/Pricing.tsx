@@ -170,10 +170,13 @@ export default function Pricing() {
             const isCurrent = hasPlan && activeTier === t.level;
             const isDowngrade = hasPlan && activeTier > t.level;
 
-            const priceDisplay = cycle === "yearly" ? t.priceYearly : t.price;
             const priceId = priceIdFor(t, cycle);
+            const iapPrice = iap.available && iap.ready ? iap.storePrice(priceId) : null;
+            const iapMissing = iap.available && iap.ready && !iap.hasProduct(priceId);
+            const priceDisplay = iapPrice ?? (cycle === "yearly" ? t.priceYearly : t.price);
             return (
               <Card
+
                 key={t.id}
                 className={`p-8 relative flex flex-col ${
                   t.highlight ? "border-primary shadow-lg md:scale-105" : ""
@@ -219,7 +222,7 @@ export default function Pricing() {
                     variant={t.highlight ? "default" : "outline"}
                     disabled={
                       isCurrent || isDowngrade || !user || loading || iap.busy ||
-                      (iap.available && !iap.ready)
+                      (iap.available && !iap.ready) || iapMissing
                     }
                     onClick={() =>
                       iap.available ? handleIapPurchase(priceId) : setCheckoutPriceId(priceId)
@@ -233,11 +236,16 @@ export default function Pricing() {
                       ? "Sign in to subscribe"
                       : iap.busy
                       ? "Processing…"
+                      : iap.available && !iap.ready
+                      ? "Loading plans…"
+                      : iapMissing
+                      ? "Not available yet"
                       : hasPlan
                       ? `Upgrade to ${t.name}`
                       : t.trialDays
                       ? `Start ${t.trialDays}-day free trial`
                       : `Choose ${t.name}`}
+
                   </Button>
 
                 )}
