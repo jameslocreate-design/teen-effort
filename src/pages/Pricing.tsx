@@ -174,8 +174,9 @@ export default function Pricing() {
             const iapPrice = iap.available && iap.ready ? iap.storePrice(priceId) : null;
             const iapMissing = iap.available && iap.ready && !iap.hasProduct(priceId);
             const priceDisplay = iapPrice ?? (cycle === "yearly" ? t.priceYearly : t.price);
-
+            return (
               <Card
+
                 key={t.id}
                 className={`p-8 relative flex flex-col ${
                   t.highlight ? "border-primary shadow-lg md:scale-105" : ""
