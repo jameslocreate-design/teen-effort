@@ -51,6 +51,19 @@ export default function Pricing() {
     );
   };
 
+  const [diagnostics, setDiagnostics] = useState<string | null>(null);
+
+  const handleDiagnostics = async () => {
+    if (diagnostics) return setDiagnostics(null);
+    try {
+      const { purchaseDiagnostics } = await import("@/lib/revenuecat");
+      const info = await purchaseDiagnostics();
+      setDiagnostics(JSON.stringify(info, null, 2));
+    } catch (e: any) {
+      setDiagnostics(String(e?.message ?? e));
+    }
+  };
+
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
