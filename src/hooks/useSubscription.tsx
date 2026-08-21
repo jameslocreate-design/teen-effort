@@ -80,9 +80,12 @@ export function useSubscription(userId: string | null | undefined) {
     premium_yearly: 3,
   };
 
-  const tier = isActive && subscription?.price_id
+  const stripeTier = isActive && subscription?.price_id
     ? (PRICE_TIERS[subscription.price_id] ?? 1)
     : 0;
+  // On native iOS, entitlements bought through the App Store also grant access.
+  const tier = Math.max(stripeTier, iapTier);
+
 
   const isPastDue = subscription?.status === "past_due";
   const isTrialing = subscription?.status === "trialing";
