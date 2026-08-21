@@ -185,7 +185,6 @@ export default function Pricing() {
 
             const priceId = priceIdFor(t, cycle);
             const iapPrice = iap.available && iap.ready ? iap.storePrice(priceId) : null;
-            const iapMissing = iap.available && iap.ready && !iap.hasProduct(priceId);
             const priceDisplay = iapPrice ?? (cycle === "yearly" ? t.priceYearly : t.price);
             return (
               <Card
@@ -235,7 +234,7 @@ export default function Pricing() {
                     variant={t.highlight ? "default" : "outline"}
                     disabled={
                       isCurrent || isDowngrade || !user || loading || iap.busy ||
-                      (iap.available && !iap.ready) || iapMissing
+                      (iap.available && !iap.ready)
                     }
                     onClick={() =>
                       iap.available ? handleIapPurchase(priceId) : setCheckoutPriceId(priceId)
@@ -251,8 +250,6 @@ export default function Pricing() {
                       ? "Processing…"
                       : iap.available && !iap.ready
                       ? "Loading plans…"
-                      : iapMissing
-                      ? "Not available yet"
                       : hasPlan
                       ? `Upgrade to ${t.name}`
                       : t.trialDays

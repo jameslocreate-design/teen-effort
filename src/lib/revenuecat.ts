@@ -7,12 +7,18 @@ import { isIOS, isNative } from "@/lib/native";
  *  - `appl_…` → real Apple App Store purchases (production)
  *  - `test_…` → RevenueCat Test Store (sandbox products, no StoreKit)
  *
- * Override per-environment with `VITE_REVENUECAT_IOS_KEY`.
+ * Native iOS must always use the Apple key. In particular, Capacitor live
+ * reload serves the development web bundle inside the native shell; allowing
+ * that bundle's `test_` key here would silently switch a real iPhone to
+ * RevenueCat's Test Store and hide every App Store product.
  */
 const FALLBACK_SDK_KEY = "appl_kIFQhizreANRdjaodstcwVfzVgU";
 
-export const IOS_PUBLIC_SDK_KEY =
-  ((import.meta.env.VITE_REVENUECAT_IOS_KEY as string | undefined) || FALLBACK_SDK_KEY).trim();
+const ENV_SDK_KEY = (import.meta.env.VITE_REVENUECAT_IOS_KEY as string | undefined)?.trim();
+
+export const IOS_PUBLIC_SDK_KEY = isNative()
+  ? FALLBACK_SDK_KEY
+  : (ENV_SDK_KEY || FALLBACK_SDK_KEY);
 
 /** True when the configured key targets RevenueCat's Test Store, not the App Store. */
 export const isTestStoreKey = () => IOS_PUBLIC_SDK_KEY.startsWith("test_");
@@ -29,9 +35,9 @@ export const APP_STORE_PRODUCT_IDS: Record<string, string> = {
   spark_monthly: "com.teeneffort.app.spark.monthly.v2",
   romance_monthly: "com.teeneffort.app.romance.monthly.v2",
   soulmate_monthly: "com.teeneffort.app.soulmate.monthly.v2",
-  spark_yearly: "com.teeneffort.app.spark.yearly.v2",
-  romance_yearly: "com.teeneffort.app.romance.yearly.v2",
-  soulmate_yearly: "com.teeneffort.app.soulmate.yearly.v2",
+  spark_yearly: "com.teeneffort.app.spark.yearly",
+  romance_yearly: "com.teeneffort.app.romance.yearly",
+  soulmate_yearly: "com.teeneffort.app.soulmate.yearly",
 };
 
 // RevenueCat Test Store uses generic product IDs.
