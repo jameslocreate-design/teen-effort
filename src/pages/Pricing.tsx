@@ -51,6 +51,19 @@ export default function Pricing() {
     );
   };
 
+  const [diagnostics, setDiagnostics] = useState<string | null>(null);
+
+  const handleDiagnostics = async () => {
+    if (diagnostics) return setDiagnostics(null);
+    try {
+      const { purchaseDiagnostics } = await import("@/lib/revenuecat");
+      const info = await purchaseDiagnostics();
+      setDiagnostics(JSON.stringify(info, null, 2));
+    } catch (e: any) {
+      setDiagnostics(String(e?.message ?? e));
+    }
+  };
+
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
@@ -302,6 +315,14 @@ export default function Pricing() {
             <Button variant="ghost" onClick={handleRestore} disabled={iap.busy}>
               Restore purchases
             </Button>
+            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={handleDiagnostics}>
+              Store diagnostics
+            </Button>
+            {diagnostics && (
+              <pre className="max-w-full overflow-x-auto rounded-xl border border-border bg-card/60 p-3 text-[11px] leading-relaxed text-muted-foreground">
+                {diagnostics}
+              </pre>
+            )}
             <p className="text-center text-xs text-muted-foreground max-w-md">
               Payment is charged to your Apple ID at confirmation. Subscriptions renew automatically
               unless turned off at least 24 hours before the end of the period. Manage or cancel in
