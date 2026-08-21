@@ -15,6 +15,23 @@ interface SubscriptionRow {
 export function useSubscription(userId: string | null | undefined) {
   const [subscription, setSubscription] = useState<SubscriptionRow | null>(null);
   const [loading, setLoading] = useState(true);
+  const [iapTier, setIapTier] = useState(0);
+
+  // App Store (RevenueCat) entitlements, native iOS only.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { iapAvailable, initPurchases, currentIapTier } = await import("@/lib/revenuecat");
+      if (!iapAvailable()) return;
+      await initPurchases(userId ?? undefined);
+      const t = await currentIapTier();
+      if (!cancelled) setIapTier(t);
+    })().catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
 
   useEffect(() => {
     if (!userId) {
