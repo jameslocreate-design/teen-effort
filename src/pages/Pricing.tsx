@@ -170,9 +170,11 @@ export default function Pricing() {
             const isCurrent = hasPlan && activeTier === t.level;
             const isDowngrade = hasPlan && activeTier > t.level;
 
-            const priceDisplay = cycle === "yearly" ? t.priceYearly : t.price;
             const priceId = priceIdFor(t, cycle);
-            return (
+            const iapPrice = iap.available && iap.ready ? iap.storePrice(priceId) : null;
+            const iapMissing = iap.available && iap.ready && !iap.hasProduct(priceId);
+            const priceDisplay = iapPrice ?? (cycle === "yearly" ? t.priceYearly : t.price);
+
               <Card
                 key={t.id}
                 className={`p-8 relative flex flex-col ${
