@@ -35,14 +35,21 @@ export default function Pricing() {
 
   const handleIapPurchase = async (priceId: string) => {
     try {
-      await iap.purchase(priceId);
-      toast.success("You're all set — welcome to your new plan!");
+      const newTier = await iap.purchase(priceId);
+      if (newTier > 0) {
+        toast.success("You're all set — welcome to your new plan!");
+      } else {
+        toast.error(
+          "The App Store didn't complete the purchase. On a test device, sign in with a Sandbox Apple ID (Settings → App Store → Sandbox Account).",
+        );
+      }
     } catch (e: any) {
       if (!/cancel/i.test(e?.message ?? "")) {
         toast.error(e?.message ?? "Purchase could not be completed");
       }
     }
   };
+
 
   const handleRestore = async () => {
     const restored = await iap.restore().catch(() => 0);
