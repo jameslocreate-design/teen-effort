@@ -8,7 +8,9 @@ import type { CapacitorConfig } from "@capacitor/cli";
 const useLiveReload = process.env.CAP_LIVE_RELOAD === "1";
 
 const config: CapacitorConfig = {
-  appId: "app.lovable.c5b6102f3f274c69a5ad0fff55b1d1e0",
+  // MUST match the Bundle ID in App Store Connect / RevenueCat, or StoreKit
+  // returns zero products ("None of the products ... could be fetched").
+  appId: "com.teeneffort.app",
   appName: "Teen Effort",
   webDir: "dist",
   ...(useLiveReload
