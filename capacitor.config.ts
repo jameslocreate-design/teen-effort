@@ -34,6 +34,15 @@ const config: CapacitorConfig = {
     scrollEnabled: true,
   },
 
+  android: {
+    backgroundColor: "#0a0c10",
+    // Let the web view resize when the keyboard opens so fixed bottom bars stay visible.
+    resizeOnFullScreen: true,
+    // Capacitor 8 Android default is a full-screen edge-to-edge web view.
+    // Match the iOS content inset behavior for parity.
+    allowMixedContent: false,
+  },
+
   plugins: {
     SplashScreen: {
       launchShowDuration: 2000,

@@ -1,10 +1,11 @@
-import { isIOS, isNative } from "@/lib/native";
+import { isAndroid, isIOS, isNative } from "@/lib/native";
 
 /**
  * RevenueCat configuration.
  *
  * Keys are *public* SDK keys and are safe to ship in the client bundle:
- *  - `appl_…` → real Apple App Store purchases (production)
+ *  - `appl_…` → Apple App Store purchases
+ *  - `goog_…` → Google Play Store purchases
  *  - `test_…` → RevenueCat Test Store (sandbox products, no StoreKit)
  *
  * Native iOS must always use the Apple key. In particular, Capacitor live
@@ -12,13 +13,24 @@ import { isIOS, isNative } from "@/lib/native";
  * that bundle's `test_` key here would silently switch a real iPhone to
  * RevenueCat's Test Store and hide every App Store product.
  */
-const FALLBACK_SDK_KEY = "appl_kIFQhizreANRdjaodstcwVfzVgU";
+const IOS_FALLBACK_KEY = "appl_kIFQhizreANRdjaodstcwVfzVgU";
+const ANDROID_FALLBACK_KEY = ""; // set once you have a goog_ key
 
-const ENV_SDK_KEY = (import.meta.env.VITE_REVENUECAT_IOS_KEY as string | undefined)?.trim();
+const ENV_IOS_KEY = (import.meta.env.VITE_REVENUECAT_IOS_KEY as string | undefined)?.trim();
+const ENV_ANDROID_KEY = (import.meta.env.VITE_REVENUECAT_ANDROID_KEY as string | undefined)?.trim();
 
 export const IOS_PUBLIC_SDK_KEY = isNative()
-  ? FALLBACK_SDK_KEY
-  : (ENV_SDK_KEY || FALLBACK_SDK_KEY);
+  ? IOS_FALLBACK_KEY
+  : (ENV_IOS_KEY || IOS_FALLBACK_KEY);
+
+export const ANDROID_PUBLIC_SDK_KEY = isNative()
+  ? (ENV_ANDROID_KEY || ANDROID_FALLBACK_KEY)
+  : (ENV_ANDROID_KEY || ANDROID_FALLBACK_KEY);
+
+/** The RevenueCat SDK key for the current native platform. */
+export const PUBLIC_SDK_KEY = isNative() && isAndroid()
+  ? ANDROID_PUBLIC_SDK_KEY
+  : IOS_PUBLIC_SDK_KEY;
 
 /** True when the configured key targets RevenueCat's Test Store, not the App Store. */
 export const isTestStoreKey = () => IOS_PUBLIC_SDK_KEY.startsWith("test_");
@@ -104,10 +116,10 @@ export function tierFromCustomerInfo(customerInfo: any): number {
   return level;
 }
 
-const VALID_KEY = /^(appl_|test_)/.test(IOS_PUBLIC_SDK_KEY) && IOS_PUBLIC_SDK_KEY.length > 10;
+const VALID_KEY = /^(appl_|test_|goog_)/.test(PUBLIC_SDK_KEY) && PUBLIC_SDK_KEY.length > 10;
 
-/** True when in-app purchases can actually run (native iOS + key configured). */
-export const iapAvailable = () => isNative() && isIOS() && VALID_KEY;
+/** True when in-app purchases can actually run (native iOS/Android + key configured). */
+export const iapAvailable = () => isNative() && VALID_KEY;
 
 let configured = false;
 
@@ -123,7 +135,7 @@ export async function initPurchases(appUserId?: string | null) {
   if (!configured) {
     await Purchases.setLogLevel({ level: LOG_LEVEL.ERROR });
     await Purchases.configure({
-      apiKey: IOS_PUBLIC_SDK_KEY,
+      apiKey: PUBLIC_SDK_KEY,
       ...(appUserId ? { appUserID: appUserId } : {}),
     });
     configured = true;
