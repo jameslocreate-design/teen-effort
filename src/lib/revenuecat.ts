@@ -1,4 +1,4 @@
-import { isIOS, isNative } from "@/lib/native";
+import { isAndroid, isIOS, isNative } from "@/lib/native";
 
 /**
  * RevenueCat configuration.
