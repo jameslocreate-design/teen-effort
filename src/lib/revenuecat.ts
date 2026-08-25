@@ -28,7 +28,7 @@ export const ANDROID_PUBLIC_SDK_KEY = isNative()
   : (ENV_ANDROID_KEY || ANDROID_FALLBACK_KEY);
 
 /** The RevenueCat SDK key for the current native platform. */
-export const PUBLIC_SDK_KEY = isNative() && !isIOS()
+export const PUBLIC_SDK_KEY = isNative() && isAndroid()
   ? ANDROID_PUBLIC_SDK_KEY
   : IOS_PUBLIC_SDK_KEY;
 
