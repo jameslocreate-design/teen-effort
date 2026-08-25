@@ -116,10 +116,10 @@ export function tierFromCustomerInfo(customerInfo: any): number {
   return level;
 }
 
-const VALID_KEY = /^(appl_|test_)/.test(IOS_PUBLIC_SDK_KEY) && IOS_PUBLIC_SDK_KEY.length > 10;
+const VALID_KEY = /^(appl_|test_|goog_)/.test(PUBLIC_SDK_KEY) && PUBLIC_SDK_KEY.length > 10;
 
-/** True when in-app purchases can actually run (native iOS + key configured). */
-export const iapAvailable = () => isNative() && isIOS() && VALID_KEY;
+/** True when in-app purchases can actually run (native iOS/Android + key configured). */
+export const iapAvailable = () => isNative() && VALID_KEY;
 
 let configured = false;
 
@@ -135,7 +135,7 @@ export async function initPurchases(appUserId?: string | null) {
   if (!configured) {
     await Purchases.setLogLevel({ level: LOG_LEVEL.ERROR });
     await Purchases.configure({
-      apiKey: IOS_PUBLIC_SDK_KEY,
+      apiKey: PUBLIC_SDK_KEY,
       ...(appUserId ? { appUserID: appUserId } : {}),
     });
     configured = true;
