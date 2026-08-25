@@ -36,6 +36,7 @@ const AuthPage = () => {
   const [emailOtpSent, setEmailOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   // The Apple OAuth handoff (/~oauth/initiate) is served by Lovable hosting, so it
   // only exists on published/preview domains — not the in-editor dev sandbox.
