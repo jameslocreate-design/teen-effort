@@ -20,7 +20,10 @@
     "cap:open:android": "npx cap open android",
     "cap:assets": "npx @capacitor/assets generate --ios --iconBackgroundColor '#0a0c10' --splashBackgroundColor '#0a0c10'",
     "ios:dev": "CAP_LIVE_RELOAD=1 npx cap sync ios && npx cap run ios",
-    "ios:release": "npm run build && npx cap sync ios && npx cap open ios"
+    "ios:release": "npm run build && npx cap sync ios && npx cap open ios",
+    "android:dev": "CAP_LIVE_RELOAD=1 npx cap sync android && npx cap run android",
+    "android:release": "npm run build && npx cap sync android && npx cap open android",
+    "cap:assets:android": "npx @capacitor/assets generate --android --iconBackgroundColor '#0a0c10' --splashBackgroundColor '#0a0c10'"
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",
