@@ -68,6 +68,29 @@ const AuthPage = () => {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    if (!appleAuthAvailable) {
+      toast.error("Google sign-in only works on the published app, not in the editor preview.");
+      return;
+    }
+    setGoogleLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+        extraParams: { prompt: "select_account" },
+      });
+      if (result.error) {
+        toast.error("Couldn't sign in with Google. Please try again.");
+        return;
+      }
+      if (result.redirected) return;
+    } catch {
+      toast.error("Couldn't sign in with Google. Please try again.");
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
 
   // Password recovery state
 
