@@ -3,6 +3,7 @@ import { Capacitor } from "@capacitor/core";
 /** True only when running inside the Capacitor native shell (iOS/Android). */
 export const isNative = () => Capacitor.isNativePlatform();
 export const isIOS = () => Capacitor.getPlatform() === "ios";
+export const isAndroid = () => Capacitor.getPlatform() === "android";
 
 /**
  * Apple forbids selling digital subscriptions outside In-App Purchase
