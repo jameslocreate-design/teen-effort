@@ -108,7 +108,7 @@ const DateReviews = () => {
           <MessageSquare className="h-6 w-6 text-primary" />
         </div>
         <h2 className="text-xl font-bold text-foreground">Date Reviews</h2>
-        <p className="text-sm text-muted-foreground">Share & discover the best date spots</p>
+        <p className="text-sm text-muted-foreground">Private to you and your linked partner</p>
       </div>
 
       <Button onClick={() => setShowForm(!showForm)} className="w-full gap-2">
