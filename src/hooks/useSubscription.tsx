@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getStripeEnvironment } from "@/lib/stripe";
+import { fetchMyPlan, syncStoreSubscription, type MyPlan } from "@/lib/billing";
 
 interface SubscriptionRow {
   id: string;
@@ -9,28 +10,37 @@ interface SubscriptionRow {
   product_id: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean;
-  stripe_customer_id: string;
+  stripe_customer_id: string | null;
+  provider?: string | null;
+  tier_level?: number | null;
+  billing_cycle?: string | null;
 }
 
 export function useSubscription(userId: string | null | undefined) {
   const [subscription, setSubscription] = useState<SubscriptionRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [iapTier, setIapTier] = useState(0);
+  const [plan, setPlan] = useState<MyPlan | null>(null);
 
-  // App Store (RevenueCat) entitlements, native iOS only.
+  // App Store / Play entitlements: verify them server-side so the database
+  // (and therefore usage limits and premium gating) knows about the purchase.
   useEffect(() => {
+    if (!userId) return;
     let cancelled = false;
     (async () => {
       const { iapAvailable, initPurchases, currentIapTier } = await import("@/lib/revenuecat");
       if (!iapAvailable()) return;
-      await initPurchases(userId ?? undefined);
-      const t = await currentIapTier();
-      if (!cancelled) setIapTier(t);
+      await initPurchases(userId);
+      const local = await currentIapTier();
+      if (!cancelled && local > 0) setIapTier(local);
+      const verified = await syncStoreSubscription();
+      if (!cancelled && verified !== null) setIapTier(verified);
     })().catch(() => {});
     return () => {
       cancelled = true;
     };
   }, [userId]);
+
 
 
   useEffect(() => {
@@ -44,16 +54,21 @@ export function useSubscription(userId: string | null | undefined) {
     const env = getStripeEnvironment();
 
     const fetchSub = async () => {
+      // Stripe/web billing row (used for the billing portal + receipts).
       const { data } = await supabase
         .from("subscriptions")
         .select("*")
         .eq("user_id", userId)
         .eq("environment", env)
+        .eq("provider", "stripe")
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
+      // Authoritative plan across every store, computed in the database.
+      const serverPlan = await fetchMyPlan();
       if (!cancelled) {
         setSubscription((data as SubscriptionRow) ?? null);
+        setPlan(serverPlan);
         setLoading(false);
       }
     };
@@ -76,43 +91,29 @@ export function useSubscription(userId: string | null | undefined) {
   }, [userId]);
 
   const now = Date.now();
-  const periodEndMs = subscription?.current_period_end
-    ? new Date(subscription.current_period_end).getTime()
-    : null;
+  const periodEndRaw = plan?.current_period_end ?? subscription?.current_period_end ?? null;
+  const periodEndMs = periodEndRaw ? new Date(periodEndRaw).getTime() : null;
 
-  const isActive = !!subscription && (
-    ["active", "trialing", "past_due"].includes(subscription.status) ||
-    (subscription.status === "canceled" && periodEndMs !== null && periodEndMs > now)
-  );
+  // Tier comes from the database (covers Stripe, App Store and Play), with the
+  // locally-read store entitlement as an offline-friendly floor.
+  const tier = Math.max(plan?.tier ?? 0, iapTier);
+  const isActive = tier > 0;
 
-  const PRICE_TIERS: Record<string, number> = {
-    spark_monthly: 1,
-    spark_yearly: 1,
-    romance_monthly: 2,
-    romance_yearly: 2,
-    soulmate_monthly: 3,
-    soulmate_yearly: 3,
-    // Legacy full-access plans count as the top tier
-    premium_monthly: 3,
-    premium_yearly: 3,
-  };
-
-  const stripeTier = isActive && subscription?.price_id
-    ? (PRICE_TIERS[subscription.price_id] ?? 1)
-    : 0;
-  // On native iOS, entitlements bought through the App Store also grant access.
-  const tier = Math.max(stripeTier, iapTier);
-
-
-  const isPastDue = subscription?.status === "past_due";
-  const isTrialing = subscription?.status === "trialing";
+  const isPastDue = plan?.past_due ?? subscription?.status === "past_due";
+  const isTrialing = plan?.trialing ?? subscription?.status === "trialing";
   const isCanceling =
-    isActive && (subscription?.cancel_at_period_end || subscription?.status === "canceled");
-  const periodEnd = subscription?.current_period_end ?? null;
+    isActive && !!(plan?.cancel_at_period_end || plan?.status === "canceled" ||
+      (!plan && (subscription?.cancel_at_period_end || subscription?.status === "canceled")));
+  const periodEnd = periodEndRaw;
 
-  // Billing cycle inferred from the price lookup key suffix.
-  const isYearly = !!subscription?.price_id?.endsWith("_yearly");
-  const isMonthly = !!subscription?.price_id?.endsWith("_monthly");
+  const cycle = plan?.billing_cycle ??
+    (subscription?.price_id?.endsWith("_yearly") ? "yearly"
+      : subscription?.price_id?.endsWith("_monthly") ? "monthly" : null);
+  const isYearly = cycle === "yearly";
+  const isMonthly = cycle === "monthly";
+
+  // Which store the active plan was bought through.
+  const provider = plan?.provider ?? subscription?.provider ?? null;
 
   // Days left in the current trial (rounded up). null when not trialing.
   const trialDaysLeft =
@@ -120,8 +121,12 @@ export function useSubscription(userId: string | null | undefined) {
       ? Math.max(0, Math.ceil((periodEndMs - now) / (1000 * 60 * 60 * 24)))
       : null;
 
+
   return {
     subscription,
+    plan,
+    planName: plan?.plan ?? (tier > 0 ? "Spark" : "Free"),
+    provider,
     isActive,
     tier,
     isPastDue,

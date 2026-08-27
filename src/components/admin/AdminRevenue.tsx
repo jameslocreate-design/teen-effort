@@ -10,7 +10,15 @@ interface SubStats {
   past_due: number;
   canceling: number;
   by_tier: Record<string, number>;
+  by_provider?: Record<string, number>;
+  by_cycle?: Record<string, number>;
 }
+
+const PROVIDER_LABELS: Record<string, string> = {
+  stripe: "Web (Stripe)",
+  app_store: "Apple App Store",
+  play_store: "Google Play",
+};
 
 const AdminRevenue = () => {
   const [stats, setStats] = useState<SubStats | null>(null);
@@ -99,6 +107,44 @@ const AdminRevenue = () => {
           )}
         </CardContent>
       </Card>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Subscribers by Store</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {Object.entries(stats.by_provider ?? {}).length > 0 ? (
+              Object.entries(stats.by_provider ?? {}).map(([p, count]) => (
+                <div key={p} className="flex items-center justify-between text-sm">
+                  <span className="text-foreground">{PROVIDER_LABELS[p] ?? p}</span>
+                  <span className="text-muted-foreground">{count}</span>
+                </div>
+              ))
+            ) : (
+              <p className="text-muted-foreground text-sm">No active subscribers yet.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Billing Cycle</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {Object.entries(stats.by_cycle ?? {}).length > 0 ? (
+              Object.entries(stats.by_cycle ?? {}).map(([c, count]) => (
+                <div key={c} className="flex items-center justify-between text-sm">
+                  <span className="text-foreground capitalize">{c}</span>
+                  <span className="text-muted-foreground">{count}</span>
+                </div>
+              ))
+            ) : (
+              <p className="text-muted-foreground text-sm">No active subscribers yet.</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
