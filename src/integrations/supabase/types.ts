@@ -761,6 +761,7 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          billing_cycle: string | null
           cancel_at_period_end: boolean
           created_at: string
           current_period_end: string | null
@@ -768,13 +769,19 @@ export type Database = {
           id: string
           price_id: string | null
           product_id: string | null
+          provider: string
           status: string
-          stripe_customer_id: string
+          store_app_user_id: string | null
+          store_product_id: string | null
+          stripe_customer_id: string | null
           stripe_subscription_id: string | null
+          tier_level: number | null
           updated_at: string
           user_id: string
+          verified_at: string | null
         }
         Insert: {
+          billing_cycle?: string | null
           cancel_at_period_end?: boolean
           created_at?: string
           current_period_end?: string | null
@@ -782,13 +789,19 @@ export type Database = {
           id?: string
           price_id?: string | null
           product_id?: string | null
+          provider?: string
           status: string
-          stripe_customer_id: string
+          store_app_user_id?: string | null
+          store_product_id?: string | null
+          stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          tier_level?: number | null
           updated_at?: string
           user_id: string
+          verified_at?: string | null
         }
         Update: {
+          billing_cycle?: string | null
           cancel_at_period_end?: boolean
           created_at?: string
           current_period_end?: string | null
@@ -796,11 +809,16 @@ export type Database = {
           id?: string
           price_id?: string | null
           product_id?: string | null
+          provider?: string
           status?: string
-          stripe_customer_id?: string
+          store_app_user_id?: string | null
+          store_product_id?: string | null
+          stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          tier_level?: number | null
           updated_at?: string
           user_id?: string
+          verified_at?: string | null
         }
         Relationships: []
       }
@@ -996,6 +1014,7 @@ export type Database = {
         Args: { _feature: string; _user_id: string }
         Returns: number
       }
+      get_my_plan: { Args: never; Returns: Json }
       get_partner_user_id: { Args: { _user_id: string }; Returns: string }
       get_subscription_stats: { Args: never; Returns: Json }
       get_subscription_tier: { Args: { _user_id: string }; Returns: number }
