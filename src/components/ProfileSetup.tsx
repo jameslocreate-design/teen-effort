@@ -216,8 +216,15 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
               value={birthday}
               onChange={(e) => setBirthday(e.target.value)}
               placeholder="Your birthday"
-              className="bg-secondary/50 border-border"
+              disabled={birthdayLocked}
+              readOnly={birthdayLocked}
+              className="bg-secondary/50 border-border disabled:opacity-70"
             />
+            {birthdayLocked && (
+              <p className="mt-1.5 text-[11px] text-muted-foreground">
+                Your birthdate is locked and can't be changed. Contact support if it's wrong.
+              </p>
+            )}
           </div>
 
           <div>
