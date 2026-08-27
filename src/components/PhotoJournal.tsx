@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Camera, Heart, Star, ImageIcon } from "lucide-react";
 import { format } from "date-fns";
 import { PhotoJournalSkeleton } from "@/components/ui/skeleton-card";
+import { signedUrlMap } from "@/lib/storage";
 
 interface DateMemory {
   id: string;
@@ -21,6 +22,7 @@ const PhotoJournal = () => {
   const [memories, setMemories] = useState<DateMemory[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [photoUrlMap, setPhotoUrlMap] = useState<Record<string, string>>({});
 
   const fetchMemories = useCallback(async () => {
     if (!user) return;
@@ -45,6 +47,12 @@ const PhotoJournal = () => {
   }, [user]);
 
   useEffect(() => { fetchMemories(); }, [fetchMemories]);
+
+  useEffect(() => {
+    const all = memories.flatMap((m) => m.photo_urls ?? []);
+    if (all.length === 0) { setPhotoUrlMap({}); return; }
+    signedUrlMap("date-photos", all).then(setPhotoUrlMap);
+  }, [memories]);
 
   if (loading) return <PhotoJournalSkeleton />;
 
@@ -96,11 +104,11 @@ const PhotoJournal = () => {
                 {memory.photo_urls?.map((url, i) => (
                   <button
                     key={i}
-                    onClick={() => setSelectedPhoto(url)}
+                    onClick={() => setSelectedPhoto(photoUrlMap[url] ?? null)}
                     className="relative aspect-square rounded-xl overflow-hidden border border-border hover:border-primary/50 transition-all hover:scale-[1.02]"
                   >
                     <img
-                      src={url}
+                      src={photoUrlMap[url] ?? ""}
                       alt={`${memory.title} memory ${i + 1}`}
                       className="w-full h-full object-cover"
                       loading="lazy"
