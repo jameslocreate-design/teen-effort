@@ -163,6 +163,7 @@ export type Database = {
           date_type: string | null
           id: string
           location: string | null
+          partner_link_id: string | null
           rating: number
           review_text: string | null
           user_id: string
@@ -176,6 +177,7 @@ export type Database = {
           date_type?: string | null
           id?: string
           location?: string | null
+          partner_link_id?: string | null
           rating: number
           review_text?: string | null
           user_id: string
@@ -189,6 +191,7 @@ export type Database = {
           date_type?: string | null
           id?: string
           location?: string | null
+          partner_link_id?: string | null
           rating?: number
           review_text?: string | null
           user_id?: string
