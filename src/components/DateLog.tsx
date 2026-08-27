@@ -64,6 +64,12 @@ const DateLog = () => {
 
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
+  useEffect(() => {
+    const all = entries.flatMap((e) => e.photo_urls ?? []);
+    if (all.length === 0) { setPhotoUrlMap({}); return; }
+    signedUrlMap("date-photos", all).then(setPhotoUrlMap);
+  }, [entries]);
+
   // Group entries by month/year
   const grouped = entries.reduce<Record<string, TimelineEntry[]>>((acc, entry) => {
     const key = format(parseISO(entry.date), "MMMM yyyy");
