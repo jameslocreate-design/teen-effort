@@ -10,7 +10,15 @@ interface SubStats {
   past_due: number;
   canceling: number;
   by_tier: Record<string, number>;
+  by_provider?: Record<string, number>;
+  by_cycle?: Record<string, number>;
 }
+
+const PROVIDER_LABELS: Record<string, string> = {
+  stripe: "Web (Stripe)",
+  app_store: "Apple App Store",
+  play_store: "Google Play",
+};
 
 const AdminRevenue = () => {
   const [stats, setStats] = useState<SubStats | null>(null);
