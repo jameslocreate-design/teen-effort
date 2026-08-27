@@ -30,6 +30,7 @@ const DateReviews = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [partnerLinkId, setPartnerLinkId] = useState<string | null>(null);
   const [form, setForm] = useState({
     venue_name: "", venue_type: "", location: "",
     rating: 5, review_text: "", date_type: "",
@@ -37,6 +38,12 @@ const DateReviews = () => {
   });
 
   const fetchReviews = useCallback(async () => {
+    if (!user) return;
+    const { data: link } = await supabase
+      .from("partner_links").select("id").eq("status", "accepted")
+      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`).maybeSingle();
+    setPartnerLinkId(link?.id ?? null);
+
     const { data } = await supabase
       .from("date_reviews")
       .select("*")
@@ -44,7 +51,7 @@ const DateReviews = () => {
       .limit(50);
     if (data) setReviews(data as Review[]);
     setLoading(false);
-  }, []);
+  }, [user]);
 
   useEffect(() => { fetchReviews(); }, [fetchReviews]);
 
@@ -55,6 +62,7 @@ const DateReviews = () => {
     }
     const { error } = await supabase.from("date_reviews").insert({
       user_id: user.id,
+      partner_link_id: partnerLinkId,
       venue_name: form.venue_name.trim(),
       venue_type: form.venue_type || null,
       location: form.location.trim() || null,
@@ -64,6 +72,7 @@ const DateReviews = () => {
       cost_range: form.cost_range || null,
       would_recommend: form.would_recommend,
     } as any);
+
 
     if (error) toast.error("Failed to post review");
     else {
