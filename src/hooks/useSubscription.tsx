@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getStripeEnvironment } from "@/lib/stripe";
+import { fetchMyPlan, syncStoreSubscription, type MyPlan } from "@/lib/billing";
 
 interface SubscriptionRow {
   id: string;
@@ -9,28 +10,37 @@ interface SubscriptionRow {
   product_id: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean;
-  stripe_customer_id: string;
+  stripe_customer_id: string | null;
+  provider?: string | null;
+  tier_level?: number | null;
+  billing_cycle?: string | null;
 }
 
 export function useSubscription(userId: string | null | undefined) {
   const [subscription, setSubscription] = useState<SubscriptionRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [iapTier, setIapTier] = useState(0);
+  const [plan, setPlan] = useState<MyPlan | null>(null);
 
-  // App Store (RevenueCat) entitlements, native iOS only.
+  // App Store / Play entitlements: verify them server-side so the database
+  // (and therefore usage limits and premium gating) knows about the purchase.
   useEffect(() => {
+    if (!userId) return;
     let cancelled = false;
     (async () => {
       const { iapAvailable, initPurchases, currentIapTier } = await import("@/lib/revenuecat");
       if (!iapAvailable()) return;
-      await initPurchases(userId ?? undefined);
-      const t = await currentIapTier();
-      if (!cancelled) setIapTier(t);
+      await initPurchases(userId);
+      const local = await currentIapTier();
+      if (!cancelled && local > 0) setIapTier(local);
+      const verified = await syncStoreSubscription();
+      if (!cancelled && verified !== null) setIapTier(verified);
     })().catch(() => {});
     return () => {
       cancelled = true;
     };
   }, [userId]);
+
 
 
   useEffect(() => {
