@@ -8,6 +8,7 @@ import {
   getPackages,
   findPackage,
 } from "@/lib/revenuecat";
+import { syncStoreSubscription } from "@/lib/billing";
 
 /**
  * In-app purchase state for the native iOS shell. On web (and on iOS before a
@@ -46,7 +47,10 @@ export function useNativePurchases(userId?: string | null) {
     try {
       const t = await purchaseByPriceId(priceId);
       setTier(t);
-      return t;
+      // Record the verified entitlement in the backend right away.
+      const verified = await syncStoreSubscription();
+      if (verified !== null) setTier(verified);
+      return verified ?? t;
     } finally {
       setBusy(false);
     }
@@ -57,7 +61,9 @@ export function useNativePurchases(userId?: string | null) {
     try {
       const t = await restorePurchases();
       setTier(t);
-      return t;
+      const verified = await syncStoreSubscription();
+      if (verified !== null) setTier(verified);
+      return verified ?? t;
     } finally {
       setBusy(false);
     }
