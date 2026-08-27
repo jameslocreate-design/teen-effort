@@ -973,6 +973,7 @@ export type Database = {
     }
     Functions: {
       admin_export_table: { Args: { _table_name: string }; Returns: Json }
+      age_years: { Args: { _dob: string }; Returns: number }
       check_and_increment_usage: {
         Args: { _feature: string; _limit: number; _user_id: string }
         Returns: Json

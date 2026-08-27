@@ -19,6 +19,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
   const { user } = useAuth();
   const [name, setName] = useState("");
   const [birthday, setBirthday] = useState("");
+  const [birthdayLocked, setBirthdayLocked] = useState(false);
   const [gender, setGender] = useState<string | null>(null);
   const [descriptors, setDescriptors] = useState<string[]>([]);
   const [loveLanguages, setLoveLanguages] = useState<string[]>([]);
@@ -49,8 +50,10 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
       .then(({ data }) => {
         if (data) {
           if (data.name) setName(data.name);
-          if (data.birthday) setBirthday(data.birthday);
-          else if ((user as any).user_metadata?.birthday) {
+          if (data.birthday) {
+            setBirthday(data.birthday);
+            setBirthdayLocked(true);
+          } else if ((user as any).user_metadata?.birthday) {
             // Prefill from signup age-gate DOB if profile hasn't set one yet
             setBirthday((user as any).user_metadata.birthday);
           }
@@ -116,27 +119,46 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
       toast.error("Please enter your name");
       return;
     }
+    if (!birthdayLocked && birthday) {
+      const [y, m, d] = birthday.split("-").map(Number);
+      const dobDate = new Date(y, (m || 1) - 1, d || 1);
+      const now = new Date();
+      let age = now.getFullYear() - dobDate.getFullYear();
+      const before =
+        now.getMonth() < dobDate.getMonth() ||
+        (now.getMonth() === dobDate.getMonth() && now.getDate() < dobDate.getDate());
+      if (before) age -= 1;
+      if (age < 13) {
+        toast.error("You must be at least 13 years old to use Teen Effort");
+        return;
+      }
+    }
     setLoading(true);
+    const payload: Record<string, unknown> = {
+      name: name.trim(),
+      gender,
+      descriptors,
+      love_language: loveLanguages.length > 0 ? loveLanguages.join(", ") : null,
+    };
+    // Birthdate is immutable once set (enforced in the database too)
+    if (!birthdayLocked) payload.birthday = birthday || null;
+
     const { error } = await supabase
       .from("profiles")
-      .update({
-        name: name.trim(),
-        birthday: birthday || null,
-        gender,
-        descriptors,
-        love_language: loveLanguages.length > 0 ? loveLanguages.join(", ") : null,
-      } as any)
+      .update(payload as any)
       .eq("user_id", user.id);
 
     if (error) {
-      toast.error("Failed to save profile");
+      toast.error(error.message || "Failed to save profile");
     } else {
       toast.success("Profile saved!");
+      if (birthday) setBirthdayLocked(true);
       window.dispatchEvent(new Event("profile-updated"));
       if (onComplete) onComplete();
     }
     setLoading(false);
   };
+
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
@@ -194,8 +216,15 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
               value={birthday}
               onChange={(e) => setBirthday(e.target.value)}
               placeholder="Your birthday"
-              className="bg-secondary/50 border-border"
+              disabled={birthdayLocked}
+              readOnly={birthdayLocked}
+              className="bg-secondary/50 border-border disabled:opacity-70"
             />
+            {birthdayLocked && (
+              <p className="mt-1.5 text-[11px] text-muted-foreground">
+                Your birthdate is locked and can't be changed. Contact support if it's wrong.
+              </p>
+            )}
           </div>
 
           <div>
