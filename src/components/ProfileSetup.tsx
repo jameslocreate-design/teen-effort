@@ -91,18 +91,15 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
       return;
     }
 
-    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
-    const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`;
-
     const { error: updateError } = await supabase
       .from("profiles")
-      .update({ avatar_url: publicUrl } as any)
+      .update({ avatar_url: filePath } as any)
       .eq("user_id", user.id);
 
     if (updateError) {
       toast.error("Failed to save avatar");
     } else {
-      setAvatarUrl(publicUrl);
+      setAvatarUrl((await signedUrl("avatars", filePath)) ?? null);
       toast.success("Profile photo updated!");
       window.dispatchEvent(new Event("profile-updated"));
     }
