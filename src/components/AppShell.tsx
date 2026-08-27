@@ -88,7 +88,7 @@ const navSections: NavSection[] = [
       { id: "reviews", label: "Date Reviews", icon: <MessageSquare className="h-4 w-4" /> },
       { id: "stats", label: "Date Stats", icon: <BarChart3 className="h-4 w-4" /> },
       { id: "achievements", label: "Badges", icon: <Trophy className="h-4 w-4" /> },
-      { id: "expert", label: "Ask an Expert", icon: <HelpCircle className="h-4 w-4" /> },
+      { id: "expert", label: "Ask an Expert (Soon)", icon: <HelpCircle className="h-4 w-4" /> },
     ],
   },
   {
