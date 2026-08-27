@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { signedUrl } from "@/lib/storage";
 import { useNavigate } from "react-router-dom";
 import {
   Heart, CalendarDays, Sparkles, User, Link2, LogOut, Users, Gift,
@@ -138,7 +139,9 @@ const AppShell = () => {
         const isComplete = !!data?.name;
         setProfileComplete(isComplete);
         if (data?.name) setProfileName(data.name);
-        if ((data as any)?.avatar_url) setProfileAvatar((data as any).avatar_url);
+        if ((data as any)?.avatar_url) {
+          setProfileAvatar(await signedUrl("avatars", (data as any).avatar_url));
+        }
         if (isComplete && !localStorage.getItem("onboarding-done")) {
           setShowOnboarding(true);
         }

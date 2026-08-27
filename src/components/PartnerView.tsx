@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { signedUrl } from "@/lib/storage";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -55,7 +56,12 @@ const PartnerView = ({ onUnlinked }: PartnerViewProps) => {
       .eq("user_id", partnerId)
       .single();
 
-    if (profile) setPartner(profile);
+    if (profile) {
+      setPartner({
+        ...profile,
+        avatar_url: await signedUrl("avatars", (profile as any).avatar_url),
+      });
+    }
     setLoading(false);
   }, [user]);
 

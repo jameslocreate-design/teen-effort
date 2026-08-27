@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { signedUrlMap } from "@/lib/storage";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Clock, Heart, Star, Camera, MapPin, DollarSign,
@@ -29,6 +30,7 @@ const DateLog = () => {
   const [entries, setEntries] = useState<TimelineEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [photoUrlMap, setPhotoUrlMap] = useState<Record<string, string>>({});
   const [stats, setStats] = useState({ total: 0, avgRating: 0, totalPhotos: 0, favorites: 0 });
 
   const fetchEntries = useCallback(async () => {
@@ -61,6 +63,12 @@ const DateLog = () => {
   }, [user]);
 
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
+
+  useEffect(() => {
+    const all = entries.flatMap((e) => e.photo_urls ?? []);
+    if (all.length === 0) { setPhotoUrlMap({}); return; }
+    signedUrlMap("date-photos", all).then(setPhotoUrlMap);
+  }, [entries]);
 
   // Group entries by month/year
   const grouped = entries.reduce<Record<string, TimelineEntry[]>>((acc, entry) => {
@@ -202,11 +210,11 @@ const DateLog = () => {
                         {entry.photo_urls.map((url, i) => (
                           <button
                             key={i}
-                            onClick={() => setSelectedPhoto(url)}
+                            onClick={() => setSelectedPhoto(photoUrlMap[url] ?? null)}
                             className="relative aspect-square rounded-lg overflow-hidden border border-border hover:border-primary/50 transition-all hover:scale-[1.02]"
                           >
                             <img
-                              src={url}
+                              src={photoUrlMap[url] ?? ""}
                               alt={`${entry.title} photo ${i + 1}`}
                               className="w-full h-full object-cover"
                               loading="lazy"

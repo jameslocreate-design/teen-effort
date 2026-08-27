@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { User, Save, Camera } from "lucide-react";
+import { signedUrl } from "@/lib/storage";
 
 const loveLanguageOptions = [
   { value: "Words of Affirmation", emoji: "💬" },
@@ -59,7 +60,9 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
             const ll = (data as any).love_language;
             setLoveLanguages(Array.isArray(ll) ? ll : ll ? [ll] : []);
           }
-          if ((data as any).avatar_url) setAvatarUrl((data as any).avatar_url);
+          if ((data as any).avatar_url) {
+            signedUrl("avatars", (data as any).avatar_url).then((u) => setAvatarUrl(u));
+          }
         }
       });
   }, [user]);
@@ -91,18 +94,15 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
       return;
     }
 
-    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
-    const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`;
-
     const { error: updateError } = await supabase
       .from("profiles")
-      .update({ avatar_url: publicUrl } as any)
+      .update({ avatar_url: filePath } as any)
       .eq("user_id", user.id);
 
     if (updateError) {
       toast.error("Failed to save avatar");
     } else {
-      setAvatarUrl(publicUrl);
+      setAvatarUrl((await signedUrl("avatars", filePath)) ?? null);
       toast.success("Profile photo updated!");
       window.dispatchEvent(new Event("profile-updated"));
     }

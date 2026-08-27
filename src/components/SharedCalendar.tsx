@@ -8,6 +8,7 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMont
 import { toast } from "sonner";
 import CalendarInsights from "@/components/CalendarInsights";
 import { CalendarSkeleton } from "@/components/ui/skeleton-card";
+import { signedUrlMap } from "@/lib/storage";
 
 interface CalendarEntry {
   id: string;
@@ -42,6 +43,7 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [photoEntryId, setPhotoEntryId] = useState<string | null>(null);
+  const [photoUrlMap, setPhotoUrlMap] = useState<Record<string, string>>({});
 
   const fetchPartnerLink = useCallback(async () => {
     if (!user) return;
@@ -75,6 +77,12 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
   useEffect(() => { fetchPartnerLink(); }, [fetchPartnerLink]);
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
   useEffect(() => { fetchTotalDates(); }, [fetchTotalDates]);
+
+  useEffect(() => {
+    const all = entries.flatMap((e) => e.photo_urls ?? []);
+    if (all.length === 0) { setPhotoUrlMap({}); return; }
+    signedUrlMap("date-photos", all).then(setPhotoUrlMap);
+  }, [entries]);
 
   const deleteEntry = async (id: string) => {
     const { error } = await supabase.from("calendar_entries").delete().eq("id", id);
@@ -120,10 +128,9 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
       return;
     }
 
-    const { data: urlData } = supabase.storage.from("date-photos").getPublicUrl(path);
     const entry = entries.find(e => e.id === photoEntryId);
     const currentPhotos = entry?.photo_urls || [];
-    const newPhotos = [...currentPhotos, urlData.publicUrl];
+    const newPhotos = [...currentPhotos, path];
 
     const { error: updateError } = await supabase
       .from("calendar_entries").update({ photo_urls: newPhotos }).eq("id", photoEntryId);
@@ -304,7 +311,7 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
                     {entry.photo_urls.map((url, i) => (
                       <img
                         key={i}
-                        src={url}
+                        src={photoUrlMap[url] ?? ""}
                         alt={`Date memory ${i + 1}`}
                         className="h-20 w-20 rounded-lg object-cover flex-shrink-0 border border-border"
                       />
