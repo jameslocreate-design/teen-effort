@@ -39,7 +39,7 @@ function providerFromStore(store: string | undefined): string {
     case "mac_app_store":
       return "app_store";
     case "play_store":
-										      return "play_store";
+      return "play_store";
     default:
       return "app_store";
   }
