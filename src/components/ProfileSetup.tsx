@@ -19,6 +19,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
   const { user } = useAuth();
   const [name, setName] = useState("");
   const [birthday, setBirthday] = useState("");
+  const [birthdayLocked, setBirthdayLocked] = useState(false);
   const [gender, setGender] = useState<string | null>(null);
   const [descriptors, setDescriptors] = useState<string[]>([]);
   const [loveLanguages, setLoveLanguages] = useState<string[]>([]);
