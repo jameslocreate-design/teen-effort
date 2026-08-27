@@ -124,6 +124,9 @@ export function useSubscription(userId: string | null | undefined) {
 
   return {
     subscription,
+    plan,
+    planName: plan?.plan ?? (tier > 0 ? "Spark" : "Free"),
+    provider,
     isActive,
     tier,
     isPastDue,
