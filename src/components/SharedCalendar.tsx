@@ -8,6 +8,7 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMont
 import { toast } from "sonner";
 import CalendarInsights from "@/components/CalendarInsights";
 import { CalendarSkeleton } from "@/components/ui/skeleton-card";
+import { signedUrlMap } from "@/lib/storage";
 
 interface CalendarEntry {
   id: string;
@@ -120,10 +121,9 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
       return;
     }
 
-    const { data: urlData } = supabase.storage.from("date-photos").getPublicUrl(path);
     const entry = entries.find(e => e.id === photoEntryId);
     const currentPhotos = entry?.photo_urls || [];
-    const newPhotos = [...currentPhotos, urlData.publicUrl];
+    const newPhotos = [...currentPhotos, path];
 
     const { error: updateError } = await supabase
       .from("calendar_entries").update({ photo_urls: newPhotos }).eq("id", photoEntryId);
