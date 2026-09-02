@@ -52,15 +52,13 @@ We do not sell your personal information. We share data only in these limited si
 
 ### Service Providers We Use
 
-| Vendor | Purpose | Data involved |
-| --- | --- | --- |
-| Supabase (Lovable Cloud) | Database, authentication, file storage, backend functions | Account, profile, and app content |
-| Apple App Store / Google Play | In-app purchases on mobile | Purchase and entitlement data |
-| RevenueCat | Subscription receipt validation and entitlement sync | Anonymous user ID, purchase data |
-| Stripe | Web subscription payments | Email, purchase data |
-| Resend | Transactional email delivery | Email address, message content |
-| OpenStreetMap / Nominatim | Converting coordinates into a place name | Approximate coordinates (not linked to your account) |
-| AI model providers (via Lovable AI Gateway) | Generating date and gift ideas | Prompt text you submit |
+- **Supabase (Lovable Cloud)** — database, authentication, file storage, and backend functions; holds your account, profile, and app content.
+- **Apple App Store / Google Play** — in-app purchases on mobile; purchase and entitlement data.
+- **RevenueCat** — subscription receipt validation and entitlement sync; anonymous user ID and purchase data.
+- **Stripe** — web subscription payments; email and purchase data.
+- **Resend** — transactional email delivery; email address and message content.
+- **OpenStreetMap / Nominatim** — converting coordinates into a place name; approximate coordinates not linked to your account.
+- **AI model providers (via Lovable AI Gateway)** — generating date and gift ideas; the prompt text you submit.
 
 ## 5. Data Retention & Deletion
 
