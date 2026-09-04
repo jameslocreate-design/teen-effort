@@ -82,12 +82,24 @@ export async function requestLocationAccess(): Promise<boolean> {
     })();
     return permissionRequest;
   }
-  try {
-    await getCurrentCoords({ timeout: 10000 });
-    return true;
-  } catch {
-    return false;
-  }
+  // Web (including Safari): the browser only shows its prompt when
+  // getCurrentPosition is called, and Safari requires that call to happen in a
+  // user gesture — this helper is always invoked from a button click.
+  if (permissionRequest) return permissionRequest;
+  permissionRequest = (async () => {
+    try {
+      // Safari can hang on high accuracy; coarse is enough and much faster.
+      await getCurrentCoords({ timeout: 15000, enableHighAccuracy: false });
+      window.dispatchEvent(new CustomEvent(LOCATION_READY_EVENT));
+      return true;
+    } catch (error) {
+      console.warn("Location access failed:", error);
+      return false;
+    } finally {
+      permissionRequest = null;
+    }
+  })();
+  return permissionRequest;
 }
 
 // A single in-flight request shared by every caller, plus a short-lived cache.
