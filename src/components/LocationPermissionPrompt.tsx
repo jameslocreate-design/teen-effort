@@ -41,16 +41,24 @@ const LocationPermissionPrompt = () => {
     });
 
     // Coming back from Settings should pick up a newly granted permission.
-    import("@capacitor/app")
-      .then(({ App }) =>
-        App.addListener("appStateChange", ({ isActive }) => {
-          if (isActive) refresh();
+    if (isNative()) {
+      import("@capacitor/app")
+        .then(({ App }) =>
+          App.addListener("appStateChange", ({ isActive }) => {
+            if (isActive) refresh();
+          })
+        )
+        .then((handle) => {
+          remove = () => handle.remove();
         })
-      )
-      .then((handle) => {
-        remove = () => handle.remove();
-      })
-      .catch(() => {});
+        .catch(() => {});
+    } else {
+      const onVisible = () => {
+        if (document.visibilityState === "visible") refresh();
+      };
+      document.addEventListener("visibilitychange", onVisible);
+      remove = () => document.removeEventListener("visibilitychange", onVisible);
+    }
 
     return () => {
       cancelled = true;
