@@ -86,7 +86,9 @@ const DatePlanner = () => {
 
   const retryLocation = async () => {
     setLocationStatus("loading");
-    if (isNative() && await checkLocationPermission() !== "granted") {
+    // On web (Safari especially) the browser prompt only appears from a user
+    // gesture, so always go through requestLocationAccess on this click.
+    if (await checkLocationPermission() !== "granted") {
       const granted = await requestLocationAccess();
       if (!granted) {
         const permission = await checkLocationPermission();
