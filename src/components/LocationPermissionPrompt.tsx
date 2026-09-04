@@ -32,7 +32,6 @@ const LocationPermissionPrompt = () => {
   }, []);
 
   useEffect(() => {
-    if (!isNative()) return;
     let cancelled = false;
     let remove: (() => void) | undefined;
 
@@ -95,11 +94,16 @@ const LocationPermissionPrompt = () => {
   const openSettings = async () => {
     const opened = await openLocationSettings();
     if (!opened) {
-      toast.error("Open Settings › Teen Effort › Location to turn it on.");
+      toast.error(
+        isNative()
+          ? "Open Settings › Teen Effort › Location to turn it on."
+          : "In Safari, tap the \u201CaA\u201D icon in the address bar › Website Settings › Location › Allow. On desktop, use Safari › Settings › Websites › Location."
+      );
     }
   };
 
-  if (!isNative() || hidden || state === null || state === "granted") return null;
+  if (hidden || state === null || state === "granted") return null;
+  // Safari has no Permissions API for geolocation, so "unknown" still needs the prompt.
 
   const denied = state === "denied";
   if (denied && localStorage.getItem(DENIED_DISMISS_KEY) === "1") return null;
@@ -116,14 +120,16 @@ const LocationPermissionPrompt = () => {
         </p>
         <p className="text-xs text-muted-foreground mt-0.5">
           {denied
-            ? "Teen Effort can't see your location, so date ideas won't be nearby. Turn it back on in Settings › Teen Effort › Location."
+            ? (isNative()
+                ? "Teen Effort can't see your location, so date ideas won't be nearby. Turn it back on in Settings › Teen Effort › Location."
+                : "Your browser is blocking location, so date ideas won't be nearby. Re-allow it in your browser's site settings for this page.")
             : "We use your location to find date spots and weather near you. Nothing is shared with anyone else."}
         </p>
         <div className="mt-3 flex gap-2">
           {denied ? (
-            <Button size="sm" onClick={openSettings} className="h-9 rounded-xl gap-1.5">
+            <Button size="sm" onClick={isNative() ? openSettings : allow} disabled={busy} className="h-9 rounded-xl gap-1.5">
               <Settings className="h-3.5 w-3.5" />
-              Open Settings
+              {isNative() ? "Open Settings" : busy ? "Retrying..." : "Try again"}
             </Button>
           ) : (
             <Button size="sm" onClick={allow} disabled={busy} className="h-9 rounded-xl">
