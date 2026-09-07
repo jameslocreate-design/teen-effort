@@ -26,15 +26,19 @@ const calcAge = (dob: string): number => {
 
 type View = "auth" | "forgot";
 
+const REMEMBER_KEY = "remember-login-email";
+
 const AuthPage = () => {
   const [view, setView] = useState<View>("auth");
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
   const [dob, setDob] = useState("");
   const [emailOtp, setEmailOtp] = useState("");
   const [emailOtpSent, setEmailOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
+
   const [appleLoading, setAppleLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
