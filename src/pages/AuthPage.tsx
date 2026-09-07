@@ -145,6 +145,8 @@ const AuthPage = () => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
     if (isSignUp && !verifyAge(dob)) return;
+    if (rememberMe) localStorage.setItem(REMEMBER_KEY, email.trim());
+    else localStorage.removeItem(REMEMBER_KEY);
     setLoading(true);
     try {
       if (isSignUp) {
