@@ -564,18 +564,6 @@ const AuthPage = () => {
           </form>
         )}
 
-        {/* Toggle sign up / sign in */}
-        {view === "auth" && !emailOtpSent && (
-          <p className="text-center text-sm text-muted-foreground">
-            {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
-            <button
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-primary hover:underline font-medium"
-            >
-              {isSignUp ? "Sign in" : "Sign up"}
-            </button>
-          </p>
-        )}
       </div>
     </div>
   );
