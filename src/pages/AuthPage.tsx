@@ -113,6 +113,12 @@ const AuthPage = () => {
       setHasPendingInvite(true);
       setIsSignUp(true);
     }
+    const saved = localStorage.getItem(REMEMBER_KEY);
+    if (saved) {
+      setEmail(saved);
+      setRememberMe(true);
+      setIsSignUp(false); // returning user → show Log in
+    }
   }, []);
 
   useEffect(() => {
