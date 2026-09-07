@@ -26,15 +26,19 @@ const calcAge = (dob: string): number => {
 
 type View = "auth" | "forgot";
 
+const REMEMBER_KEY = "remember-login-email";
+
 const AuthPage = () => {
   const [view, setView] = useState<View>("auth");
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
   const [dob, setDob] = useState("");
   const [emailOtp, setEmailOtp] = useState("");
   const [emailOtpSent, setEmailOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
+
   const [appleLoading, setAppleLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
@@ -109,6 +113,12 @@ const AuthPage = () => {
       setHasPendingInvite(true);
       setIsSignUp(true);
     }
+    const saved = localStorage.getItem(REMEMBER_KEY);
+    if (saved) {
+      setEmail(saved);
+      setRememberMe(true);
+      setIsSignUp(false); // returning user → show Log in
+    }
   }, []);
 
   useEffect(() => {
@@ -135,6 +145,8 @@ const AuthPage = () => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
     if (isSignUp && !verifyAge(dob)) return;
+    if (rememberMe) localStorage.setItem(REMEMBER_KEY, email.trim());
+    else localStorage.removeItem(REMEMBER_KEY);
     setLoading(true);
     try {
       if (isSignUp) {
@@ -283,6 +295,35 @@ const AuthPage = () => {
           </div>
         )}
 
+        {/* Sign up / Log in switch — sign up first for new users */}
+        {view === "auth" && !emailOtpSent && (
+          <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-1 p-1 rounded-2xl bg-secondary/60 border border-border">
+              <button
+                type="button"
+                onClick={() => setIsSignUp(true)}
+                className={`h-11 rounded-xl text-sm font-semibold font-sans transition-all ${
+                  isSignUp ? "bg-primary text-primary-foreground glow-sm" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Create account
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsSignUp(false)}
+                className={`h-11 rounded-xl text-sm font-semibold font-sans transition-all ${
+                  !isSignUp ? "bg-primary text-primary-foreground glow-sm" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Log in
+              </button>
+            </div>
+            <p className="text-center text-xs text-muted-foreground">
+              {isSignUp ? "New here? Create your account below." : "Already have an account? Enter your details below."}
+            </p>
+          </div>
+        )}
+
         {/* Forgot Password — step 1: send code */}
         {view === "forgot" && !resetSent && (
           <form onSubmit={handleSendResetCode} className="space-y-4">
@@ -417,8 +458,17 @@ const AuthPage = () => {
               </div>
             )}
 
-            {!isSignUp && (
-              <div className="flex justify-end">
+            <div className="flex items-center justify-between gap-3">
+              <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none min-h-[44px]">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-4 w-4 rounded border-border accent-primary"
+                />
+                Keep me signed in
+              </label>
+              {!isSignUp && (
                 <button
                   type="button"
                   onClick={() => setView("forgot")}
@@ -426,10 +476,10 @@ const AuthPage = () => {
                 >
                   Forgot password?
                 </button>
-              </div>
-            )}
+              )}
+            </div>
             <Button type="submit" disabled={loading} className="w-full h-11 rounded-xl">
-              {loading ? "Loading..." : isSignUp ? "Send Verification Code" : "Sign In"}
+              {loading ? "Loading..." : isSignUp ? "Create Account" : "Log In"}
               <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           </form>
@@ -514,18 +564,6 @@ const AuthPage = () => {
           </form>
         )}
 
-        {/* Toggle sign up / sign in */}
-        {view === "auth" && !emailOtpSent && (
-          <p className="text-center text-sm text-muted-foreground">
-            {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
-            <button
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-primary hover:underline font-medium"
-            >
-              {isSignUp ? "Sign in" : "Sign up"}
-            </button>
-          </p>
-        )}
       </div>
     </div>
   );
