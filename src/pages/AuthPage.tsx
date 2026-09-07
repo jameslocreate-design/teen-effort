@@ -458,8 +458,17 @@ const AuthPage = () => {
               </div>
             )}
 
-            {!isSignUp && (
-              <div className="flex justify-end">
+            <div className="flex items-center justify-between gap-3">
+              <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none min-h-[44px]">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-4 w-4 rounded border-border accent-primary"
+                />
+                Keep me signed in
+              </label>
+              {!isSignUp && (
                 <button
                   type="button"
                   onClick={() => setView("forgot")}
@@ -467,10 +476,10 @@ const AuthPage = () => {
                 >
                   Forgot password?
                 </button>
-              </div>
-            )}
+              )}
+            </div>
             <Button type="submit" disabled={loading} className="w-full h-11 rounded-xl">
-              {loading ? "Loading..." : isSignUp ? "Send Verification Code" : "Sign In"}
+              {loading ? "Loading..." : isSignUp ? "Create Account" : "Log In"}
               <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           </form>
