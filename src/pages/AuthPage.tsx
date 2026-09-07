@@ -295,6 +295,35 @@ const AuthPage = () => {
           </div>
         )}
 
+        {/* Sign up / Log in switch — sign up first for new users */}
+        {view === "auth" && !emailOtpSent && (
+          <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-1 p-1 rounded-2xl bg-secondary/60 border border-border">
+              <button
+                type="button"
+                onClick={() => setIsSignUp(true)}
+                className={`h-11 rounded-xl text-sm font-semibold font-sans transition-all ${
+                  isSignUp ? "bg-primary text-primary-foreground glow-sm" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Create account
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsSignUp(false)}
+                className={`h-11 rounded-xl text-sm font-semibold font-sans transition-all ${
+                  !isSignUp ? "bg-primary text-primary-foreground glow-sm" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Log in
+              </button>
+            </div>
+            <p className="text-center text-xs text-muted-foreground">
+              {isSignUp ? "New here? Create your account below." : "Already have an account? Enter your details below."}
+            </p>
+          </div>
+        )}
+
         {/* Forgot Password — step 1: send code */}
         {view === "forgot" && !resetSent && (
           <form onSubmit={handleSendResetCode} className="space-y-4">
