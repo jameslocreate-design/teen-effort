@@ -3,9 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { signedUrl } from "@/lib/storage";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { User, Unlink, CalendarDays, Heart } from "lucide-react";
+import { User, Unlink, CalendarDays, Heart, BookHeart, Download, Check, Clock } from "lucide-react";
 import { format } from "date-fns";
+import { generateMemoryBook } from "@/lib/memory-book";
 
 interface PartnerProfile {
   name: string;
