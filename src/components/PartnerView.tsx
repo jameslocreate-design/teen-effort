@@ -3,9 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { signedUrl } from "@/lib/storage";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { User, Unlink, CalendarDays, Heart } from "lucide-react";
+import { User, Unlink, CalendarDays, Heart, BookHeart, Download, Check, Clock } from "lucide-react";
 import { format } from "date-fns";
+import { generateMemoryBook } from "@/lib/memory-book";
 
 interface PartnerProfile {
   name: string;
@@ -25,6 +27,14 @@ const PartnerView = ({ onUnlinked }: PartnerViewProps) => {
   const [linkId, setLinkId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [unlinking, setUnlinking] = useState(false);
+  const [myName, setMyName] = useState("Me");
+  const [isUser1, setIsUser1] = useState(true);
+  const [myConsent, setMyConsent] = useState(false);
+  const [partnerConsent, setPartnerConsent] = useState(false);
+  const [savingConsent, setSavingConsent] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+
+  const bothAgreed = myConsent && partnerConsent;
 
   const fetchData = useCallback(async () => {
     if (!user) return;
@@ -33,7 +43,7 @@ const PartnerView = ({ onUnlinked }: PartnerViewProps) => {
     // Get accepted partner link (use limit(1) so accidental duplicates don't break the read)
     const { data: link } = await supabase
       .from("partner_links")
-      .select("id, created_at, user1_id, user2_id")
+      .select("id, created_at, user1_id, user2_id, user1_memories_ok, user2_memories_ok")
       .eq("status", "accepted")
       .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
       .order("created_at", { ascending: false })
@@ -48,7 +58,12 @@ const PartnerView = ({ onUnlinked }: PartnerViewProps) => {
     setLinkId(link.id);
     setLinkedDate(link.created_at);
 
-    const partnerId = link.user1_id === user.id ? link.user2_id : link.user1_id;
+    const mine = link.user1_id === user.id;
+    setIsUser1(mine);
+    setMyConsent(mine ? link.user1_memories_ok : link.user2_memories_ok);
+    setPartnerConsent(mine ? link.user2_memories_ok : link.user1_memories_ok);
+
+    const partnerId = mine ? link.user2_id : link.user1_id;
 
     const { data: profile } = await supabase
       .from("profiles")
@@ -62,17 +77,81 @@ const PartnerView = ({ onUnlinked }: PartnerViewProps) => {
         avatar_url: await signedUrl("avatars", (profile as any).avatar_url),
       });
     }
+
+    const { data: me } = await supabase
+      .from("profiles")
+      .select("name")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (me?.name) setMyName(me.name);
+
     setLoading(false);
   }, [user]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  // Pick up the partner's answer when returning to the screen
+  useEffect(() => {
+    const onFocus = () => { if (document.visibilityState === "visible") fetchData(); };
+    document.addEventListener("visibilitychange", onFocus);
+    return () => document.removeEventListener("visibilitychange", onFocus);
+  }, [fetchData]);
+
+  const toggleConsent = async (value: boolean) => {
+    if (!linkId) return;
+    setSavingConsent(true);
+    const column = isUser1 ? "user1_memories_ok" : "user2_memories_ok";
+    const { error } = await supabase
+      .from("partner_links")
+      .update({ [column]: value })
+      .eq("id", linkId);
+    if (error) {
+      toast.error("Couldn't save that. Try again.");
+    } else {
+      setMyConsent(value);
+      toast.success(value ? "You've agreed to share your memories" : "Memory sharing turned off");
+      fetchData();
+    }
+    setSavingConsent(false);
+  };
+
+  const downloadMemoryBook = async () => {
+    if (!linkId || !partner) return false;
+    setDownloading(true);
+    try {
+      await generateMemoryBook({
+        partnerLinkId: linkId,
+        myName,
+        partnerName: partner.name,
+        linkedSince: linkedDate,
+      });
+      toast.success("Your memory book is downloading");
+      return true;
+    } catch {
+      toast.error("Couldn't create the memory book");
+      return false;
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   const handleUnlink = async () => {
     if (!linkId) return;
-    const confirmed = window.confirm("Are you sure you want to unlink from your partner? This will remove your shared calendar data.");
-    if (!confirmed) return;
+    const message = bothAgreed
+      ? "You both agreed to keep your memories. Your memory book will download first, then you'll be unlinked and the shared dates removed. Continue?"
+      : "Are you sure you want to unlink from your partner? This will remove your shared calendar data.";
+    if (!window.confirm(message)) return;
 
     setUnlinking(true);
+
+    if (bothAgreed) {
+      const ok = await downloadMemoryBook();
+      if (!ok) {
+        setUnlinking(false);
+        return;
+      }
+    }
+
     const { error } = await supabase.from("partner_links").delete().eq("id", linkId);
     if (error) {
       toast.error("Failed to unlink");
@@ -143,6 +222,61 @@ const PartnerView = ({ onUnlinked }: PartnerViewProps) => {
                 Linked since <span className="text-foreground font-medium">{format(new Date(linkedDate), "MMM d, yyyy")}</span>
               </span>
             </div>
+          )}
+        </div>
+
+        {/* Keep our memories agreement */}
+        <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+          <div className="flex items-start gap-3">
+            <div className="h-9 w-9 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
+              <BookHeart className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex-1 space-y-1">
+              <h3 className="text-sm font-semibold text-foreground">Keep our memories</h3>
+              <p className="text-xs text-muted-foreground">
+                If you both agree, you can each download a memory book of your dates, ratings and
+                photos before unlinking.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-3 rounded-lg bg-secondary/50 px-4 py-3">
+            <span className="text-sm text-foreground">I agree to share our memories</span>
+            <Switch
+              checked={myConsent}
+              disabled={savingConsent}
+              onCheckedChange={toggleConsent}
+              aria-label="Agree to share our memories"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 text-xs">
+            {partnerConsent ? (
+              <>
+                <Check className="h-3.5 w-3.5 text-primary" />
+                <span className="text-muted-foreground">
+                  {partner.name} has agreed too
+                </span>
+              </>
+            ) : (
+              <>
+                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-muted-foreground">
+                  Waiting for {partner.name} to agree
+                </span>
+              </>
+            )}
+          </div>
+
+          {bothAgreed && (
+            <Button
+              onClick={downloadMemoryBook}
+              disabled={downloading}
+              className="w-full rounded-xl h-11 gap-2"
+            >
+              <Download className="h-4 w-4" />
+              {downloading ? "Creating your book..." : "Download memory book"}
+            </Button>
           )}
         </div>
 
