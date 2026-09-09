@@ -301,7 +301,7 @@ export async function generateMemoryBook({
   doc.setFont("times", "italic");
   doc.setFontSize(10);
   doc.setTextColor(...ROSE);
-  doc.text("Thank you for the memories. 💗", W / 2, H - M, { align: "center" });
+  doc.text("Thank you for the memories.", W / 2, H - M, { align: "center" });
 
   const safe = (s: string) => s.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "");
   doc.save(`memory-book-${safe(myName)}-and-${safe(partnerName)}.pdf`);
