@@ -225,6 +225,61 @@ const PartnerView = ({ onUnlinked }: PartnerViewProps) => {
           )}
         </div>
 
+        {/* Keep our memories agreement */}
+        <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+          <div className="flex items-start gap-3">
+            <div className="h-9 w-9 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
+              <BookHeart className="h-4.5 w-4.5 text-primary" />
+            </div>
+            <div className="flex-1 space-y-1">
+              <h3 className="text-sm font-semibold text-foreground">Keep our memories</h3>
+              <p className="text-xs text-muted-foreground">
+                If you both agree, you can each download a memory book of your dates, ratings and
+                photos before unlinking.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-3 rounded-lg bg-secondary/50 px-4 py-3">
+            <span className="text-sm text-foreground">I agree to share our memories</span>
+            <Switch
+              checked={myConsent}
+              disabled={savingConsent}
+              onCheckedChange={toggleConsent}
+              aria-label="Agree to share our memories"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 text-xs">
+            {partnerConsent ? (
+              <>
+                <Check className="h-3.5 w-3.5 text-primary" />
+                <span className="text-muted-foreground">
+                  {partner.name} has agreed too
+                </span>
+              </>
+            ) : (
+              <>
+                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-muted-foreground">
+                  Waiting for {partner.name} to agree
+                </span>
+              </>
+            )}
+          </div>
+
+          {bothAgreed && (
+            <Button
+              onClick={downloadMemoryBook}
+              disabled={downloading}
+              className="w-full rounded-xl h-11 gap-2"
+            >
+              <Download className="h-4 w-4" />
+              {downloading ? "Creating your book..." : "Download memory book"}
+            </Button>
+          )}
+        </div>
+
         {/* Unlink */}
         <Button
           variant="outline"
