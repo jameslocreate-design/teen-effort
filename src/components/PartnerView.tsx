@@ -229,7 +229,7 @@ const PartnerView = ({ onUnlinked }: PartnerViewProps) => {
         <div className="rounded-xl border border-border bg-card p-5 space-y-4">
           <div className="flex items-start gap-3">
             <div className="h-9 w-9 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
-              <BookHeart className="h-4.5 w-4.5 text-primary" />
+              <BookHeart className="h-4 w-4 text-primary" />
             </div>
             <div className="flex-1 space-y-1">
               <h3 className="text-sm font-semibold text-foreground">Keep our memories</h3>
