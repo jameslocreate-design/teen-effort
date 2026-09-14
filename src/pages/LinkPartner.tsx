@@ -100,6 +100,10 @@ const LinkPartner = () => {
           .eq("id", linkId);
         if (upErr) {
           console.error("Accept update error:", upErr);
+          if (isAgeMismatch(upErr)) {
+            setStatus("age");
+            return;
+          }
           setStatus("error");
           return;
         }

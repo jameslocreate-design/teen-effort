@@ -190,7 +190,7 @@ const PartnerLink = ({ onLinked }: PartnerLinkProps) => {
       .eq("id", pendingLink.id);
 
     if (error) {
-      toast.error("Failed to accept");
+      toast.error(isAgeMismatch(error) ? AGE_MISMATCH_MESSAGE : "Failed to accept");
       return;
     }
 
