@@ -121,7 +121,7 @@ const LinkPartner = () => {
           .single();
         if (error || !inserted) {
           console.error("Link insert error:", error);
-          setStatus("error");
+          setStatus(isAgeMismatch(error) ? "age" : "error");
           return;
         }
         linkId = inserted.id;
