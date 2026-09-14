@@ -138,7 +138,19 @@ const PartnerLink = ({ onLinked }: PartnerLinkProps) => {
     if (rows.length > 0) {
       // Auto-accept whatever's there — both sides clicked, link them up now
       const keepId = rows[0].id;
-      await supabase.from("partner_links").update({ status: "accepted" }).eq("id", keepId);
+      const { error: acceptErr } = await supabase
+        .from("partner_links")
+        .update({ status: "accepted" })
+        .eq("id", keepId);
+      if (acceptErr) {
+        if (isAgeMismatch(acceptErr)) {
+          toast.error(AGE_MISMATCH_MESSAGE);
+        } else {
+          toast.error("Failed to link");
+        }
+        setLoading(false);
+        return;
+      }
       const dupes = rows.slice(1).map((r) => r.id);
       if (dupes.length > 0) await supabase.from("partner_links").delete().in("id", dupes);
       toast.success("You're linked! 💕");
@@ -154,7 +166,9 @@ const PartnerLink = ({ onLinked }: PartnerLinkProps) => {
     });
 
     if (error) {
-      if (error.code === "23505") {
+      if (isAgeMismatch(error)) {
+        toast.error(AGE_MISMATCH_MESSAGE);
+      } else if (error.code === "23505") {
         toast.error("A link already exists with this partner");
       } else {
         toast.error("Failed to send link request");
