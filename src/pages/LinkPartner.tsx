@@ -193,6 +193,19 @@ const LinkPartner = () => {
             </button>
           </>
         )}
+
+        {status === "age" && (
+          <>
+            <h1 className="text-2xl font-bold text-foreground">Can't connect these accounts</h1>
+            <p className="text-muted-foreground">{AGE_MISMATCH_MESSAGE}</p>
+            <button
+              onClick={handleContinue}
+              className="w-full rounded-xl bg-primary text-primary-foreground py-3 font-medium hover:bg-primary/90 transition-colors"
+            >
+              Go to App
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
