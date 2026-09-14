@@ -4,12 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Heart, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { AGE_MISMATCH_MESSAGE, isAgeMismatch } from "@/lib/age-group";
 
 const LinkPartner = () => {
   const { code } = useParams<{ code: string }>();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [status, setStatus] = useState<"loading" | "success" | "error" | "self">("loading");
+  const [status, setStatus] = useState<"loading" | "success" | "error" | "self" | "age">("loading");
 
   useEffect(() => {
     if (authLoading) return;
@@ -100,6 +101,10 @@ const LinkPartner = () => {
           .eq("id", linkId);
         if (upErr) {
           console.error("Accept update error:", upErr);
+          if (isAgeMismatch(upErr)) {
+            setStatus("age");
+            return;
+          }
           setStatus("error");
           return;
         }
@@ -116,7 +121,7 @@ const LinkPartner = () => {
           .single();
         if (error || !inserted) {
           console.error("Link insert error:", error);
-          setStatus("error");
+          setStatus(isAgeMismatch(error) ? "age" : "error");
           return;
         }
         linkId = inserted.id;
@@ -180,6 +185,19 @@ const LinkPartner = () => {
           <>
             <h1 className="text-2xl font-bold text-foreground">That's your own link! 😄</h1>
             <p className="text-muted-foreground">Share this link with your partner instead.</p>
+            <button
+              onClick={handleContinue}
+              className="w-full rounded-xl bg-primary text-primary-foreground py-3 font-medium hover:bg-primary/90 transition-colors"
+            >
+              Go to App
+            </button>
+          </>
+        )}
+
+        {status === "age" && (
+          <>
+            <h1 className="text-2xl font-bold text-foreground">Can't connect these accounts</h1>
+            <p className="text-muted-foreground">{AGE_MISMATCH_MESSAGE}</p>
             <button
               onClick={handleContinue}
               className="w-full rounded-xl bg-primary text-primary-foreground py-3 font-medium hover:bg-primary/90 transition-colors"
