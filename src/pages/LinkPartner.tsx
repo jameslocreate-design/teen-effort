@@ -4,12 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Heart, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { AGE_MISMATCH_MESSAGE, isAgeMismatch } from "@/lib/age-group";
 
 const LinkPartner = () => {
   const { code } = useParams<{ code: string }>();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [status, setStatus] = useState<"loading" | "success" | "error" | "self">("loading");
+  const [status, setStatus] = useState<"loading" | "success" | "error" | "self" | "age">("loading");
 
   useEffect(() => {
     if (authLoading) return;
