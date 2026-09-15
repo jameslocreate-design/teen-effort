@@ -35,6 +35,9 @@ const PartnerView = ({ onUnlinked }: PartnerViewProps) => {
   const [partnerConsent, setPartnerConsent] = useState(false);
   const [savingConsent, setSavingConsent] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [partnerId, setPartnerId] = useState<string | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [blocking, setBlocking] = useState(false);
 
   const bothAgreed = myConsent && partnerConsent;
 
