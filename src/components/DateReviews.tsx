@@ -275,6 +275,16 @@ const DateReviews = () => {
           ))}
         </div>
       )}
+
+      <ReportDialog
+        open={!!reporting}
+        onOpenChange={(open) => { if (!open) setReporting(null); }}
+        contentType="date_review"
+        contentId={reporting?.id}
+        reportedUserId={reporting?.user_id}
+        snapshot={reporting ? `${reporting.venue_name}: ${reporting.review_text ?? ""}` : null}
+        label="this review"
+      />
     </div>
   );
 };
