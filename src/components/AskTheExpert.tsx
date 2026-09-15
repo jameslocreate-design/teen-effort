@@ -5,9 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { MessageCircle, Send, Sparkles, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { MessageCircle, Send, Sparkles, Trash2, ChevronDown, ChevronUp, Flag } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
+import ReportDialog from "@/components/ReportDialog";
+import type { ReportContentType } from "@/lib/moderation";
 
 interface Post {
   id: string;
@@ -37,6 +39,13 @@ const AskTheExpert = () => {
   const [replyText, setReplyText] = useState<Record<string, string>>({});
   const [loadingAI, setLoadingAI] = useState<Record<string, boolean>>({});
   const [replyingTo, setReplyingTo] = useState<Record<string, boolean>>({});
+  const [reporting, setReporting] = useState<{
+    type: ReportContentType;
+    id: string;
+    userId: string | null;
+    snapshot: string;
+    label: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchPosts();
@@ -185,9 +194,27 @@ const AskTheExpert = () => {
                 </p>
                 <p className="text-sm text-foreground whitespace-pre-wrap">{post.content}</p>
               </div>
-              {post.user_id === user?.id && (
+              {post.user_id === user?.id ? (
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => deletePost(post.id)}>
                   <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Report question"
+                  className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                  onClick={() =>
+                    setReporting({
+                      type: "expert_post",
+                      id: post.id,
+                      userId: post.user_id,
+                      snapshot: post.content,
+                      label: "this question",
+                    })
+                  }
+                >
+                  <Flag className="h-3.5 w-3.5" />
                 </Button>
               )}
             </div>
@@ -228,11 +255,29 @@ const AskTheExpert = () => {
                           <p className="text-foreground whitespace-pre-wrap">{reply.content}</p>
                         )}
                       </div>
-                      {reply.user_id === user?.id && (
+                      {reply.user_id === user?.id ? (
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" onClick={() => deleteReply(reply.id)}>
                           <Trash2 className="h-3 w-3" />
                         </Button>
-                      )}
+                      ) : !reply.is_ai ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label="Report reply"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                          onClick={() =>
+                            setReporting({
+                              type: "expert_reply",
+                              id: reply.id,
+                              userId: reply.user_id,
+                              snapshot: reply.content,
+                              label: "this reply",
+                            })
+                          }
+                        >
+                          <Flag className="h-3 w-3" />
+                        </Button>
+                      ) : null}
                     </div>
                   </div>
                 ))}
@@ -258,6 +303,16 @@ const AskTheExpert = () => {
           </CardContent>
         </Card>
       ))}
+
+      <ReportDialog
+        open={!!reporting}
+        onOpenChange={(open) => { if (!open) setReporting(null); }}
+        contentType={reporting?.type ?? "expert_post"}
+        contentId={reporting?.id}
+        reportedUserId={reporting?.userId}
+        snapshot={reporting?.snapshot}
+        label={reporting?.label ?? "this post"}
+      />
     </div>
   );
 };

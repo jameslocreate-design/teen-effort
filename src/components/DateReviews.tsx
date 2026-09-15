@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Star, MessageSquare, Plus, Trash2, ThumbsUp, MapPin } from "lucide-react";
+import { Star, MessageSquare, Plus, Trash2, ThumbsUp, MapPin, Flag } from "lucide-react";
+import ReportDialog from "@/components/ReportDialog";
 
 interface Review {
   id: string;
@@ -31,6 +32,7 @@ const DateReviews = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [partnerLinkId, setPartnerLinkId] = useState<string | null>(null);
+  const [reporting, setReporting] = useState<Review | null>(null);
   const [form, setForm] = useState({
     venue_name: "", venue_type: "", location: "",
     rating: 5, review_text: "", date_type: "",
@@ -234,9 +236,13 @@ const DateReviews = () => {
                     )}
                   </div>
                 </div>
-                {review.user_id === user?.id && (
+                {review.user_id === user?.id ? (
                   <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => handleDelete(review.id)}>
                     <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                ) : (
+                  <Button variant="ghost" size="icon" aria-label="Report review" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => setReporting(review)}>
+                    <Flag className="h-3.5 w-3.5" />
                   </Button>
                 )}
               </div>
@@ -269,6 +275,16 @@ const DateReviews = () => {
           ))}
         </div>
       )}
+
+      <ReportDialog
+        open={!!reporting}
+        onOpenChange={(open) => { if (!open) setReporting(null); }}
+        contentType="date_review"
+        contentId={reporting?.id}
+        reportedUserId={reporting?.user_id}
+        snapshot={reporting ? `${reporting.venue_name}: ${reporting.review_text ?? ""}` : null}
+        label="this review"
+      />
     </div>
   );
 };

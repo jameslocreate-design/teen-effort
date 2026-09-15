@@ -4,8 +4,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Link2, Copy, Check, UserPlus, Heart, Share2 } from "lucide-react";
+import { Link2, Copy, Check, UserPlus, Heart, Share2, Flag, Ban } from "lucide-react";
 import { AGE_MISMATCH_MESSAGE, isAgeMismatch } from "@/lib/age-group";
+import ReportDialog from "@/components/ReportDialog";
+import { blockUser } from "@/lib/moderation";
 
 interface PartnerLinkProps {
   onLinked: () => void;
@@ -18,8 +20,31 @@ const PartnerLink = ({ onLinked }: PartnerLinkProps) => {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [pendingLink, setPendingLink] = useState<any>(null);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [blocking, setBlocking] = useState(false);
 
   const shareUrl = myCode ? `${window.location.origin}/link/${myCode}` : "";
+
+  const requesterId: string | null = pendingLink
+    ? pendingLink.user1_id === user?.id
+      ? pendingLink.user2_id
+      : pendingLink.user1_id
+    : null;
+
+  const handleBlockRequester = async () => {
+    if (!requesterId) return;
+    if (!window.confirm("Block this person? Their request disappears and they can never connect with you again.")) return;
+    setBlocking(true);
+    try {
+      await blockUser(requesterId);
+      setPendingLink(null);
+      toast.success("Blocked. That request is gone.");
+    } catch {
+      toast.error("Couldn't block this person. Please try again.");
+    } finally {
+      setBlocking(false);
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -272,6 +297,27 @@ const PartnerLink = ({ onLinked }: PartnerLinkProps) => {
             <Button onClick={handleAccept} className="w-full rounded-xl">
               Accept Partner Link
             </Button>
+            <div className="flex gap-2">
+              <Button variant="ghost" onClick={() => setReportOpen(true)} className="flex-1 rounded-xl h-10 text-xs text-muted-foreground">
+                <Flag className="h-3.5 w-3.5" /> Report
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={handleBlockRequester}
+                disabled={blocking}
+                className="flex-1 rounded-xl h-10 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+              >
+                <Ban className="h-3.5 w-3.5" /> {blocking ? "Blocking..." : "Block"}
+              </Button>
+            </div>
+            <ReportDialog
+              open={reportOpen}
+              onOpenChange={setReportOpen}
+              contentType="partner_request"
+              contentId={pendingLink.id}
+              reportedUserId={requesterId}
+              label="this link request"
+            />
           </div>
         )}
 

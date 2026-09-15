@@ -5,9 +5,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { User, Unlink, CalendarDays, Heart, BookHeart, Download, Check, Clock } from "lucide-react";
+import { User, Unlink, CalendarDays, Heart, BookHeart, Download, Check, Clock, Flag, Ban } from "lucide-react";
 import { format } from "date-fns";
 import { generateMemoryBook } from "@/lib/memory-book";
+import ReportDialog from "@/components/ReportDialog";
+import { blockUser } from "@/lib/moderation";
 
 interface PartnerProfile {
   name: string;
@@ -33,6 +35,9 @@ const PartnerView = ({ onUnlinked }: PartnerViewProps) => {
   const [partnerConsent, setPartnerConsent] = useState(false);
   const [savingConsent, setSavingConsent] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [partnerId, setPartnerId] = useState<string | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [blocking, setBlocking] = useState(false);
 
   const bothAgreed = myConsent && partnerConsent;
 
@@ -64,6 +69,7 @@ const PartnerView = ({ onUnlinked }: PartnerViewProps) => {
     setPartnerConsent(mine ? link.user2_memories_ok : link.user1_memories_ok);
 
     const partnerId = mine ? link.user2_id : link.user1_id;
+    setPartnerId(partnerId);
 
     const { data: profile } = await supabase
       .from("profiles")
@@ -160,6 +166,26 @@ const PartnerView = ({ onUnlinked }: PartnerViewProps) => {
       onUnlinked();
     }
     setUnlinking(false);
+  };
+
+  const handleBlock = async () => {
+    if (!partnerId) return;
+    if (
+      !window.confirm(
+        "Blocking will unlink you right away, remove your shared dates and stop this person from ever connecting with you again. Continue?"
+      )
+    )
+      return;
+    setBlocking(true);
+    try {
+      await blockUser(partnerId);
+      toast.success("Blocked. You're no longer linked.");
+      onUnlinked();
+    } catch {
+      toast.error("Couldn't block this person. Please try again.");
+    } finally {
+      setBlocking(false);
+    }
   };
 
   if (loading) {
@@ -290,6 +316,40 @@ const PartnerView = ({ onUnlinked }: PartnerViewProps) => {
           <Unlink className="h-4 w-4" />
           {unlinking ? "Unlinking..." : "Unlink Account"}
         </Button>
+
+        {/* Safety */}
+        <div className="space-y-2 pt-2">
+          <p className="text-xs text-muted-foreground text-center">
+            Feeling unsafe or uncomfortable? You can report or block this person.
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => setReportOpen(true)}
+              className="flex-1 rounded-xl h-11 text-muted-foreground"
+            >
+              <Flag className="h-4 w-4" /> Report
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={handleBlock}
+              disabled={blocking}
+              className="flex-1 rounded-xl h-11 text-destructive hover:bg-destructive/10 hover:text-destructive"
+            >
+              <Ban className="h-4 w-4" /> {blocking ? "Blocking..." : "Block"}
+            </Button>
+          </div>
+        </div>
+
+        <ReportDialog
+          open={reportOpen}
+          onOpenChange={setReportOpen}
+          contentType="partner_profile"
+          contentId={partnerId}
+          reportedUserId={partnerId}
+          snapshot={partner.name}
+          label="this person"
+        />
       </div>
     </div>
   );
