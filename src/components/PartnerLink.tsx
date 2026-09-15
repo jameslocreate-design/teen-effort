@@ -4,8 +4,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Link2, Copy, Check, UserPlus, Heart, Share2 } from "lucide-react";
+import { Link2, Copy, Check, UserPlus, Heart, Share2, Flag, Ban } from "lucide-react";
 import { AGE_MISMATCH_MESSAGE, isAgeMismatch } from "@/lib/age-group";
+import ReportDialog from "@/components/ReportDialog";
+import { blockUser } from "@/lib/moderation";
 
 interface PartnerLinkProps {
   onLinked: () => void;
