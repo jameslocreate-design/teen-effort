@@ -5,9 +5,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { User, Unlink, CalendarDays, Heart, BookHeart, Download, Check, Clock } from "lucide-react";
+import { User, Unlink, CalendarDays, Heart, BookHeart, Download, Check, Clock, Flag, Ban } from "lucide-react";
 import { format } from "date-fns";
 import { generateMemoryBook } from "@/lib/memory-book";
+import ReportDialog from "@/components/ReportDialog";
+import { blockUser } from "@/lib/moderation";
 
 interface PartnerProfile {
   name: string;
