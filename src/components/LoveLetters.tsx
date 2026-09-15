@@ -160,17 +160,31 @@ const LoveLetters = () => {
                 </span>
               </div>
               <p className="text-sm text-foreground font-sans leading-relaxed whitespace-pre-wrap">{letter.content}</p>
-              {isFromMe && (
-                <div className="flex justify-end">
+              <div className="flex justify-end">
+                {isFromMe ? (
                   <Button variant="ghost" size="sm" onClick={() => handleDelete(letter.id)} className="text-muted-foreground hover:text-destructive h-7 text-xs">
                     <Trash2 className="h-3 w-3" />
                   </Button>
-                </div>
-              )}
+                ) : (
+                  <Button variant="ghost" size="sm" onClick={() => setReporting(letter)} className="text-muted-foreground hover:text-destructive h-7 text-xs gap-1">
+                    <Flag className="h-3 w-3" /> Report
+                  </Button>
+                )}
+              </div>
             </div>
           );
         })}
       </div>
+
+      <ReportDialog
+        open={!!reporting}
+        onOpenChange={(open) => { if (!open) setReporting(null); }}
+        contentType="love_letter"
+        contentId={reporting?.id}
+        reportedUserId={reporting?.sender_id}
+        snapshot={reporting?.content}
+        label="this letter"
+      />
     </div>
   );
 };
