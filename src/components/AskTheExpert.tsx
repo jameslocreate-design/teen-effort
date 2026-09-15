@@ -303,6 +303,16 @@ const AskTheExpert = () => {
           </CardContent>
         </Card>
       ))}
+
+      <ReportDialog
+        open={!!reporting}
+        onOpenChange={(open) => { if (!open) setReporting(null); }}
+        contentType={reporting?.type ?? "expert_post"}
+        contentId={reporting?.id}
+        reportedUserId={reporting?.userId}
+        snapshot={reporting?.snapshot}
+        label={reporting?.label ?? "this post"}
+      />
     </div>
   );
 };
