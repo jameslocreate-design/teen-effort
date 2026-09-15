@@ -255,11 +255,29 @@ const AskTheExpert = () => {
                           <p className="text-foreground whitespace-pre-wrap">{reply.content}</p>
                         )}
                       </div>
-                      {reply.user_id === user?.id && (
+                      {reply.user_id === user?.id ? (
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" onClick={() => deleteReply(reply.id)}>
                           <Trash2 className="h-3 w-3" />
                         </Button>
-                      )}
+                      ) : !reply.is_ai ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label="Report reply"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                          onClick={() =>
+                            setReporting({
+                              type: "expert_reply",
+                              id: reply.id,
+                              userId: reply.user_id,
+                              snapshot: reply.content,
+                              label: "this reply",
+                            })
+                          }
+                        >
+                          <Flag className="h-3 w-3" />
+                        </Button>
+                      ) : null}
                     </div>
                   </div>
                 ))}
