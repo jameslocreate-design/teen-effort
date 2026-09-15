@@ -194,9 +194,27 @@ const AskTheExpert = () => {
                 </p>
                 <p className="text-sm text-foreground whitespace-pre-wrap">{post.content}</p>
               </div>
-              {post.user_id === user?.id && (
+              {post.user_id === user?.id ? (
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => deletePost(post.id)}>
                   <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Report question"
+                  className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                  onClick={() =>
+                    setReporting({
+                      type: "expert_post",
+                      id: post.id,
+                      userId: post.user_id,
+                      snapshot: post.content,
+                      label: "this question",
+                    })
+                  }
+                >
+                  <Flag className="h-3.5 w-3.5" />
                 </Button>
               )}
             </div>
