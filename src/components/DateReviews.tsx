@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Star, MessageSquare, Plus, Trash2, ThumbsUp, MapPin } from "lucide-react";
+import { Star, MessageSquare, Plus, Trash2, ThumbsUp, MapPin, Flag } from "lucide-react";
+import ReportDialog from "@/components/ReportDialog";
 
 interface Review {
   id: string;
