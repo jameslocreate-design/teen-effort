@@ -236,9 +236,13 @@ const DateReviews = () => {
                     )}
                   </div>
                 </div>
-                {review.user_id === user?.id && (
+                {review.user_id === user?.id ? (
                   <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => handleDelete(review.id)}>
                     <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                ) : (
+                  <Button variant="ghost" size="icon" aria-label="Report review" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => setReporting(review)}>
+                    <Flag className="h-3.5 w-3.5" />
                   </Button>
                 )}
               </div>
