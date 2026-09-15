@@ -20,8 +20,31 @@ const PartnerLink = ({ onLinked }: PartnerLinkProps) => {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [pendingLink, setPendingLink] = useState<any>(null);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [blocking, setBlocking] = useState(false);
 
   const shareUrl = myCode ? `${window.location.origin}/link/${myCode}` : "";
+
+  const requesterId: string | null = pendingLink
+    ? pendingLink.user1_id === user?.id
+      ? pendingLink.user2_id
+      : pendingLink.user1_id
+    : null;
+
+  const handleBlockRequester = async () => {
+    if (!requesterId) return;
+    if (!window.confirm("Block this person? Their request disappears and they can never connect with you again.")) return;
+    setBlocking(true);
+    try {
+      await blockUser(requesterId);
+      setPendingLink(null);
+      toast.success("Blocked. That request is gone.");
+    } catch {
+      toast.error("Couldn't block this person. Please try again.");
+    } finally {
+      setBlocking(false);
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
