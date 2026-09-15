@@ -32,6 +32,7 @@ const DateReviews = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [partnerLinkId, setPartnerLinkId] = useState<string | null>(null);
+  const [reporting, setReporting] = useState<Review | null>(null);
   const [form, setForm] = useState({
     venue_name: "", venue_type: "", location: "",
     rating: 5, review_text: "", date_type: "",
