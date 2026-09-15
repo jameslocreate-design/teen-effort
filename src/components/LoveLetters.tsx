@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Send, Heart, Mail, MailOpen, Trash2, PenLine } from "lucide-react";
+import { Send, Heart, Mail, MailOpen, Trash2, PenLine, Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+import ReportDialog from "@/components/ReportDialog";
 
 interface Letter {
   id: string;
