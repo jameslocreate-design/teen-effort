@@ -316,6 +316,40 @@ const PartnerView = ({ onUnlinked }: PartnerViewProps) => {
           <Unlink className="h-4 w-4" />
           {unlinking ? "Unlinking..." : "Unlink Account"}
         </Button>
+
+        {/* Safety */}
+        <div className="space-y-2 pt-2">
+          <p className="text-xs text-muted-foreground text-center">
+            Feeling unsafe or uncomfortable? You can report or block this person.
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => setReportOpen(true)}
+              className="flex-1 rounded-xl h-11 text-muted-foreground"
+            >
+              <Flag className="h-4 w-4" /> Report
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={handleBlock}
+              disabled={blocking}
+              className="flex-1 rounded-xl h-11 text-destructive hover:bg-destructive/10 hover:text-destructive"
+            >
+              <Ban className="h-4 w-4" /> {blocking ? "Blocking..." : "Block"}
+            </Button>
+          </div>
+        </div>
+
+        <ReportDialog
+          open={reportOpen}
+          onOpenChange={setReportOpen}
+          contentType="partner_profile"
+          contentId={partnerId}
+          reportedUserId={partnerId}
+          snapshot={partner.name}
+          label="this person"
+        />
       </div>
     </div>
   );
