@@ -39,6 +39,13 @@ const AskTheExpert = () => {
   const [replyText, setReplyText] = useState<Record<string, string>>({});
   const [loadingAI, setLoadingAI] = useState<Record<string, boolean>>({});
   const [replyingTo, setReplyingTo] = useState<Record<string, boolean>>({});
+  const [reporting, setReporting] = useState<{
+    type: ReportContentType;
+    id: string;
+    userId: string | null;
+    snapshot: string;
+    label: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchPosts();
