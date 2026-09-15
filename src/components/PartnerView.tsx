@@ -69,6 +69,7 @@ const PartnerView = ({ onUnlinked }: PartnerViewProps) => {
     setPartnerConsent(mine ? link.user2_memories_ok : link.user1_memories_ok);
 
     const partnerId = mine ? link.user2_id : link.user1_id;
+    setPartnerId(partnerId);
 
     const { data: profile } = await supabase
       .from("profiles")
