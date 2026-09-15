@@ -168,6 +168,26 @@ const PartnerView = ({ onUnlinked }: PartnerViewProps) => {
     setUnlinking(false);
   };
 
+  const handleBlock = async () => {
+    if (!partnerId) return;
+    if (
+      !window.confirm(
+        "Blocking will unlink you right away, remove your shared dates and stop this person from ever connecting with you again. Continue?"
+      )
+    )
+      return;
+    setBlocking(true);
+    try {
+      await blockUser(partnerId);
+      toast.success("Blocked. You're no longer linked.");
+      onUnlinked();
+    } catch {
+      toast.error("Couldn't block this person. Please try again.");
+    } finally {
+      setBlocking(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
