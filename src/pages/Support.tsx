@@ -21,7 +21,7 @@ const faqs = [
   },
   {
     q: "How do I report inappropriate content or another user?",
-    a: "Every piece of shared content and every partner profile has a report option. You can also email us directly at " +
+    a: "Tap the flag icon on a partner profile, a link request, a love letter, a date review, or a forum post to report it. You can also block a partner or a link request, which unlinks you immediately and stops that person from ever connecting with you again. You can always email us at " +
       SAFETY_EMAIL +
       " with details and a screenshot if possible. We review every report and can remove content, block users, and terminate accounts.",
   },
