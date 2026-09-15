@@ -5,9 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { MessageCircle, Send, Sparkles, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { MessageCircle, Send, Sparkles, Trash2, ChevronDown, ChevronUp, Flag } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
+import ReportDialog from "@/components/ReportDialog";
+import type { ReportContentType } from "@/lib/moderation";
 
 interface Post {
   id: string;
