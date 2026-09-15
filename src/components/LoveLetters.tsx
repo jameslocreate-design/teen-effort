@@ -23,6 +23,7 @@ const LoveLetters = () => {
   const [partnerLinkId, setPartnerLinkId] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [composing, setComposing] = useState(false);
+  const [reporting, setReporting] = useState<Letter | null>(null);
 
   useEffect(() => {
     if (!user) return;
