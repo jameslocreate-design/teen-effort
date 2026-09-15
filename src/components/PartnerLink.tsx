@@ -297,6 +297,27 @@ const PartnerLink = ({ onLinked }: PartnerLinkProps) => {
             <Button onClick={handleAccept} className="w-full rounded-xl">
               Accept Partner Link
             </Button>
+            <div className="flex gap-2">
+              <Button variant="ghost" onClick={() => setReportOpen(true)} className="flex-1 rounded-xl h-10 text-xs text-muted-foreground">
+                <Flag className="h-3.5 w-3.5" /> Report
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={handleBlockRequester}
+                disabled={blocking}
+                className="flex-1 rounded-xl h-10 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+              >
+                <Ban className="h-3.5 w-3.5" /> {blocking ? "Blocking..." : "Block"}
+              </Button>
+            </div>
+            <ReportDialog
+              open={reportOpen}
+              onOpenChange={setReportOpen}
+              contentType="partner_request"
+              contentId={pendingLink.id}
+              reportedUserId={requesterId}
+              label="this link request"
+            />
           </div>
         )}
 
