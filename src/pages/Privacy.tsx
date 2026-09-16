@@ -24,6 +24,7 @@ export default function Privacy() {
         <article className="text-foreground/90 font-sans">
           <ReactMarkdown
             components={{
+              h1: () => null,
               h2: ({ node, ...props }) => (
                 <h2
                   className="font-display text-2xl md:text-3xl font-semibold mt-10 mb-4 pb-2 border-b border-border"
