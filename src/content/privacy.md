@@ -1,115 +1,121 @@
 # Privacy Policy
 
-**Last updated:** September 2, 2026
+**Last Updated: September 8, 2026**
 
-This Privacy Policy describes how Teen Effort (“we,” “us,” or “our”) collects, uses, and protects your information when you use our mobile application and website (collectively, the “Service”). By using the Service, you agree to the practices described in this policy.
+Teen Effort ("we," "us," "our," or the "App") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard information when you use our mobile application. This policy is designed to comply with the California Consumer Privacy Act (CCPA), as amended by the California Privacy Rights Act (CPRA), and other applicable California and federal privacy laws.
 
-## 1. Information We Collect
+## 1. Personal Information We Collect
 
-### Account Information
-When you create an account, we collect your email address, your name or display name, your birthday, and either a password or an authentication token from Apple or Google if you use social sign-in. We do not currently offer SMS sign-up and do not collect phone numbers.
+### 1.1 Collected Directly From You
 
-### Profile & Content
-We collect the information you add to your profile and the content you create in the app, including your partner link status, saved date ideas, journal entries and photos, calendar events, wishlists and saved gift ideas, mood selections, date reviews, and any support or safety reports you submit.
+- **Account Information.** Name, email address, date of birth, username, and password. Date of birth is collected once at signup and cannot be edited afterward.
+- **Photo Journal Content.** Photos and media you upload.
+- **Love Letters.** Written messages exchanged with your linked partner.
+- **Vision Board Content.** Images, links, text, and goals you add.
+- **Compatibility Quiz Responses.** Your answers, scored locally within the app (no AI or third-party processing).
+- **Wishlists, Gift Ideas, and Reviews.** Content you add to these features.
+- **Saved Dates and Venue Information.** Calendar entries and the location of venues you choose to save (not your own location).
+- **Payment Information.** Processed by Stripe on the web and Apple or Google via RevenueCat in the apps; we do not directly store full payment card numbers.
+- **Partner Linking Data.** Invite codes and link or unlink status between two accounts. Linking is restricted by age band: accounts ages 13–17 may link only with other accounts ages 13–17, and accounts ages 18 and older may link only with other accounts ages 18 and older.
+- **Unlink Summary Data (Optional).** If both partners agree at the time of unlinking, a PDF summary of the relationship, such as the number of dates and Photo Journal highlights, may be generated. If either partner does not agree, no summary is generated or shared.
 
-### Location Data
-With your permission, we use your device's approximate location to suggest nearby date ideas and venues. Coordinates are used at the moment of a request and are **not stored on our servers**; they may be cached briefly on your own device to avoid repeated permission prompts. You can deny location access and still use the app by entering a location manually. We never track your location in the background.
+### 1.2 Collected Automatically
 
-### Usage & Device Information
-We record limited in-app usage counters (for example, how many date or gift generations you have used in the current month) so we can enforce plan limits. These counters are computed and stored in our own backend. We do not embed third-party advertising or analytics SDKs and we do not build advertising profiles.
+- **On-Demand Location Data.** When you actively use a feature that requires it, such as date ideas, map view, or the weather widget, we request your device's location. This is used only for that request, held in memory for up to five minutes to avoid repeated prompts, and is not stored or logged. **Your location is never shared with your linked partner or any other user.**
+- **Device and Usage Data.** Device type, operating system, app interactions, and crash logs.
 
-### Purchase Information
-When you subscribe, we receive transaction identifiers, product identifiers, and entitlement status from the Apple App Store, Google Play, Stripe, or RevenueCat to confirm your subscription tier. We never receive or store complete payment card details.
+### 1.3 Received From Third Parties
 
-## 2. How We Use Your Information
+- Purchase and entitlement status from RevenueCat (anonymous user identifier and purchase data only).
+- Transaction confirmation data from Stripe.
+- AI-generated suggestions, such as date ideas and gift ideas, from Lovable's AI Gateway using Google Gemini, based only on the prompt text you submit. Your photos, letters, and journal content are never sent to this or any AI model.
 
-We use your information to:
+## 2. How We Use Personal Information
 
-- Provide and personalize the Service, including AI-generated date ideas and gift suggestions.
-- Link your account with a partner when you choose to share an invite code.
-- Process purchases, verify entitlements, and restore subscriptions.
-- Send transactional emails and on-device reminders, such as verification codes, subscription receipts, and date reminders.
-- Enforce plan limits and prevent abuse.
-- Improve app performance and fix bugs.
-- Enforce our Terms of Service and protect the safety of our users, especially minors.
+- **Provide the Services.** Operate core features including the Photo Journal, Love Letters, Vision Board, saved dates, and Compatibility Quiz.
+- **Facilitate Partner Linking.** Enable content sharing exclusively between two linked accounts through an invite code.
+- **Process Payments.** Manage subscriptions through Stripe, Apple, and Google or RevenueCat.
+- **Generate Suggestions.** Use submitted prompt text to generate date and gift ideas through a third-party AI model.
+- **Communicate With You.** Send transactional and administrative communications.
+- **Maintain Security.** Detect fraud and prevent misuse.
+- **Comply With Legal Obligations.** Respond to legally valid requests.
+- **Improve the Services.** Analyze usage and fix issues.
 
-We do not use your information for behavioral advertising, and we do not sell or share it for cross-context behavioral advertising.
+We do not use personal information for targeted advertising. We do not use any AI model to process, scan, or moderate photos, letters, or journal content.
 
-## 3. AI-Generated Content
+## 3. How We Disclose Personal Information
 
-Teen Effort uses artificial intelligence to generate date ideas, gift suggestions, and relationship prompts. AI output is provided for entertainment and inspiration only and is not professional counseling, medical, or safety advice.
+- **Your Linked Partner.** Content you create, including photos, letters, Vision Board items, wishlists, saved dates, and quiz results, is shared exclusively with your linked partner account and only while the link is active. Access is revoked immediately and completely upon unlinking.
+- **Service Providers.** Stripe for payments, RevenueCat for subscription management, Supabase for authentication and database services, and Lovable Cloud or Lovable AI Gateway for backend infrastructure and AI-generated suggestions.
+- **Law Enforcement and Regulatory Authorities.** When required to comply with applicable law or valid legal process, or to protect the safety of users.
+- **Business Transfers.** In connection with a merger, acquisition, financing, or sale of assets, subject to applicable law.
 
-Prompts and content you submit are sent to our AI providers solely to produce your result. **Your prompts, journal entries, messages, and other content are not used to train AI models**, by us or by our providers.
+We do not sell your personal information. We do not use advertising networks, analytics SDKs, or tracking technologies.
 
-## 4. How We Share Your Information
+## 4. Your California Privacy Rights (CCPA/CPRA)
 
-We do not sell your personal information. We share data only in these limited situations:
+### Categories of Personal Information
 
-- **With your linked partner:** When you explicitly link accounts, shared content such as calendar events, saved dates, wishlists, and date reviews becomes visible to that partner and to no one else.
-- **With service providers:** We rely on a small set of vendors, listed below, each acting on our instructions and contractually bound to protect your data.
-- **For legal reasons:** We may disclose information if required by law, court order, or to protect the rights, safety, or property of our users or the public.
-- **Business transfers:** If Teen Effort is involved in a merger or acquisition, your information may transfer, subject to this policy.
+- **Identifiers:** Name, email, and username; collected directly from you for account management and shared with service providers such as Supabase. Not sold.
+- **Protected Classification Characteristics:** Date of birth; collected directly from you once and kept immutable for age eligibility enforcement. Not shared or sold.
+- **Commercial Information:** Subscription tier and transaction history; received from you, RevenueCat, and Stripe for payment processing. Shared with Stripe and RevenueCat. Not sold.
+- **Internet or Network Activity:** App usage and crash logs; collected automatically to improve the Services and shared with service providers. Not sold.
+- **Geolocation Data:** On-demand device location, which is not stored, and saved venue locations, which are not your own location; collected with device permission to provide date-idea, map, and weather features. Not shared with other users or sold.
+- **Audio, Visual, or Photographic Information:** Photo Journal photos and Vision Board images; collected directly from you to provide these features and shared only with your linked partner while linked. Not sold.
+- **User-Generated Written Content:** Love Letters, quiz responses, and wishlists; collected directly from you to provide these features and shared only with your linked partner while linked. Not sold.
+- **Sensitive Personal Information:** Precise geolocation, processed on demand and not stored, and Love Letter content. Geolocation is not shared; Love Letters are shared only with your linked partner. Not sold.
+- **Inferences:** Compatibility results calculated locally, not derived by AI; generated from quiz responses to provide the compatibility feature and shared only with your linked partner. Not sold.
 
-### Service Providers We Use
+### Your Rights
 
-- **Supabase (Lovable Cloud)** — database, authentication, file storage, and backend functions; holds your account, profile, and app content.
-- **Apple App Store / Google Play** — in-app purchases on mobile; purchase and entitlement data.
-- **RevenueCat** — subscription receipt validation and entitlement sync; anonymous user ID and purchase data.
-- **Stripe** — web subscription payments; email and purchase data.
-- **Resend** — transactional email delivery; email address and message content.
-- **OpenStreetMap / Nominatim** — converting coordinates into a place name; approximate coordinates not linked to your account.
-- **AI model providers (via Lovable AI Gateway)** — generating date and gift ideas; the prompt text you submit.
+California residents have the right to **Know or Access**, **Delete**, **Correct**, **Opt Out of Sale or Sharing**, **Limit Use of Sensitive Personal Information**, **Non-Discrimination**, and **Appeal** a decision on a rights request. We do not sell personal information or share it for cross-context behavioral advertising.
 
-## 5. Data Retention & Deletion
+We collect two categories of sensitive personal information as defined under the CPRA: precise geolocation and the contents of private messages (Love Letters) between linked partners. We use both only to provide the specific features you request—location-based suggestions and the Love Letters feature itself. The CPRA classifies this as a permitted business purpose that does not require a separate "Limit the Use of My Sensitive Personal Information" opt-out.
 
-We keep your information while your account is active. Specific retention windows:
+### How to Exercise Your Rights
 
-- **Account, profile, and content:** kept until you delete your account.
-- **Verification codes and pending sign-ups:** deleted within 24 hours.
-- **In-app usage counters:** kept for the current and prior 12 monthly periods.
-- **Transactional email logs:** kept up to 90 days.
-- **Encrypted backups:** purged within 30 days of deletion.
+Submit requests to [support.teeneffort@gmail.com](mailto:support.teeneffort@gmail.com), stating the right you wish to exercise. We may need to verify your identity before processing. Deletion requests result in immediate, permanent removal of your account and associated database records, including your profile, dates, journal entries, letters, wishlists, gift ideas, reviews, quiz answers, and partner links. Uploaded photo or avatar files may remain in private storage after the associated database records are deleted and are not accessible through the App.
 
-When you delete your account from Settings, we permanently remove your profile, saved dates, calendar events, journal entries and photos, wishlists, saved gift ideas, reviews, usage records, and partner links. Deletion is immediate in our live database; backup copies are purged on the schedule above. Purchase records required for tax, accounting, or fraud-prevention purposes may be retained by Apple, Google, or Stripe under their own policies.
+## 5. Minors' Privacy
 
-## 6. Your Rights & Choices
+Teen Effort is intended for users ages 13 and older. We do not knowingly permit account creation by anyone under 13. Date of birth is required at signup, and the system rejects account creation for any user who indicates they are under 13. Date of birth cannot be edited after account creation.
 
-Depending on where you live, you may have the right to access, correct, delete, or obtain a portable copy of your personal information, and to appeal a decision about such a request. Residents of California, Colorado, Connecticut, Virginia, and other states with comprehensive privacy laws have these rights; we honor them for **all** users regardless of location. Under California's "eraser law" for minors (Cal. Bus. & Prof. Code §22581), registered users under 18 may request removal of content they posted.
+To reduce the risk of inappropriate contact between minors and adults, partner linking is restricted by age band: accounts belonging to users ages 13–17 may link only with other accounts in the 13–17 age band, and accounts belonging to users ages 18 and older may link only with other accounts ages 18 and older. This restriction does not eliminate every age-related risk within the 13–17 band itself, such as a 13-year-old linking with a 17-year-old. Users in that age band remain subject to additional privacy protections described throughout this policy and under applicable state law, including California's Age-Appropriate Design Code Act.
 
-- **Account deletion:** Delete your account at any time from the in-app Settings screen.
-- **Access or export:** Email us and we will provide a copy of your data within 45 days.
-- **Location:** Change location permissions in your device settings at any time.
-- **Notifications:** Disable reminders in your device settings or in the app.
-- **Marketing:** We do not send marketing email. All email is transactional or account-related.
+Parents or guardians who believe a minor has provided personal information inconsistently with this policy may contact us at [support.teeneffort@gmail.com](mailto:support.teeneffort@gmail.com) to request review or deletion.
 
-To exercise any right, contact support.teeneffort@gmail.com. We will not discriminate against you for making a request.
+## 6. Location Data
 
-## 7. Children & Minors
+Teen Effort requests access to your device's precise or approximate location only when you actively use a feature that requires it, including date suggestions, map view, or weather. This data is used for that request, temporarily held in memory for up to five minutes, and never stored, logged, or shared with any other user, including a linked partner. You may deny or revoke location permission at any time through your device settings; doing so may limit these features.
 
-Teen Effort is intended for users age 13 and older. We do not knowingly collect personal information from children under 13. Age is enforced at account creation by our backend, and a birthday cannot be changed after it is set. If we learn that an account belongs to a user under 13, we will delete the account and its data.
+The only location-related data we store is the location of a venue you choose to save to your calendar, such as a restaurant address. This is the venue's location, not yours.
 
-Users between 13 and 17 should review this policy with a parent or guardian. We encourage minors not to share sensitive personal information, precise home addresses, or school details with other users. Parents or guardians may contact us to review or delete their teen's information.
+## 7. Content Reporting and Safety
 
-## 8. Profile Visibility
+Teen Effort provides in-app report and block functionality, allowing users to report content or their linked partner and to block further contact. Users may also contact us directly at [support.teeneffort@gmail.com](mailto:support.teeneffort@gmail.com) with any safety concern.
 
-Teen Effort is not a public social network. There are no public profiles, no discovery feeds, and no messaging with strangers. Your content is visible only to you and, where you choose to share it, your one linked partner. Community features are disabled or limited while they are in development.
+## 8. Data Retention
 
-## 9. Security
+Account deletion immediately and permanently removes your profile and associated content from our database. Uploaded photo and avatar files are not yet automatically deleted from private file storage when an account is deleted, although the App's records and access paths to those files are removed. We do not retain location history because location history is not stored.
 
-We use industry-standard measures to protect your information, including encryption in transit, encryption at rest, access controls, private file storage with short-lived signed links, and row-level security in our database so that your content is accessible only to you and any partner you explicitly link with.
+## 9. Data Security
 
-No online service is completely secure, and we cannot guarantee absolute security. Please use a strong, unique password and keep your device secure.
+We maintain reasonable administrative, technical, and physical safeguards designed to protect personal information from loss, misuse, and unauthorized access. No method of transmission or storage is 100% secure.
 
-## 10. International Users
+## 10. Third-Party Vendors
 
-Our servers and service providers are located in the United States. By using the Service, you consent to the transfer and processing of your information in the United States and other jurisdictions where our providers operate.
+- [Stripe](https://stripe.com/privacy) — payment processing.
+- [RevenueCat](https://www.revenuecat.com/privacy) — subscription management.
+- **Supabase** — authentication and database services.
+- **Lovable Cloud / Lovable AI Gateway** — backend infrastructure and AI-generated suggestions through Google Gemini, based only on submitted prompt text.
 
 ## 11. Changes to This Policy
 
-We may update this Privacy Policy from time to time. If we make material changes, we will notify you through the app or by email before the changes take effect. Your continued use of the Service after changes constitutes acceptance of the updated policy.
+We may update this Privacy Policy from time to time. If we make material changes, we will notify you through the App or by email before the changes take effect.
 
 ## 12. Contact Us
 
-If you have questions about this Privacy Policy or how we handle your data, contact us at:
-
-**Email:** support.teeneffort@gmail.com
+**Teen Effort**  
+Email: [support.teeneffort@gmail.com](mailto:support.teeneffort@gmail.com)  
+Address: **7227 Waterston, New Albany, OH 43054**  
+Legal Entity: **Teen Effort LLC (Ohio)**
