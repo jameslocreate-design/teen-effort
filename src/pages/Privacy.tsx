@@ -18,12 +18,13 @@ export default function Privacy() {
           Privacy Policy
         </h1>
         <p className="text-sm text-muted-foreground mb-10">
-          Last updated September 2, 2026
+          Last updated September 8, 2026
         </p>
 
         <article className="text-foreground/90 font-sans">
           <ReactMarkdown
             components={{
+              h1: () => null,
               h2: ({ node, ...props }) => (
                 <h2
                   className="font-display text-2xl md:text-3xl font-semibold mt-10 mb-4 pb-2 border-b border-border"
