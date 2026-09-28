@@ -383,7 +383,7 @@ const AppShell = () => {
             {activeTab === "roulette" && <PremiumGate feature="Date Roulette" minTier={2} description="Spin the wheel for surprise date ideas — unlimited spins with Romance and above."><DateRoulette /></PremiumGate>}
             {activeTab === "gifts" && <GiftPlanner />}
             {activeTab === "bucket" && <BucketList />}
-            {activeTab === "expert" && <ExpertComingSoon />}
+            {activeTab === "expert" && !isIOS() && <ExpertComingSoon />}
             {activeTab === "journal" && <PhotoJournal />}
             {activeTab === "stats" && <DateStats />}
             {activeTab === "achievements" && <Achievements />}
