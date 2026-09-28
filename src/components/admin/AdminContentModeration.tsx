@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import AdminReports from "@/components/admin/AdminReports";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -67,6 +68,9 @@ const AdminContentModeration = () => {
         <h2 className="text-2xl font-bold text-foreground mb-1">Content Moderation</h2>
         <p className="text-muted-foreground text-sm">Review and moderate expert community posts and replies</p>
       </div>
+
+      <AdminReports />
+
 
       <Card>
         <CardHeader>
