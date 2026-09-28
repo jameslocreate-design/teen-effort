@@ -482,6 +482,14 @@ const AuthPage = () => {
               {loading ? "Loading..." : isSignUp ? "Create Account" : "Log In"}
               <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
+            {isSignUp && (
+              <p className="text-xs text-muted-foreground text-center leading-relaxed">
+                By creating an account you agree to our{" "}
+                <a href="/terms" className="underline">Terms</a> and{" "}
+                <a href="/privacy" className="underline">Privacy Policy</a>. We have zero tolerance for
+                objectionable content or abusive users — you can report or block anyone at any time.
+              </p>
+            )}
           </form>
         )}
 
