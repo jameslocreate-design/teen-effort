@@ -526,6 +526,9 @@ export type Database = {
           deactivated_at: string | null
           descriptors: string[] | null
           gender: string | null
+          home_city: string | null
+          home_lat: number | null
+          home_lng: number | null
           id: string
           love_language: string | null
           name: string
@@ -543,6 +546,9 @@ export type Database = {
           deactivated_at?: string | null
           descriptors?: string[] | null
           gender?: string | null
+          home_city?: string | null
+          home_lat?: number | null
+          home_lng?: number | null
           id?: string
           love_language?: string | null
           name?: string
@@ -560,6 +566,9 @@ export type Database = {
           deactivated_at?: string | null
           descriptors?: string[] | null
           gender?: string | null
+          home_city?: string | null
+          home_lat?: number | null
+          home_lng?: number | null
           id?: string
           love_language?: string | null
           name?: string

@@ -29,6 +29,13 @@
       "when": 1790637260941,
       "tag": "0003_add_relationship_start_date",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790637565918,
+      "tag": "0004_add_home_city_to_profiles",
+      "breakpoints": true
     }
   ]
 }
