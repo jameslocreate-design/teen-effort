@@ -48,8 +48,16 @@ const SettingsPage = ({ onBack }: { onBack: () => void }) => {
   const [changingPw, setChangingPw] = useState(false);
   const [exporting, setExporting] = useState(false);
 
+  const [homeCity, setHomeCity] = useState<string | null>(null);
+  const loadHomeCity = () => {
+    if (!user) return;
+    supabase.from("profiles").select("home_city").eq("user_id", user.id).maybeSingle()
+      .then(({ data }) => setHomeCity(data?.home_city ?? null));
+  };
+
   useEffect(() => {
     if (!user) return;
+    loadHomeCity();
     supabase
       .from("profiles")
       .select("privacy_settings")
