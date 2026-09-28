@@ -42,6 +42,7 @@ import PremiumGate from "@/components/PremiumGate";
 import PremiumBadge from "@/components/PremiumBadge";
 import { SubscriptionStatusBanner } from "@/components/SubscriptionStatusBanner";
 import { toast } from "sonner";
+import { isIOS } from "@/lib/native";
 import AuthPage from "@/pages/AuthPage";
 
 type Tab =
@@ -89,7 +90,8 @@ const navSections: NavSection[] = [
       { id: "reviews", label: "Date Reviews", icon: <MessageSquare className="h-4 w-4" /> },
       { id: "stats", label: "Date Stats", icon: <BarChart3 className="h-4 w-4" /> },
       { id: "achievements", label: "Badges", icon: <Trophy className="h-4 w-4" /> },
-      { id: "expert", label: "Ask an Expert (Soon)", icon: <HelpCircle className="h-4 w-4" /> },
+      // Hidden on iOS — Apple App Review rejects unmoderated user-generated advice spaces.
+      ...(!isIOS() ? [{ id: "expert" as Tab, label: "Ask an Expert (Soon)", icon: <HelpCircle className="h-4 w-4" /> }] : []),
     ],
   },
   {
@@ -381,7 +383,7 @@ const AppShell = () => {
             {activeTab === "roulette" && <PremiumGate feature="Date Roulette" minTier={2} description="Spin the wheel for surprise date ideas — unlimited spins with Romance and above."><DateRoulette /></PremiumGate>}
             {activeTab === "gifts" && <GiftPlanner />}
             {activeTab === "bucket" && <BucketList />}
-            {activeTab === "expert" && <ExpertComingSoon />}
+            {activeTab === "expert" && !isIOS() && <ExpertComingSoon />}
             {activeTab === "journal" && <PhotoJournal />}
             {activeTab === "stats" && <DateStats />}
             {activeTab === "achievements" && <Achievements />}
