@@ -486,6 +486,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          relationship_start_date: string | null
           status: string
           updated_at: string
           user1_id: string
@@ -496,6 +497,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          relationship_start_date?: string | null
           status?: string
           updated_at?: string
           user1_id: string
@@ -506,6 +508,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          relationship_start_date?: string | null
           status?: string
           updated_at?: string
           user1_id?: string
