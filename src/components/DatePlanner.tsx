@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Loader2, Sparkles, MapPin } from "lucide-react";
 import WeatherWidget from "@/components/WeatherWidget";
+import TimeTogether from "@/components/TimeTogether";
 import { Button } from "@/components/ui/button";
 import DateFilters from "@/components/date-planner/DateFilters";
 import DateResults from "@/components/date-planner/DateResults";
@@ -210,6 +211,8 @@ const DatePlanner = () => {
           </Button>
         )}
       </div>
+
+      <TimeTogether />
 
       <WeatherWidget />
 
