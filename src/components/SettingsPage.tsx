@@ -23,6 +23,7 @@ import jsPDF from "jspdf";
 import ReactMarkdown from "react-markdown";
 import privacyMd from "@/content/privacy.md?raw";
 import SafetyCenter from "@/components/SafetyCenter";
+import { HomeCityPicker } from "@/components/DistanceWidget";
 
 interface PrivacySettings {
   date_ideas_visibility: "partner" | "private";
@@ -48,8 +49,16 @@ const SettingsPage = ({ onBack }: { onBack: () => void }) => {
   const [changingPw, setChangingPw] = useState(false);
   const [exporting, setExporting] = useState(false);
 
+  const [homeCity, setHomeCity] = useState<string | null>(null);
+  const loadHomeCity = () => {
+    if (!user) return;
+    supabase.from("profiles").select("home_city").eq("user_id", user.id).maybeSingle()
+      .then(({ data }) => setHomeCity(data?.home_city ?? null));
+  };
+
   useEffect(() => {
     if (!user) return;
+    loadHomeCity();
     supabase
       .from("profiles")
       .select("privacy_settings")
@@ -245,6 +254,10 @@ const SettingsPage = ({ onBack }: { onBack: () => void }) => {
         {/* Privacy */}
         <Section icon={<Shield className="h-4 w-4" />} title="Safety: Report & Block" desc="Report abuse, block someone, and manage blocked accounts">
           <SafetyCenter userId={user?.id} />
+        </Section>
+
+        <Section icon={<MapPin className="h-4 w-4" />} title="Home City" desc="Used only for the Distance widget with your partner">
+          <HomeCityPicker current={homeCity} onSaved={loadHomeCity} />
         </Section>
 
         <Section icon={<Lock className="h-4 w-4" />} title="Privacy" desc="Control what your partner and others can see">
