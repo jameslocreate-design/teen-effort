@@ -1095,6 +1095,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      list_my_blocked_users: {
+        Args: never
+        Returns: {
+          blocked_at: string
+          blocked_id: string
+          name: string
+        }[]
+      }
       lookup_user_by_partner_code: { Args: { _code: string }; Returns: string }
       move_to_dlq: {
         Args: {
