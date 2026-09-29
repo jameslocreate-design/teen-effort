@@ -1,64 +1,59 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import type { User } from "@supabase/supabase-js";
-import { registerPush } from "@/lib/push";
-import { syncDateReminders, initReminderTaps, startPartnerActivityWatch, stopPartnerActivityWatch } from "@/lib/reminders";
-import { initPurchases, logOutPurchases } from "@/lib/revenuecat";
+import { DEMO_USER_ID, getDemoProfile, type DemoProfile } from "@/lib/demo";
 
-
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  signOut: () => Promise<void>;
+/**
+ * DEMO BUILD — there is no sign-up or login.
+ *
+ * The "user" is a local, device-only identity backed by the profile the tester
+ * filled in on first launch. Nothing is sent to any backend or auth service.
+ */
+interface DemoUser {
+  id: string;
+  name: string;
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null, loading: true, signOut: async () => {} });
+interface AuthContextType {
+  user: DemoUser | null;
+  profile: DemoProfile | null;
+  loading: boolean;
+  signOut: () => Promise<void>;
+  refresh: () => void;
+}
+
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  profile: null,
+  loading: true,
+  signOut: async () => {},
+  refresh: () => {},
+});
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<DemoProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const handleSession = (session: any) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-      // If the user signed in mid-OAuth consent flow, return them to the consent URL.
-      if (session?.user) {
-        // Native-only side effects (no-ops on web)
-        registerPush(session.user.id).catch(() => {});
-        initPurchases(session.user.id).catch(() => {});
-        initReminderTaps().catch(() => {});
-        syncDateReminders().catch(() => {});
-        startPartnerActivityWatch(session.user.id).catch(() => {});
-
-
-        const params = new URLSearchParams(window.location.search);
-        const next = params.get("next");
-        if (next && next.startsWith("/") && !next.startsWith("//")) {
-          window.location.replace(next);
-        }
-      }
-    };
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => handleSession(session));
-    supabase.auth.getSession().then(({ data: { session } }) => handleSession(session));
-    return () => {
-      subscription.unsubscribe();
-      stopPartnerActivityWatch();
-    };
-  }, []);
-
-  const signOut = async () => {
-    stopPartnerActivityWatch();
-    await logOutPurchases().catch(() => {});
-    await supabase.auth.signOut();
+  const refresh = () => {
+    setProfile(getDemoProfile());
+    setLoading(false);
   };
 
+  useEffect(() => {
+    refresh();
+    const handler = () => refresh();
+    window.addEventListener("demo-profile-updated", handler);
+    return () => window.removeEventListener("demo-profile-updated", handler);
+  }, []);
+
+  const user = profile ? { id: DEMO_USER_ID, name: profile.name } : null;
+
+  const signOut = async () => {
+    /* No accounts in the demo build — use "Reset profile" in Settings. */
+  };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signOut }}>
+    <AuthContext.Provider value={{ user, profile, loading, signOut, refresh }}>
       {children}
     </AuthContext.Provider>
   );
