@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { addMonths, addYears, differenceInCalendarDays, differenceInCalendarMonths, format, parseISO } from "date-fns";
 import { Heart, Loader2, Pencil, Sparkles, Link2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { DEMO_LINK_ID } from "@/lib/demo";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,17 +47,15 @@ const TimeTogether = () => {
   const [saving, setSaving] = useState(false);
   const [, setTick] = useState(0);
 
+  // Demo build: the start date is kept in this browser only.
+  const STORAGE_KEY = "demo-relationship-start";
+
   const load = async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from("partner_links")
-      .select("id, relationship_start_date")
-      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
-      .eq("status", "accepted")
-      .maybeSingle();
-    setLinkId(data?.id ?? null);
-    setStartDate(data?.relationship_start_date ?? null);
-    syncTimeTogetherWidget(data?.relationship_start_date ?? null);
+    setLinkId(DEMO_LINK_ID);
+    const stored = localStorage.getItem(STORAGE_KEY);
+    setStartDate(stored || null);
+    syncTimeTogetherWidget(stored || null);
     setLoading(false);
   };
 
@@ -76,35 +74,19 @@ const TimeTogether = () => {
     };
   }, [user?.id]);
 
-  // Live sync with partner's edits
-  useEffect(() => {
-    if (!linkId) return;
-    const ch = supabase
-      .channel(`time-together-${linkId}`)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "partner_links", filter: `id=eq.${linkId}` },
-        (p) => setStartDate((p.new as { relationship_start_date: string | null }).relationship_start_date))
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, [linkId]);
-
   const stats = useMemo(() => (startDate ? timeTogether(startDate) : null), [startDate, Date.now() / 60000 | 0]);
   const milestone = startDate && stats ? milestoneLabel(startDate, stats.total) : null;
 
   const save = async (value: string) => {
-    if (!linkId) return;
     if (!value) return toast.error("Pick a date first");
     if (value > todayISO()) return toast.error("That date is in the future — pick today or earlier.");
     setSaving(true);
-    const { error } = await supabase.from("partner_links").update({ relationship_start_date: value }).eq("id", linkId);
+    localStorage.setItem(STORAGE_KEY, value);
     setSaving(false);
-    if (error) {
-      toast.error(error.message.includes("FUTURE") ? "That date is in the future." : "Couldn't save the date");
-      return;
-    }
     setStartDate(value);
     syncTimeTogetherWidget(value);
     setEditing(false);
-    toast.success("Saved for both of you 💞");
+    toast.success("Saved on this device 💞");
   };
 
   if (loading) return <div className="rounded-xl border border-border bg-card p-4 animate-pulse"><div className="h-16" /></div>;
