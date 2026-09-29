@@ -111,8 +111,9 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
     }
   };
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement> | File, entryId = photoEntryId) => {
+    const file = e instanceof File ? e : e.target.files?.[0];
+    const photoEntryId = entryId;
     if (!file || !photoEntryId || !user) return;
     setUploadingId(photoEntryId);
 
@@ -331,9 +332,11 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
                     variant="ghost" size="sm"
                     className="h-7 gap-1.5 text-xs px-2"
                     disabled={uploadingId === entry.id}
-                    onClick={() => {
+                    onClick={async () => {
                       setPhotoEntryId(entry.id);
-                      fileInputRef.current?.click();
+                      const native = await pickPhotoNative();
+                      if (native === undefined) fileInputRef.current?.click();
+                      else if (native) handlePhotoUpload(native, entry.id);
                     }}
                   >
                     {uploadingId === entry.id ? (
