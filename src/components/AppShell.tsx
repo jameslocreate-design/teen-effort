@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { signedUrl } from "@/lib/storage";
+import { getDemoProfile } from "@/lib/demo";
+import DemoBadge, { DemoFooterNote } from "@/components/DemoBadge";
 import { useNavigate } from "react-router-dom";
 import {
   Heart, CalendarDays, Sparkles, User, Link2, LogOut, Users, Gift,
@@ -13,9 +13,7 @@ import { Button } from "@/components/ui/button";
 import DatePlanner from "@/components/DatePlanner";
 import GiftPlanner from "@/components/GiftPlanner";
 import SharedCalendar from "@/components/SharedCalendar";
-import ProfileSetup from "@/components/ProfileSetup";
-import PartnerLink from "@/components/PartnerLink";
-import PartnerView from "@/components/PartnerView";
+import DemoProfileSetup from "@/components/DemoProfileSetup";
 import BucketList from "@/components/BucketList";
 import ExpertComingSoon from "@/components/ExpertComingSoon";
 import OnboardingTour from "@/components/OnboardingTour";
@@ -37,13 +35,12 @@ import RelationshipTimeline from "@/components/RelationshipTimeline";
 import SmartRecommendations from "@/components/SmartRecommendations";
 import VisionBoard from "@/components/VisionBoard";
 import AppreciationPrompts from "@/components/AppreciationPrompts";
-import SettingsPage from "@/components/SettingsPage";
+import DemoSettingsPage from "@/components/DemoSettingsPage";
 import PremiumGate from "@/components/PremiumGate";
 import PremiumBadge from "@/components/PremiumBadge";
 import { SubscriptionStatusBanner } from "@/components/SubscriptionStatusBanner";
 import { toast } from "sonner";
 import { isIOS } from "@/lib/native";
-import AuthPage from "@/pages/AuthPage";
 
 type Tab =
   | "planner" | "roulette" | "gifts" | "calendar"
@@ -97,10 +94,6 @@ const navSections: NavSection[] = [
   {
     title: "Account",
     items: [
-      { id: "partner", label: "Link Partner", icon: <Link2 className="h-4 w-4" /> },
-      { id: "partner-view", label: "Partner", icon: <Users className="h-4 w-4" /> },
-      { id: "referral", label: "Invite Friends", icon: <Share2 className="h-4 w-4" /> },
-      { id: "premium", label: "Premium", icon: <Star className="h-4 w-4" /> },
       { id: "profile", label: "Profile", icon: <User className="h-4 w-4" /> },
     ],
   },
@@ -126,46 +119,14 @@ const AppShell = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
+  // Demo build: the profile lives in this browser only.
   const fetchProfile = () => {
-    if (!user) return;
-    supabase
-      .from("profiles")
-      .select("name, avatar_url")
-      .eq("user_id", user.id)
-      .single()
-      .then(async ({ data }) => {
-        if ((data as any)?.deactivated_at) {
-          await supabase.from("profiles").update({ deactivated_at: null } as any).eq("user_id", user.id);
-          toast.success("Welcome back! Your account has been reactivated.");
-        }
-        const isComplete = !!data?.name;
-        setProfileComplete(isComplete);
-        if (data?.name) setProfileName(data.name);
-        if ((data as any)?.avatar_url) {
-          setProfileAvatar(await signedUrl("avatars", (data as any).avatar_url));
-        }
-        if (isComplete && !localStorage.getItem("onboarding-done")) {
-          setShowOnboarding(true);
-        }
-        if (isComplete) {
-          // Check if user needs the partner-link onboarding step
-          if (localStorage.getItem("partner-onboarding-done")) {
-            setNeedsPartnerStep(false);
-          } else {
-            const { data: links } = await supabase
-              .from("partner_links")
-              .select("id")
-              .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
-              .limit(1);
-            if (links && links.length > 0) {
-              localStorage.setItem("partner-onboarding-done", "true");
-              setNeedsPartnerStep(false);
-            } else {
-              setNeedsPartnerStep(true);
-            }
-          }
-        }
-      });
+    const demo = getDemoProfile();
+    setProfileComplete(!!demo);
+    setProfileName(demo?.name ?? "");
+    setProfileAvatar(null);
+    setNeedsPartnerStep(false);
+    if (demo && !localStorage.getItem("onboarding-done")) setShowOnboarding(true);
   };
 
   useEffect(() => {
@@ -200,38 +161,22 @@ const AppShell = () => {
     );
   }
 
-  if (!user) return <AuthPage />;
   if (profileComplete === null) return null;
-  if (!profileComplete) return <ProfileSetup onComplete={() => setProfileComplete(true)} />;
-
-  if (needsPartnerStep) {
-    const finishPartnerStep = () => {
-      localStorage.setItem("partner-onboarding-done", "true");
-      setNeedsPartnerStep(false);
-    };
-    return (
-      <div className="min-h-screen bg-background px-4 py-8 overflow-y-auto">
-        <div className="max-w-md mx-auto space-y-6">
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl font-display italic text-primary">Link your partner</h2>
-            <p className="text-sm text-muted-foreground">
-              Share your code or enter theirs to unlock shared calendars, wishlists, and more. You can always do this later.
-            </p>
-          </div>
-          <PartnerLink onLinked={finishPartnerStep} />
-          <Button
-            variant="ghost"
-            onClick={finishPartnerStep}
-            className="w-full text-muted-foreground hover:text-foreground"
-          >
-            Skip for now
-          </Button>
-        </div>
-      </div>
-    );
+  if (!profileComplete || !user) {
+    return <DemoProfileSetup onComplete={() => fetchProfile()} />;
   }
 
-  if (showSettings) return <SettingsPage onBack={() => setShowSettings(false)} />;
+  if (showSettings) {
+    return (
+      <DemoSettingsPage
+        onBack={() => setShowSettings(false)}
+        onEditProfile={() => {
+          setShowSettings(false);
+          setActiveTab("profile");
+        }}
+      />
+    );
+  }
 
   const handleOnboardingComplete = () => {
     localStorage.setItem("onboarding-done", "true");
