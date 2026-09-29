@@ -4,7 +4,7 @@ import { checkAndIncrementUsage } from "../_shared/usage-limits.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-demo-mode",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 interface OsmVenue {
@@ -96,34 +96,28 @@ serve(async (req) => {
   }
 
   try {
-    // Web-only demo build: there are no accounts, so skip the signed-in usage
-    // check. The demo client enforces its own per-device daily limit.
-    const isDemo = req.headers.get("x-demo-mode") === "true";
-
-    if (!isDemo) {
-      // Enforce monthly free-tier limit (paid users are unlimited)
-      let usage;
-      try {
-        usage = await checkAndIncrementUsage(req, "date_ideas");
-      } catch (authErr) {
-        console.error("Auth/usage error", authErr);
-        return new Response(
-          JSON.stringify({ error: "You must be signed in to generate date ideas." }),
-          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-        );
-      }
-      if (!usage.allowed) {
-        return new Response(
-          JSON.stringify({
-            error: "limit_reached",
-            message: `You've used all ${usage.limit} free date generations this month. Upgrade for unlimited access.`,
-            feature: "date_ideas",
-            limit: usage.limit,
-            remaining: 0,
-          }),
-          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-        );
-      }
+    // Enforce monthly free-tier limit (paid users are unlimited)
+    let usage;
+    try {
+      usage = await checkAndIncrementUsage(req, "date_ideas");
+    } catch (authErr) {
+      console.error("Auth/usage error", authErr);
+      return new Response(
+        JSON.stringify({ error: "You must be signed in to generate date ideas." }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    if (!usage.allowed) {
+      return new Response(
+        JSON.stringify({
+          error: "limit_reached",
+          message: `You've used all ${usage.limit} free date generations this month. Upgrade for unlimited access.`,
+          feature: "date_ideas",
+          limit: usage.limit,
+          remaining: 0,
+        }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     const { cost, location, activity, distance, timeRange, cuisine, latitude, longitude, funActivity, includeEating } = await req.json();

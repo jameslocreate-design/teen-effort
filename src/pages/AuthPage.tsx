@@ -28,7 +28,34 @@ type View = "auth" | "forgot";
 
 const REMEMBER_KEY = "remember-login-email";
 
+const useDemoLogin = () => {
+  const [showDemo, setShowDemo] = useState(false);
+  const [demoCode, setDemoCode] = useState("");
+  const [demoLoading, setDemoLoading] = useState(false);
+  const handleDemoLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setDemoLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("demo-login", { body: { code: demoCode } });
+      if (error || !data?.email) {
+        let msg = "That demo code isn't valid.";
+        try { const b = await (error as any)?.context?.json?.(); if (b?.error) msg = b.error; } catch {}
+        throw new Error(msg);
+      }
+      const { error: signInErr } = await supabase.auth.signInWithPassword({ email: data.email, password: data.password });
+      if (signInErr) throw signInErr;
+      toast.success("Welcome to your demo account — Soulmate unlocked!");
+    } catch (err: any) {
+      toast.error(err?.message || "Could not start the demo");
+    } finally {
+      setDemoLoading(false);
+    }
+  };
+  return { showDemo, setShowDemo, demoCode, setDemoCode, demoLoading, handleDemoLogin };
+};
+
 const AuthPage = () => {
+  const { showDemo, setShowDemo, demoCode, setDemoCode, demoLoading, handleDemoLogin } = useDemoLogin();
   const [view, setView] = useState<View>("auth");
   const [isSignUp, setIsSignUp] = useState(true);
   const [email, setEmail] = useState("");
@@ -529,6 +556,36 @@ const AuthPage = () => {
           </div>
         )}
 
+
+        {/* Demo code login */}
+        {view === "auth" && !emailOtpSent && !isSignUp && (
+          <div className="mt-6 border-t border-border pt-5">
+            {!showDemo ? (
+              <button type="button" onClick={() => setShowDemo(true)} className="w-full text-sm text-primary hover:underline min-h-[44px]">
+                Have a demo code? Log in with code
+              </button>
+            ) : (
+              <form onSubmit={handleDemoLogin} className="space-y-3">
+                <div className="relative">
+                  <Hash className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Demo code"
+                    value={demoCode}
+                    onChange={(e) => setDemoCode(e.target.value)}
+                    className="pl-10 bg-secondary/50 border-border text-base"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    required
+                  />
+                </div>
+                <Button type="submit" variant="outline" disabled={demoLoading} className="w-full h-11 rounded-xl">
+                  {demoLoading ? "Starting demo..." : "Log in with code"}
+                </Button>
+              </form>
+            )}
+          </div>
+        )}
 
         {/* Email OTP Verification */}
         {view === "auth" && emailOtpSent && (
