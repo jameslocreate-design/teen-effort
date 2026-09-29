@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { toast } from "sonner";
+import { syncTimeTogetherWidget } from "@/lib/widgetSync";
 
 const todayISO = () => format(new Date(), "yyyy-MM-dd");
 
@@ -56,6 +57,7 @@ const TimeTogether = () => {
       .maybeSingle();
     setLinkId(data?.id ?? null);
     setStartDate(data?.relationship_start_date ?? null);
+    syncTimeTogetherWidget(data?.relationship_start_date ?? null);
     setLoading(false);
   };
 
@@ -100,6 +102,7 @@ const TimeTogether = () => {
       return;
     }
     setStartDate(value);
+    syncTimeTogetherWidget(value);
     setEditing(false);
     toast.success("Saved for both of you 💞");
   };
