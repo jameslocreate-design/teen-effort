@@ -47,68 +47,52 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
 
   const fetchPartnerLink = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from("partner_links").select("id").eq("status", "accepted")
-      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`).maybeSingle();
-    if (data) setPartnerLinkId(data.id);
+    setPartnerLinkId(DEMO_LINK_ID);
     setLoading(false);
   }, [user]);
+
+  const allEntries = () => demoSelect<any>("calendar_entries") as CalendarEntry[];
 
   const fetchEntries = useCallback(async () => {
     if (!user || !partnerLinkId) return;
     const start = format(startOfMonth(currentMonth), "yyyy-MM-dd");
     const end = format(endOfMonth(currentMonth), "yyyy-MM-dd");
-    const { data } = await supabase
-      .from("calendar_entries").select("*")
-      .eq("partner_link_id", partnerLinkId)
-      .gte("date", start).lte("date", end);
-    if (data) setEntries(data as CalendarEntry[]);
+    setEntries(allEntries().filter((e) => e.date >= start && e.date <= end));
     syncDateReminders().catch(() => {});
   }, [user, partnerLinkId, currentMonth]);
 
   const fetchTotalDates = useCallback(async () => {
     if (!partnerLinkId) return;
-    const { count } = await supabase
-      .from("calendar_entries").select("id", { count: "exact", head: true })
-      .eq("partner_link_id", partnerLinkId);
-    setTotalDates(count ?? 0);
+    setTotalDates(allEntries().length);
   }, [partnerLinkId]);
 
   useEffect(() => { fetchPartnerLink(); }, [fetchPartnerLink]);
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
   useEffect(() => { fetchTotalDates(); }, [fetchTotalDates]);
 
+  // Demo build: photos are stored as data URLs in this browser, so they need
+  // no signing — each stored value is already displayable.
   useEffect(() => {
     const all = entries.flatMap((e) => e.photo_urls ?? []);
-    if (all.length === 0) { setPhotoUrlMap({}); return; }
-    signedUrlMap("date-photos", all).then(setPhotoUrlMap);
+    setPhotoUrlMap(Object.fromEntries(all.map((u) => [u, u])));
   }, [entries]);
 
   const deleteEntry = async (id: string) => {
-    const { error } = await supabase.from("calendar_entries").delete().eq("id", id);
-    if (error) toast.error("Failed to delete");
-    else {
-      setEntries((prev) => prev.filter((e) => e.id !== id));
-      setTotalDates((prev) => Math.max(0, prev - 1));
-      toast.success("Removed from calendar");
-    }
+    demoDelete("calendar_entries", id);
+    setEntries((prev) => prev.filter((e) => e.id !== id));
+    setTotalDates((prev) => Math.max(0, prev - 1));
+    toast.success("Removed from calendar");
   };
 
   const toggleFavorite = async (entry: CalendarEntry) => {
-    const { error } = await supabase
-      .from("calendar_entries").update({ is_favorite: !entry.is_favorite }).eq("id", entry.id);
-    if (!error) {
-      setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, is_favorite: !e.is_favorite } : e));
-    }
+    demoUpdate("calendar_entries", entry.id, { is_favorite: !entry.is_favorite } as any);
+    setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, is_favorite: !e.is_favorite } : e));
   };
 
   const setRating = async (entryId: string, rating: number) => {
-    const { error } = await supabase
-      .from("calendar_entries").update({ user_rating: rating }).eq("id", entryId);
-    if (!error) {
-      setEntries(prev => prev.map(e => e.id === entryId ? { ...e, user_rating: rating } : e));
-      toast.success("Rating saved!");
-    }
+    demoUpdate("calendar_entries", entryId, { user_rating: rating } as any);
+    setEntries(prev => prev.map(e => e.id === entryId ? { ...e, user_rating: rating } : e));
+    toast.success("Rating saved!");
   };
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,29 +100,23 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
     if (!file || !photoEntryId || !user) return;
     setUploadingId(photoEntryId);
 
-    const ext = file.name.split('.').pop();
-    const path = `${user.id}/${photoEntryId}/${Date.now()}.${ext}`;
+    try {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
 
-    const { error: uploadError } = await supabase.storage
-      .from("date-photos").upload(path, file);
-
-    if (uploadError) {
-      toast.error("Failed to upload photo");
-      setUploadingId(null);
-      return;
-    }
-
-    const entry = entries.find(e => e.id === photoEntryId);
-    const currentPhotos = entry?.photo_urls || [];
-    const newPhotos = [...currentPhotos, path];
-
-    const { error: updateError } = await supabase
-      .from("calendar_entries").update({ photo_urls: newPhotos }).eq("id", photoEntryId);
-
-    if (!updateError) {
+      const entry = entries.find(e => e.id === photoEntryId);
+      const newPhotos = [...(entry?.photo_urls || []), dataUrl];
+      demoUpdate("calendar_entries", photoEntryId, { photo_urls: newPhotos } as any);
       setEntries(prev => prev.map(e => e.id === photoEntryId ? { ...e, photo_urls: newPhotos } : e));
       toast.success("Photo added!");
+    } catch {
+      toast.error("Failed to add photo");
     }
+
     setUploadingId(null);
     setPhotoEntryId(null);
   };
