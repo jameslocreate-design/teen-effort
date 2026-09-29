@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { MapPin, Settings, X } from "lucide-react";
+import { MapPin, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { isNative } from "@/lib/native";
 import {
