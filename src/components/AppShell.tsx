@@ -261,9 +261,7 @@ const AppShell = () => {
           {renderNav()}
         </div>
         <div className="border-t border-border p-3 flex items-center justify-between gap-1">
-          <Button variant="ghost" size="sm" onClick={signOut} className="justify-start gap-2 text-muted-foreground font-sans text-xs flex-1">
-            <LogOut className="h-4 w-4" /> Sign Out
-          </Button>
+          <DemoBadge className="flex-1 justify-center" />
           <Button variant="ghost" size="icon" onClick={() => setShowSettings(true)} className="h-8 w-8 text-muted-foreground" title="Settings">
             <Settings className="h-4 w-4" />
           </Button>
@@ -290,8 +288,8 @@ const AppShell = () => {
               {renderNav()}
             </div>
             <div className="border-t border-border p-3 flex items-center justify-between">
-              <Button variant="ghost" size="sm" onClick={signOut} className="justify-start gap-2 text-muted-foreground font-sans text-xs">
-                <LogOut className="h-4 w-4" /> Sign Out
+              <Button variant="ghost" size="sm" onClick={() => { setSidebarOpen(false); setShowSettings(true); }} className="justify-start gap-2 text-muted-foreground font-sans text-xs">
+                <Settings className="h-4 w-4" /> Settings
               </Button>
               <ThemeToggle />
             </div>
@@ -309,6 +307,7 @@ const AppShell = () => {
               <Menu className="h-5 w-5" />
             </Button>
             <h1 className="text-base font-display italic text-primary">Teen Effort</h1>
+            <DemoBadge />
           </div>
           <div className="flex items-center gap-1">
             <ThemeToggle />
@@ -340,7 +339,6 @@ const AppShell = () => {
             {activeTab === "map" && <DateMap />}
             {activeTab === "vision" && <VisionBoard />}
             {activeTab === "appreciate" && <AppreciationPrompts />}
-            {activeTab === "referral" && <ReferralSystem />}
             {activeTab === "calendar" && (
               <SharedCalendar
                 onPlanDate={(title, date) => {
@@ -349,9 +347,8 @@ const AppShell = () => {
                 }}
               />
             )}
-            {activeTab === "partner" && <PartnerLink onLinked={() => setActiveTab("partner-view")} />}
-            {activeTab === "partner-view" && <PartnerView onUnlinked={() => setActiveTab("partner")} />}
-            {activeTab === "profile" && <ProfileSetup onComplete={() => {}} />}
+            {activeTab === "profile" && <DemoProfileSetup onComplete={() => fetchProfile()} />}
+            <DemoFooterNote className="mt-12" />
           </div>
         </main>
 
