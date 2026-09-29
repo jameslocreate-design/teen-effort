@@ -55,6 +55,7 @@ const useDemoLogin = () => {
 };
 
 const AuthPage = () => {
+  const { showDemo, setShowDemo, demoCode, setDemoCode, demoLoading, handleDemoLogin } = useDemoLogin();
   const [view, setView] = useState<View>("auth");
   const [isSignUp, setIsSignUp] = useState(true);
   const [email, setEmail] = useState("");
@@ -555,6 +556,36 @@ const AuthPage = () => {
           </div>
         )}
 
+
+        {/* Demo code login */}
+        {view === "auth" && !emailOtpSent && !isSignUp && (
+          <div className="mt-6 border-t border-border pt-5">
+            {!showDemo ? (
+              <button type="button" onClick={() => setShowDemo(true)} className="w-full text-sm text-primary hover:underline min-h-[44px]">
+                Have a demo code? Log in with code
+              </button>
+            ) : (
+              <form onSubmit={handleDemoLogin} className="space-y-3">
+                <div className="relative">
+                  <Hash className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Demo code"
+                    value={demoCode}
+                    onChange={(e) => setDemoCode(e.target.value)}
+                    className="pl-10 bg-secondary/50 border-border text-base"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    required
+                  />
+                </div>
+                <Button type="submit" variant="outline" disabled={demoLoading} className="w-full h-11 rounded-xl">
+                  {demoLoading ? "Starting demo..." : "Log in with code"}
+                </Button>
+              </form>
+            )}
+          </div>
+        )}
 
         {/* Email OTP Verification */}
         {view === "auth" && emailOtpSent && (
