@@ -28,6 +28,32 @@ type View = "auth" | "forgot";
 
 const REMEMBER_KEY = "remember-login-email";
 
+const useDemoLogin = () => {
+  const [showDemo, setShowDemo] = useState(false);
+  const [demoCode, setDemoCode] = useState("");
+  const [demoLoading, setDemoLoading] = useState(false);
+  const handleDemoLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setDemoLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("demo-login", { body: { code: demoCode } });
+      if (error || !data?.email) {
+        let msg = "That demo code isn't valid.";
+        try { const b = await (error as any)?.context?.json?.(); if (b?.error) msg = b.error; } catch {}
+        throw new Error(msg);
+      }
+      const { error: signInErr } = await supabase.auth.signInWithPassword({ email: data.email, password: data.password });
+      if (signInErr) throw signInErr;
+      toast.success("Welcome to your demo account — Soulmate unlocked!");
+    } catch (err: any) {
+      toast.error(err?.message || "Could not start the demo");
+    } finally {
+      setDemoLoading(false);
+    }
+  };
+  return { showDemo, setShowDemo, demoCode, setDemoCode, demoLoading, handleDemoLogin };
+};
+
 const AuthPage = () => {
   const [view, setView] = useState<View>("auth");
   const [isSignUp, setIsSignUp] = useState(true);
