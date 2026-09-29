@@ -9,7 +9,7 @@ import { UsageLimitError } from "@/lib/date-planner";
 import { UsageMeter } from "@/components/UsageMeter";
 import { notifyUsageUpdated } from "@/hooks/useUsage";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { demoSelect, demoInsert, demoDelete } from "@/lib/demo-db";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/hooks/useSubscription";
 import { FEATURE_TIERS } from "@/lib/tiers";
@@ -61,10 +61,7 @@ const GiftPlanner = () => {
 
   const fetchSavedGifts = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from("saved_gifts").select("*").eq("user_id", user.id)
-      .order("created_at", { ascending: false });
-    if (data) setSavedGifts(data);
+    setSavedGifts(demoSelect<any>("saved_gifts").slice().reverse());
   }, [user]);
 
   useEffect(() => { fetchSavedGifts(); }, [fetchSavedGifts]);
@@ -105,21 +102,21 @@ const GiftPlanner = () => {
       return;
     }
     setSavingIndex(index);
-    const { error } = await supabase.from("saved_gifts").insert({
+    demoInsert("saved_gifts", {
       user_id: user.id, title: idea.title, description: idea.description,
       estimated_cost: idea.estimated_cost, where_to_buy: idea.where_to_buy,
       personalization_tip: idea.personalization_tip, vibe: idea.vibe,
-    });
-    if (error) toast.error("Failed to save gift");
-    else { toast.success(`"${idea.title}" saved!`); fetchSavedGifts(); }
+    } as any);
+    toast.success(`"${idea.title}" saved!`);
+    fetchSavedGifts();
     setSavingIndex(null);
   };
 
   const handleDeleteGift = async (id: string) => {
     setDeletingId(id);
-    const { error } = await supabase.from("saved_gifts").delete().eq("id", id);
-    if (error) toast.error("Failed to delete gift");
-    else { setSavedGifts((prev) => prev.filter((g) => g.id !== id)); toast.success("Gift removed"); }
+    demoDelete("saved_gifts", id);
+    setSavedGifts((prev) => prev.filter((g) => g.id !== id));
+    toast.success("Gift removed");
     setDeletingId(null);
   };
 

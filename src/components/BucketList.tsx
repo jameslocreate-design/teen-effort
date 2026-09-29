@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { demoSelect, demoInsert, demoUpdate, demoDelete } from "@/lib/demo-db";
+import { DEMO_LINK_ID } from "@/lib/demo";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,55 +35,37 @@ const BucketList = () => {
 
   const fetchLinkAndItems = async () => {
     if (!user) return;
-    const { data: lid } = await supabase.rpc("get_accepted_partner_link_id", { _user_id: user.id });
-    if (!lid) {
-      setLinkId(null);
-      setLoading(false);
-      return;
-    }
-    setLinkId(lid);
-    const { data } = await supabase
-      .from("bucket_list")
-      .select("*")
-      .eq("partner_link_id", lid)
-      .order("created_at", { ascending: true });
-    setItems((data as BucketItem[]) || []);
+    setLinkId(DEMO_LINK_ID);
+    setItems(demoSelect<any>("bucket_list") as BucketItem[]);
     setLoading(false);
   };
 
   const addItem = async () => {
-    if (!user || !linkId || !title.trim()) return;
+    if (!user || !title.trim()) return;
     setAdding(true);
-    const { error } = await supabase.from("bucket_list").insert({
-      partner_link_id: linkId,
+    demoInsert("bucket_list", {
+      partner_link_id: DEMO_LINK_ID,
       added_by: user.id,
       title: title.trim(),
       description: description.trim() || null,
-    });
-    if (error) {
-      toast.error("Failed to add item");
-    } else {
-      setTitle("");
-      setDescription("");
-      await fetchLinkAndItems();
-      toast.success("Added to bucket list!");
-    }
+      completed: false,
+      completed_at: null,
+    } as any);
+    setTitle("");
+    setDescription("");
+    await fetchLinkAndItems();
+    toast.success("Added to bucket list!");
     setAdding(false);
   };
 
   const markComplete = async (id: string) => {
-    const { error } = await supabase
-      .from("bucket_list")
-      .update({ completed: true, completed_at: new Date().toISOString() })
-      .eq("id", id);
-    if (error) toast.error("Failed to update");
-    else await fetchLinkAndItems();
+    demoUpdate("bucket_list", id, { completed: true, completed_at: new Date().toISOString() } as any);
+    await fetchLinkAndItems();
   };
 
   const deleteItem = async (id: string) => {
-    const { error } = await supabase.from("bucket_list").delete().eq("id", id);
-    if (error) toast.error("Failed to delete");
-    else await fetchLinkAndItems();
+    demoDelete("bucket_list", id);
+    await fetchLinkAndItems();
   };
 
   if (loading) return <div className="text-center text-muted-foreground py-12">Loading…</div>;

@@ -4,7 +4,7 @@ import { checkAndIncrementUsage } from "../_shared/usage-limits.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-demo-mode",
 };
 
 serve(async (req) => {
@@ -13,27 +13,33 @@ serve(async (req) => {
   }
 
   try {
-    let usage;
-    try {
-      usage = await checkAndIncrementUsage(req, "gift_ideas");
-    } catch (authErr) {
-      console.error("Auth/usage error", authErr);
-      return new Response(
-        JSON.stringify({ error: "You must be signed in to generate gift ideas." }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-    if (!usage.allowed) {
-      return new Response(
-        JSON.stringify({
-          error: "limit_reached",
-          message: `You've used all ${usage.limit} free gift generations this month. Upgrade for unlimited access.`,
-          feature: "gift_ideas",
-          limit: usage.limit,
-          remaining: 0,
-        }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+    // Web-only demo build: no accounts exist, so the signed-in usage check is
+    // skipped and the demo client enforces its own per-device daily limit.
+    const isDemo = req.headers.get("x-demo-mode") === "true";
+
+    if (!isDemo) {
+      let usage;
+      try {
+        usage = await checkAndIncrementUsage(req, "gift_ideas");
+      } catch (authErr) {
+        console.error("Auth/usage error", authErr);
+        return new Response(
+          JSON.stringify({ error: "You must be signed in to generate gift ideas." }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      if (!usage.allowed) {
+        return new Response(
+          JSON.stringify({
+            error: "limit_reached",
+            message: `You've used all ${usage.limit} free gift generations this month. Upgrade for unlimited access.`,
+            feature: "gift_ideas",
+            limit: usage.limit,
+            remaining: 0,
+          }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
     }
 
     const { cost, personalization, event } = await req.json();
