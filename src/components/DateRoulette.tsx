@@ -105,16 +105,15 @@ const DateRoulette = () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const { error } = await supabase.from("calendar_entries").insert({
+    demoInsert("calendar_entries", {
       partner_link_id: linkId, added_by: user.id,
       date: format(tomorrow, "yyyy-MM-dd"), title: idea.title,
       description: idea.description || null, estimated_cost: idea.estimated_cost || null,
       duration: idea.duration || null, vibe: idea.vibe || null,
       yelp_url: idea.yelp_url || null, yelp_rating: idea.yelp_rating || null,
       yelp_review_count: idea.yelp_review_count || null,
-    });
-    if (error) toast.error("Failed to save");
-    else toast.success(`"${idea.title}" added to calendar for tomorrow!`);
+    } as any);
+    toast.success(`"${idea.title}" added to calendar for tomorrow!`);
   };
 
   const count = ideas.length || 6;
