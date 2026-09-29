@@ -2,8 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Dices, Loader2, Sparkles, CalendarPlus, Trash2, Plus } from "lucide-react";
 import type { DateIdea } from "@/lib/date-planner";
-import { demoSelect, demoInsert, demoDelete } from "@/lib/demo-db";
-import { DEMO_LINK_ID } from "@/lib/demo";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -41,13 +40,21 @@ const DateRoulette = () => {
 
   const fetchIdeas = useCallback(async () => {
     if (!user) return;
-    setIdeas(demoSelect<any>("roulette_date_ideas").slice().reverse());
+    const { data } = await supabase
+      .from("roulette_date_ideas")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+    setIdeas(data || []);
   }, [user]);
 
   const fetchPartnerLink = useCallback(async () => {
     if (!user) return null;
-    setPartnerLinkId(DEMO_LINK_ID);
-    return DEMO_LINK_ID;
+    const { data } = await supabase
+      .from("partner_links").select("id").eq("status", "accepted")
+      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`).maybeSingle();
+    if (data) setPartnerLinkId(data.id);
+    return data?.id || null;
   }, [user]);
 
   useEffect(() => { fetchIdeas(); fetchPartnerLink(); }, [fetchIdeas, fetchPartnerLink]);
@@ -61,14 +68,19 @@ const DateRoulette = () => {
 
   const handleAddManual = async () => {
     if (!newTitle.trim() || !user) return;
-    demoInsert("roulette_date_ideas", { user_id: user.id, title: newTitle.trim() } as any);
-    setNewTitle("");
-    fetchIdeas();
-    toast.success("Added to the wheel!");
+    const { error } = await supabase.from("roulette_date_ideas").insert({
+      user_id: user.id, title: newTitle.trim(),
+    });
+    if (error) toast.error("Failed to add");
+    else {
+      setNewTitle("");
+      fetchIdeas();
+      toast.success("Added to the wheel!");
+    }
   };
 
   const handleRemove = async (id: string) => {
-    demoDelete("roulette_date_ideas", id);
+    await supabase.from("roulette_date_ideas").delete().eq("id", id);
     setIdeas(prev => prev.filter(i => i.id !== id));
     setSelectedIndex(null);
     setRotation(0);
@@ -105,15 +117,16 @@ const DateRoulette = () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    demoInsert("calendar_entries", {
+    const { error } = await supabase.from("calendar_entries").insert({
       partner_link_id: linkId, added_by: user.id,
       date: format(tomorrow, "yyyy-MM-dd"), title: idea.title,
       description: idea.description || null, estimated_cost: idea.estimated_cost || null,
       duration: idea.duration || null, vibe: idea.vibe || null,
       yelp_url: idea.yelp_url || null, yelp_rating: idea.yelp_rating || null,
       yelp_review_count: idea.yelp_review_count || null,
-    } as any);
-    toast.success(`"${idea.title}" added to calendar for tomorrow!`);
+    });
+    if (error) toast.error("Failed to save");
+    else toast.success(`"${idea.title}" added to calendar for tomorrow!`);
   };
 
   const count = ideas.length || 6;

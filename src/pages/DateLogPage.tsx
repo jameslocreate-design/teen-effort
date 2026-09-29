@@ -1,17 +1,17 @@
 import { AuthProvider } from "@/contexts/AuthContext";
 import { useAuth } from "@/contexts/AuthContext";
+import AuthPage from "@/pages/AuthPage";
 import DateLog from "@/components/DateLog";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Navigate } from "react-router-dom";
 
 const DateLogInner = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
   if (loading) return null;
-  if (!user) return <Navigate to="/" replace />;
+  if (!user) return <AuthPage />;
 
   return (
     <div className="min-h-screen bg-background">

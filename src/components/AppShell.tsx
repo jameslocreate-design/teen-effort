@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getDemoProfile } from "@/lib/demo";
-import DemoBadge, { DemoFooterNote } from "@/components/DemoBadge";
+import { supabase } from "@/integrations/supabase/client";
+import { signedUrl } from "@/lib/storage";
 import { useNavigate } from "react-router-dom";
 import {
   Heart, CalendarDays, Sparkles, User, Link2, LogOut, Users, Gift,
@@ -13,7 +13,9 @@ import { Button } from "@/components/ui/button";
 import DatePlanner from "@/components/DatePlanner";
 import GiftPlanner from "@/components/GiftPlanner";
 import SharedCalendar from "@/components/SharedCalendar";
-import DemoProfileSetup from "@/components/DemoProfileSetup";
+import ProfileSetup from "@/components/ProfileSetup";
+import PartnerLink from "@/components/PartnerLink";
+import PartnerView from "@/components/PartnerView";
 import BucketList from "@/components/BucketList";
 import ExpertComingSoon from "@/components/ExpertComingSoon";
 import OnboardingTour from "@/components/OnboardingTour";
@@ -35,12 +37,13 @@ import RelationshipTimeline from "@/components/RelationshipTimeline";
 import SmartRecommendations from "@/components/SmartRecommendations";
 import VisionBoard from "@/components/VisionBoard";
 import AppreciationPrompts from "@/components/AppreciationPrompts";
-import DemoSettingsPage from "@/components/DemoSettingsPage";
+import SettingsPage from "@/components/SettingsPage";
 import PremiumGate from "@/components/PremiumGate";
 import PremiumBadge from "@/components/PremiumBadge";
 import { SubscriptionStatusBanner } from "@/components/SubscriptionStatusBanner";
 import { toast } from "sonner";
 import { isIOS } from "@/lib/native";
+import AuthPage from "@/pages/AuthPage";
 
 type Tab =
   | "planner" | "roulette" | "gifts" | "calendar"
@@ -94,6 +97,10 @@ const navSections: NavSection[] = [
   {
     title: "Account",
     items: [
+      { id: "partner", label: "Link Partner", icon: <Link2 className="h-4 w-4" /> },
+      { id: "partner-view", label: "Partner", icon: <Users className="h-4 w-4" /> },
+      { id: "referral", label: "Invite Friends", icon: <Share2 className="h-4 w-4" /> },
+      { id: "premium", label: "Premium", icon: <Star className="h-4 w-4" /> },
       { id: "profile", label: "Profile", icon: <User className="h-4 w-4" /> },
     ],
   },
@@ -119,14 +126,46 @@ const AppShell = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
-  // Demo build: the profile lives in this browser only.
   const fetchProfile = () => {
-    const demo = getDemoProfile();
-    setProfileComplete(!!demo);
-    setProfileName(demo?.name ?? "");
-    setProfileAvatar(null);
-    setNeedsPartnerStep(false);
-    if (demo && !localStorage.getItem("onboarding-done")) setShowOnboarding(true);
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("name, avatar_url")
+      .eq("user_id", user.id)
+      .single()
+      .then(async ({ data }) => {
+        if ((data as any)?.deactivated_at) {
+          await supabase.from("profiles").update({ deactivated_at: null } as any).eq("user_id", user.id);
+          toast.success("Welcome back! Your account has been reactivated.");
+        }
+        const isComplete = !!data?.name;
+        setProfileComplete(isComplete);
+        if (data?.name) setProfileName(data.name);
+        if ((data as any)?.avatar_url) {
+          setProfileAvatar(await signedUrl("avatars", (data as any).avatar_url));
+        }
+        if (isComplete && !localStorage.getItem("onboarding-done")) {
+          setShowOnboarding(true);
+        }
+        if (isComplete) {
+          // Check if user needs the partner-link onboarding step
+          if (localStorage.getItem("partner-onboarding-done")) {
+            setNeedsPartnerStep(false);
+          } else {
+            const { data: links } = await supabase
+              .from("partner_links")
+              .select("id")
+              .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+              .limit(1);
+            if (links && links.length > 0) {
+              localStorage.setItem("partner-onboarding-done", "true");
+              setNeedsPartnerStep(false);
+            } else {
+              setNeedsPartnerStep(true);
+            }
+          }
+        }
+      });
   };
 
   useEffect(() => {
@@ -161,22 +200,38 @@ const AppShell = () => {
     );
   }
 
+  if (!user) return <AuthPage />;
   if (profileComplete === null) return null;
-  if (!profileComplete || !user) {
-    return <DemoProfileSetup onComplete={() => fetchProfile()} />;
-  }
+  if (!profileComplete) return <ProfileSetup onComplete={() => setProfileComplete(true)} />;
 
-  if (showSettings) {
+  if (needsPartnerStep) {
+    const finishPartnerStep = () => {
+      localStorage.setItem("partner-onboarding-done", "true");
+      setNeedsPartnerStep(false);
+    };
     return (
-      <DemoSettingsPage
-        onBack={() => setShowSettings(false)}
-        onEditProfile={() => {
-          setShowSettings(false);
-          setActiveTab("profile");
-        }}
-      />
+      <div className="min-h-screen bg-background px-4 py-8 overflow-y-auto">
+        <div className="max-w-md mx-auto space-y-6">
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl font-display italic text-primary">Link your partner</h2>
+            <p className="text-sm text-muted-foreground">
+              Share your code or enter theirs to unlock shared calendars, wishlists, and more. You can always do this later.
+            </p>
+          </div>
+          <PartnerLink onLinked={finishPartnerStep} />
+          <Button
+            variant="ghost"
+            onClick={finishPartnerStep}
+            className="w-full text-muted-foreground hover:text-foreground"
+          >
+            Skip for now
+          </Button>
+        </div>
+      </div>
     );
   }
+
+  if (showSettings) return <SettingsPage onBack={() => setShowSettings(false)} />;
 
   const handleOnboardingComplete = () => {
     localStorage.setItem("onboarding-done", "true");
@@ -261,7 +316,9 @@ const AppShell = () => {
           {renderNav()}
         </div>
         <div className="border-t border-border p-3 flex items-center justify-between gap-1">
-          <DemoBadge className="flex-1 justify-center" />
+          <Button variant="ghost" size="sm" onClick={signOut} className="justify-start gap-2 text-muted-foreground font-sans text-xs flex-1">
+            <LogOut className="h-4 w-4" /> Sign Out
+          </Button>
           <Button variant="ghost" size="icon" onClick={() => setShowSettings(true)} className="h-8 w-8 text-muted-foreground" title="Settings">
             <Settings className="h-4 w-4" />
           </Button>
@@ -288,8 +345,8 @@ const AppShell = () => {
               {renderNav()}
             </div>
             <div className="border-t border-border p-3 flex items-center justify-between">
-              <Button variant="ghost" size="sm" onClick={() => { setSidebarOpen(false); setShowSettings(true); }} className="justify-start gap-2 text-muted-foreground font-sans text-xs">
-                <Settings className="h-4 w-4" /> Settings
+              <Button variant="ghost" size="sm" onClick={signOut} className="justify-start gap-2 text-muted-foreground font-sans text-xs">
+                <LogOut className="h-4 w-4" /> Sign Out
               </Button>
               <ThemeToggle />
             </div>
@@ -307,7 +364,6 @@ const AppShell = () => {
               <Menu className="h-5 w-5" />
             </Button>
             <h1 className="text-base font-display italic text-primary">Teen Effort</h1>
-            <DemoBadge />
           </div>
           <div className="flex items-center gap-1">
             <ThemeToggle />
@@ -339,6 +395,7 @@ const AppShell = () => {
             {activeTab === "map" && <DateMap />}
             {activeTab === "vision" && <VisionBoard />}
             {activeTab === "appreciate" && <AppreciationPrompts />}
+            {activeTab === "referral" && <ReferralSystem />}
             {activeTab === "calendar" && (
               <SharedCalendar
                 onPlanDate={(title, date) => {
@@ -347,8 +404,9 @@ const AppShell = () => {
                 }}
               />
             )}
-            {activeTab === "profile" && <DemoProfileSetup onComplete={() => fetchProfile()} />}
-            <DemoFooterNote className="mt-12" />
+            {activeTab === "partner" && <PartnerLink onLinked={() => setActiveTab("partner-view")} />}
+            {activeTab === "partner-view" && <PartnerView onUnlinked={() => setActiveTab("partner")} />}
+            {activeTab === "profile" && <ProfileSetup onComplete={() => {}} />}
           </div>
         </main>
 

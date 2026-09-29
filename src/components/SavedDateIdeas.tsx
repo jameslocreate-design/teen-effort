@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { demoSelect, demoInsert, demoDelete } from "@/lib/demo-db";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { CalendarPlus, Dices, Trash2, Bookmark, Clock, DollarSign, Sparkles, Star, ExternalLink } from "lucide-react";
@@ -41,17 +41,24 @@ const SavedDateIdeas = ({ onAddToCalendar, refreshKey }: SavedDateIdeasProps) =>
 
   const fetchSaved = useCallback(async () => {
     if (!user) return;
-    const rows = demoSelect<any>("saved_date_ideas").slice().reverse();
-    setIdeas(rows as SavedIdea[]);
+    const { data } = await supabase
+      .from("saved_date_ideas")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+    setIdeas(data || []);
     setLoading(false);
   }, [user]);
 
   useEffect(() => { fetchSaved(); }, [fetchSaved, refreshKey]);
 
   const handleDelete = async (id: string) => {
-    demoDelete("saved_date_ideas", id);
-    setIdeas(prev => prev.filter(i => i.id !== id));
-    toast.success("Removed from saved ideas");
+    const { error } = await supabase.from("saved_date_ideas").delete().eq("id", id);
+    if (error) toast.error("Failed to remove");
+    else {
+      setIdeas(prev => prev.filter(i => i.id !== id));
+      toast.success("Removed from saved ideas");
+    }
   };
 
   const toDateIdea = (saved: SavedIdea): DateIdea => ({
@@ -68,7 +75,7 @@ const SavedDateIdeas = ({ onAddToCalendar, refreshKey }: SavedDateIdeasProps) =>
 
   const handleAddToRoulette = async (saved: SavedIdea) => {
     if (!user) return;
-    demoInsert("roulette_date_ideas", {
+    const { error } = await supabase.from("roulette_date_ideas").insert({
       user_id: user.id,
       title: saved.title,
       description: saved.description,
@@ -78,9 +85,12 @@ const SavedDateIdeas = ({ onAddToCalendar, refreshKey }: SavedDateIdeasProps) =>
       yelp_url: saved.yelp_url,
       yelp_rating: saved.yelp_rating,
       yelp_review_count: saved.yelp_review_count,
-    } as any);
-    toast.success(`"${saved.title}" added to the roulette wheel!`);
-    window.dispatchEvent(new Event("roulette-updated"));
+    });
+    if (error) toast.error("Failed to add to roulette");
+    else {
+      toast.success(`"${saved.title}" added to the roulette wheel!`);
+      window.dispatchEvent(new Event("roulette-updated"));
+    }
   };
 
   if (loading || ideas.length === 0) return null;

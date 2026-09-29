@@ -14,8 +14,7 @@ import { generateDateIdeas, UsageLimitError, type DateFilters as DateFiltersType
 import { UsageMeter } from "@/components/UsageMeter";
 import { notifyUsageUpdated } from "@/hooks/useUsage";
 import { useNavigate } from "react-router-dom";
-import { demoInsert } from "@/lib/demo-db";
-import { DEMO_LINK_ID } from "@/lib/demo";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { isNative, purchasesBlocked } from "@/lib/native";
 import {
@@ -54,7 +53,10 @@ const DatePlanner = () => {
 
   const fetchPartnerLink = useCallback(async () => {
     if (!user) return;
-    setPartnerLinkId(DEMO_LINK_ID);
+    const { data } = await supabase
+      .from("partner_links").select("id").eq("status", "accepted")
+      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`).maybeSingle();
+    if (data) setPartnerLinkId(data.id);
   }, [user]);
 
   useEffect(() => { fetchPartnerLink(); }, [fetchPartnerLink]);
@@ -140,7 +142,7 @@ const DatePlanner = () => {
     if (!selectedCalendarDate || !selectedIdea || selectedIdeaIndex === null || !user || !partnerLinkId) return;
     setSavingIndex(selectedIdeaIndex);
     setDatePickerOpen(false);
-    demoInsert("calendar_entries", {
+    const { error } = await supabase.from("calendar_entries").insert({
       partner_link_id: partnerLinkId, added_by: user.id,
       date: format(selectedCalendarDate, "yyyy-MM-dd"),
       event_time: selectedTime || null, title: selectedIdea.title,
@@ -149,8 +151,9 @@ const DatePlanner = () => {
       yelp_url: selectedIdea.url || null, yelp_rating: selectedIdea.rating || null,
       yelp_review_count: selectedIdea.review_count || null,
       latitude: filters.latitude, longitude: filters.longitude,
-    } as any);
-    toast.success(`"${selectedIdea.title}" added to calendar!`);
+    });
+    if (error) toast.error("Failed to save to calendar");
+    else toast.success(`"${selectedIdea.title}" added to calendar!`);
     setSavingIndex(null); setSelectedIdea(null); setSelectedIdeaIndex(null);
     setSelectedCalendarDate(undefined); setSelectedTime("");
   };
@@ -163,7 +166,7 @@ const DatePlanner = () => {
   const handleSaveForLater = async (idea: DateIdea, index: number) => {
     if (!user) { toast.error("You must be logged in"); return; }
     setSavingForLaterIndex(index);
-    demoInsert("saved_date_ideas", {
+    const { error } = await supabase.from("saved_date_ideas").insert({
       user_id: user.id,
       title: idea.title,
       description: idea.description,
@@ -174,9 +177,12 @@ const DatePlanner = () => {
       yelp_rating: idea.rating || null,
       yelp_review_count: idea.review_count || null,
       yelp_url: idea.url || null,
-    } as any);
-    toast.success(`"${idea.title}" saved for later!`);
-    setSavedRefreshKey(k => k + 1);
+    });
+    if (error) toast.error("Failed to save idea");
+    else {
+      toast.success(`"${idea.title}" saved for later!`);
+      setSavedRefreshKey(k => k + 1);
+    }
     setSavingForLaterIndex(null);
   };
 
