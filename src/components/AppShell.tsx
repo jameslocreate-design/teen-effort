@@ -411,7 +411,7 @@ const AppShell = () => {
         </main>
 
         {/* Mobile Bottom Navigation */}
-        <nav className="fixed bottom-0 inset-x-0 border-t border-border bg-background/95 backdrop-blur-md lg:hidden z-40 safe-area-bottom">
+        <nav className="mobile-bottom-navigation fixed bottom-0 inset-x-0 border-t border-border bg-background/95 backdrop-blur-md lg:hidden z-40 safe-area-bottom">
           <div className="flex items-center justify-around px-1 py-1">
             {mobileQuickTabs.map((tab) => (
               <button

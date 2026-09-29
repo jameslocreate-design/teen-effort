@@ -77,13 +77,13 @@ export async function initNative() {
     /* keyboard plugin unavailable */
   }
 
-  // Reflect keyboard height so fixed bottom bars stay above it.
-  Keyboard.addListener("keyboardWillShow", (info) => {
-    document.documentElement.style.setProperty("--keyboard-height", `${info.keyboardHeight}px`);
+  // Capacitor already resizes the native web view for the keyboard. Do not add
+  // the keyboard height as page padding too; that double adjustment makes iOS
+  // jump the entire interface upward. The class only hides fixed navigation.
+  Keyboard.addListener("keyboardWillShow", () => {
     document.body.classList.add("keyboard-open");
   });
   Keyboard.addListener("keyboardWillHide", () => {
-    document.documentElement.style.setProperty("--keyboard-height", "0px");
     document.body.classList.remove("keyboard-open");
   });
 
