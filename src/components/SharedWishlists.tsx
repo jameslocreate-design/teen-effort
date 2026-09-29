@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { demoSelect, demoInsert, demoDelete } from "@/lib/demo-db";
-import { DEMO_LINK_ID, DEMO_PARTNER_ID } from "@/lib/demo";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,38 +31,62 @@ const SharedWishlists = () => {
 
   const fetchData = useCallback(async () => {
     if (!user) return;
-    setPartnerLinkId(DEMO_LINK_ID);
-    setPartnerId(DEMO_PARTNER_ID);
-    const items = demoSelect<any>("wishlists").slice().reverse() as WishlistItem[];
-    setMyItems(items.filter(i => i.user_id === user.id));
-    setPartnerItems(items.filter(i => i.user_id === DEMO_PARTNER_ID));
+    const { data: link } = await supabase
+      .from("partner_links").select("id, user1_id, user2_id").eq("status", "accepted")
+      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`).maybeSingle();
+
+    if (!link) { setLoading(false); return; }
+    setPartnerLinkId(link.id);
+    const pId = link.user1_id === user.id ? link.user2_id : link.user1_id;
+    setPartnerId(pId);
+
+    const { data: items } = await supabase
+      .from("wishlists")
+      .select("*")
+      .eq("partner_link_id", link.id)
+      .order("created_at", { ascending: false });
+
+    if (items) {
+      setMyItems((items as WishlistItem[]).filter(i => i.user_id === user.id));
+      setPartnerItems((items as WishlistItem[]).filter(i => i.user_id === pId));
+    }
     setLoading(false);
   }, [user]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const handleAdd = async () => {
-    if (!user || !newTitle.trim()) {
+    if (!user || !partnerLinkId || !newTitle.trim()) {
       toast.error("Please enter a title");
       return;
     }
-    const created = demoInsert<any>("wishlists", {
-      user_id: user.id,
-      partner_link_id: DEMO_LINK_ID,
-      title: newTitle.trim(),
-      description: newDesc.trim() || null,
-      url: newUrl.trim() || null,
-    } as any);
-    setMyItems(prev => [created as WishlistItem, ...prev]);
-    setNewTitle(""); setNewDesc(""); setNewUrl("");
-    setAddingNew(false);
-    toast.success("Added to your wishlist!");
+    const { data, error } = await supabase
+      .from("wishlists")
+      .insert({
+        user_id: user.id,
+        partner_link_id: partnerLinkId,
+        title: newTitle.trim(),
+        description: newDesc.trim() || null,
+        url: newUrl.trim() || null,
+      } as any)
+      .select()
+      .single();
+
+    if (error) toast.error("Failed to add item");
+    else {
+      setMyItems(prev => [data as WishlistItem, ...prev]);
+      setNewTitle(""); setNewDesc(""); setNewUrl("");
+      setAddingNew(false);
+      toast.success("Added to your wishlist!");
+    }
   };
 
   const handleDelete = async (id: string) => {
-    demoDelete("wishlists", id);
-    setMyItems(prev => prev.filter(i => i.id !== id));
-    toast.success("Removed from wishlist");
+    const { error } = await supabase.from("wishlists").delete().eq("id", id);
+    if (!error) {
+      setMyItems(prev => prev.filter(i => i.id !== id));
+      toast.success("Removed from wishlist");
+    }
   };
 
   if (loading) {
