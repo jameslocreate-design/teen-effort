@@ -140,7 +140,7 @@ const DatePlanner = () => {
     if (!selectedCalendarDate || !selectedIdea || selectedIdeaIndex === null || !user || !partnerLinkId) return;
     setSavingIndex(selectedIdeaIndex);
     setDatePickerOpen(false);
-    const { error } = await supabase.from("calendar_entries").insert({
+    demoInsert("calendar_entries", {
       partner_link_id: partnerLinkId, added_by: user.id,
       date: format(selectedCalendarDate, "yyyy-MM-dd"),
       event_time: selectedTime || null, title: selectedIdea.title,
@@ -149,9 +149,8 @@ const DatePlanner = () => {
       yelp_url: selectedIdea.url || null, yelp_rating: selectedIdea.rating || null,
       yelp_review_count: selectedIdea.review_count || null,
       latitude: filters.latitude, longitude: filters.longitude,
-    });
-    if (error) toast.error("Failed to save to calendar");
-    else toast.success(`"${selectedIdea.title}" added to calendar!`);
+    } as any);
+    toast.success(`"${selectedIdea.title}" added to calendar!`);
     setSavingIndex(null); setSelectedIdea(null); setSelectedIdeaIndex(null);
     setSelectedCalendarDate(undefined); setSelectedTime("");
   };
@@ -164,7 +163,7 @@ const DatePlanner = () => {
   const handleSaveForLater = async (idea: DateIdea, index: number) => {
     if (!user) { toast.error("You must be logged in"); return; }
     setSavingForLaterIndex(index);
-    const { error } = await supabase.from("saved_date_ideas").insert({
+    demoInsert("saved_date_ideas", {
       user_id: user.id,
       title: idea.title,
       description: idea.description,
@@ -175,12 +174,9 @@ const DatePlanner = () => {
       yelp_rating: idea.rating || null,
       yelp_review_count: idea.review_count || null,
       yelp_url: idea.url || null,
-    });
-    if (error) toast.error("Failed to save idea");
-    else {
-      toast.success(`"${idea.title}" saved for later!`);
-      setSavedRefreshKey(k => k + 1);
-    }
+    } as any);
+    toast.success(`"${idea.title}" saved for later!`);
+    setSavedRefreshKey(k => k + 1);
     setSavingForLaterIndex(null);
   };
 
