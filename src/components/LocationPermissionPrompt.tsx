@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { MapPin, Settings, X } from "lucide-react";
+import { MapPin, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { isNative } from "@/lib/native";
 import {
@@ -114,8 +114,6 @@ const LocationPermissionPrompt = () => {
   // Safari has no Permissions API for geolocation, so "unknown" still needs the prompt.
 
   const denied = state === "denied";
-  if (denied && localStorage.getItem(DENIED_DISMISS_KEY) === "1") return null;
-  if (!denied && localStorage.getItem(DISMISS_KEY) === "1") return null;
 
   return (
     <div className="mx-4 mt-4 rounded-2xl border border-primary/30 bg-primary/10 p-4 flex items-start gap-3">
@@ -124,44 +122,28 @@ const LocationPermissionPrompt = () => {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-foreground">
-          {denied ? "Location is turned off" : "Allow location access"}
+          {denied ? "Location is turned off" : "Find date spots near you"}
         </p>
         <p className="text-xs text-muted-foreground mt-0.5">
           {denied
             ? (isNative()
-                ? "Teen Effort can't see your location, so date ideas won't be nearby. Turn it back on in Settings › Teen Effort › Location."
+                ? "Teen Effort can't see your location, so date ideas won't be nearby. You can turn it on in Settings › Teen Effort › Location."
                 : "Your browser is blocking location, so date ideas won't be nearby. Re-allow it in your browser's site settings for this page.")
             : "We use your location to find date spots and weather near you. Nothing is shared with anyone else."}
         </p>
         <div className="mt-3 flex gap-2">
           {denied ? (
-            <Button size="sm" onClick={isNative() ? openSettings : allow} disabled={busy} className="h-9 rounded-xl gap-1.5">
+            <Button size="sm" onClick={isNative() ? openSettings : allow} disabled={busy} className="h-11 rounded-xl gap-1.5">
               <Settings className="h-3.5 w-3.5" />
               {isNative() ? "Open Settings" : busy ? "Retrying..." : "Try again"}
             </Button>
           ) : (
-            <Button size="sm" onClick={allow} disabled={busy} className="h-9 rounded-xl">
-              {busy ? "Requesting..." : "Allow location"}
+            <Button size="sm" onClick={allow} disabled={busy} className="h-11 rounded-xl px-6">
+              {busy ? "Requesting..." : "Continue"}
             </Button>
           )}
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={denied ? dismissDeniedHint : dismiss}
-            className="h-9 rounded-xl"
-          >
-            Not now
-          </Button>
         </div>
       </div>
-      <button
-        type="button"
-        onClick={denied ? dismissDeniedHint : dismiss}
-        aria-label="Dismiss location prompt"
-        className="text-muted-foreground hover:text-foreground p-1"
-      >
-        <X className="h-4 w-4" />
-      </button>
     </div>
   );
 };

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { User, Save, Camera } from "lucide-react";
 import { signedUrl } from "@/lib/storage";
+import { pickPhotoNative } from "@/lib/camera";
 
 const loveLanguageOptions = [
   { value: "Words of Affirmation", emoji: "💬" },
@@ -70,8 +71,8 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
       });
   }, [user]);
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement> | File) => {
+    const file = e instanceof File ? e : e.target.files?.[0];
     if (!file || !user) return;
 
     if (!file.type.startsWith("image/")) {
@@ -167,7 +168,11 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
           {/* Avatar upload */}
           <div className="relative mx-auto w-fit">
             <button
-              onClick={() => fileInputRef.current?.click()}
+              onClick={async () => {
+                const native = await pickPhotoNative();
+                if (native === undefined) fileInputRef.current?.click();
+                else if (native) handleAvatarUpload(native);
+              }}
               disabled={uploading}
               className="relative h-20 w-20 rounded-full bg-secondary flex items-center justify-center overflow-hidden ring-2 ring-primary/20 hover:ring-primary/40 transition-all group"
             >
