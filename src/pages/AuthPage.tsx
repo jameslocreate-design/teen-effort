@@ -84,6 +84,12 @@ const AuthPage = () => {
     }
     setAppleLoading(true);
     try {
+      if (isNative()) {
+        // Native build: Apple sheet → identityToken + nonce → signInWithIdToken (no web redirect).
+        const { nativeAppleSignIn } = await import("@/lib/appleSignIn");
+        await nativeAppleSignIn();
+        return;
+      }
       const result = await lovable.auth.signInWithOAuth("apple", {
         redirect_uri: window.location.origin,
       });
@@ -528,6 +534,21 @@ const AuthPage = () => {
               <span className="text-xs text-muted-foreground">or</span>
               <div className="h-px flex-1 bg-border" />
             </div>
+            {/* Apple's official, unmodified Sign in with Apple artwork */}
+            <button
+              type="button"
+              disabled={appleLoading}
+              onClick={handleAppleSignIn}
+              aria-label={isSignUp ? "Sign up with Apple" : "Sign in with Apple"}
+              className="block w-full h-11 disabled:opacity-60"
+            >
+              <img
+                src={`https://appleid.cdn-apple.com/appleid/button?height=44&width=375&type=${isSignUp ? "sign-up" : "sign-in"}&color=white&border=false&border_radius=12&scale=2&locale=en_US`}
+                alt={isSignUp ? "Sign up with Apple" : "Sign in with Apple"}
+                className="h-11 w-full object-contain"
+                draggable={false}
+              />
+            </button>
             <Button
               type="button"
               variant="outline"
@@ -536,22 +557,12 @@ const AuthPage = () => {
               className="w-full h-11 rounded-xl gap-2"
             >
               <svg className="h-4 w-4" viewBox="0 0 48 48" aria-hidden="true">
-                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.720 17.74 9.5 24 9.5z"/>
                 <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                <path fill="#FBBC05" d="M10.53 28.59A14.6 14.6 0 019.77 24c0-1.6.28-3.14.76-4.59l-7.97-6.19A23.94 23.94 0 000 24c0 3.88.93 7.54 2.56 10.78l7.97-6.19z"/>
-                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                <path fill="#FBBC05" d="M10.53 28.59A14.6 14.6 0 019.77 24c0-1.6.28-3.14.76-4.59l-7.97-6.19A23.94 23.94 0 000 24c0 3.88.93 7.54 2.56 10.78l7.970-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.220-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
               </svg>
               {googleLoading ? "Connecting..." : isSignUp ? "Sign up with Google" : "Continue with Google"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={appleLoading}
-              onClick={handleAppleSignIn}
-              className="w-full h-11 rounded-xl gap-2"
-            >
-              <Apple className="h-4 w-4" />
-              {appleLoading ? "Connecting..." : "Continue with Apple"}
             </Button>
           </div>
         )}
