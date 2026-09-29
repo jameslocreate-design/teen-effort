@@ -238,7 +238,7 @@
   .loading-dots span:nth-child(3) { animation-delay: 600ms; }
 
   .safe-area-bottom {
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--keyboard-height, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   .safe-area-top {
@@ -247,10 +247,6 @@
 }
 
 /* Native (Capacitor) shell adjustments — no effect in the browser */
-:root {
-  --keyboard-height: 0px;
-}
-
 body.is-native {
   overscroll-behavior-y: none;
   -webkit-user-select: none;
@@ -267,6 +263,12 @@ body.is-native [contenteditable="true"] {
 
 body.is-ios {
   padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* The native web view already makes room for the keyboard. Keep fixed app
+   navigation out of that smaller viewport instead of pushing the page upward. */
+body.keyboard-open .mobile-bottom-navigation {
+  display: none;
 }
 
 
