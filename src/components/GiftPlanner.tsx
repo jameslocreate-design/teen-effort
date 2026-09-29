@@ -9,7 +9,7 @@ import { UsageLimitError } from "@/lib/date-planner";
 import { UsageMeter } from "@/components/UsageMeter";
 import { notifyUsageUpdated } from "@/hooks/useUsage";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { demoSelect, demoInsert, demoDelete } from "@/lib/demo-db";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/hooks/useSubscription";
 import { FEATURE_TIERS } from "@/lib/tiers";
@@ -61,10 +61,7 @@ const GiftPlanner = () => {
 
   const fetchSavedGifts = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from("saved_gifts").select("*").eq("user_id", user.id)
-      .order("created_at", { ascending: false });
-    if (data) setSavedGifts(data);
+    setSavedGifts(demoSelect<any>("saved_gifts").slice().reverse());
   }, [user]);
 
   useEffect(() => { fetchSavedGifts(); }, [fetchSavedGifts]);
