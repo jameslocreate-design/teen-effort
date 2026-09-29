@@ -102,21 +102,21 @@ const GiftPlanner = () => {
       return;
     }
     setSavingIndex(index);
-    const { error } = await supabase.from("saved_gifts").insert({
+    demoInsert("saved_gifts", {
       user_id: user.id, title: idea.title, description: idea.description,
       estimated_cost: idea.estimated_cost, where_to_buy: idea.where_to_buy,
       personalization_tip: idea.personalization_tip, vibe: idea.vibe,
-    });
-    if (error) toast.error("Failed to save gift");
-    else { toast.success(`"${idea.title}" saved!`); fetchSavedGifts(); }
+    } as any);
+    toast.success(`"${idea.title}" saved!`);
+    fetchSavedGifts();
     setSavingIndex(null);
   };
 
   const handleDeleteGift = async (id: string) => {
     setDeletingId(id);
-    const { error } = await supabase.from("saved_gifts").delete().eq("id", id);
-    if (error) toast.error("Failed to delete gift");
-    else { setSavedGifts((prev) => prev.filter((g) => g.id !== id)); toast.success("Gift removed"); }
+    demoDelete("saved_gifts", id);
+    setSavedGifts((prev) => prev.filter((g) => g.id !== id));
+    toast.success("Gift removed");
     setDeletingId(null);
   };
 

@@ -41,21 +41,13 @@ const DateRoulette = () => {
 
   const fetchIdeas = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from("roulette_date_ideas")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
-    setIdeas(data || []);
+    setIdeas(demoSelect<any>("roulette_date_ideas").slice().reverse());
   }, [user]);
 
   const fetchPartnerLink = useCallback(async () => {
     if (!user) return null;
-    const { data } = await supabase
-      .from("partner_links").select("id").eq("status", "accepted")
-      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`).maybeSingle();
-    if (data) setPartnerLinkId(data.id);
-    return data?.id || null;
+    setPartnerLinkId(DEMO_LINK_ID);
+    return DEMO_LINK_ID;
   }, [user]);
 
   useEffect(() => { fetchIdeas(); fetchPartnerLink(); }, [fetchIdeas, fetchPartnerLink]);
@@ -69,19 +61,14 @@ const DateRoulette = () => {
 
   const handleAddManual = async () => {
     if (!newTitle.trim() || !user) return;
-    const { error } = await supabase.from("roulette_date_ideas").insert({
-      user_id: user.id, title: newTitle.trim(),
-    });
-    if (error) toast.error("Failed to add");
-    else {
-      setNewTitle("");
-      fetchIdeas();
-      toast.success("Added to the wheel!");
-    }
+    demoInsert("roulette_date_ideas", { user_id: user.id, title: newTitle.trim() } as any);
+    setNewTitle("");
+    fetchIdeas();
+    toast.success("Added to the wheel!");
   };
 
   const handleRemove = async (id: string) => {
-    await supabase.from("roulette_date_ideas").delete().eq("id", id);
+    demoDelete("roulette_date_ideas", id);
     setIdeas(prev => prev.filter(i => i.id !== id));
     setSelectedIndex(null);
     setRotation(0);
