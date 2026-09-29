@@ -1,6 +1,7 @@
 import { syncDateReminders } from "@/lib/reminders";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { demoSelect, demoUpdate, demoDelete } from "@/lib/demo-db";
+import { DEMO_LINK_ID } from "@/lib/demo";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Trash2, CalendarDays, Star, ExternalLink, Camera, Heart, ImageIcon } from "lucide-react";
@@ -8,7 +9,6 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMont
 import { toast } from "sonner";
 import CalendarInsights from "@/components/CalendarInsights";
 import { CalendarSkeleton } from "@/components/ui/skeleton-card";
-import { signedUrlMap } from "@/lib/storage";
 
 interface CalendarEntry {
   id: string;
