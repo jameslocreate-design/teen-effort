@@ -14,7 +14,8 @@ import { generateDateIdeas, UsageLimitError, type DateFilters as DateFiltersType
 import { UsageMeter } from "@/components/UsageMeter";
 import { notifyUsageUpdated } from "@/hooks/useUsage";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { demoInsert } from "@/lib/demo-db";
+import { DEMO_LINK_ID } from "@/lib/demo";
 import { useAuth } from "@/contexts/AuthContext";
 import { isNative, purchasesBlocked } from "@/lib/native";
 import {
@@ -53,10 +54,7 @@ const DatePlanner = () => {
 
   const fetchPartnerLink = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from("partner_links").select("id").eq("status", "accepted")
-      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`).maybeSingle();
-    if (data) setPartnerLinkId(data.id);
+    setPartnerLinkId(DEMO_LINK_ID);
   }, [user]);
 
   useEffect(() => { fetchPartnerLink(); }, [fetchPartnerLink]);
