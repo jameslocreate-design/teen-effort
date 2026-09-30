@@ -55,6 +55,7 @@ const useDemoLogin = () => {
 };
 
 const AuthPage = () => {
+  const nativeApp = isNative();
   const { showDemo, setShowDemo, demoCode, setDemoCode, demoLoading, handleDemoLogin } = useDemoLogin();
   const [view, setView] = useState<View>("auth");
   const [isSignUp, setIsSignUp] = useState(true);
@@ -300,14 +301,14 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="fixed inset-0 overflow-hidden overscroll-none bg-background flex items-center justify-center px-4 safe-area-top">
-      <div className="w-full max-w-sm space-y-4 max-h-full overflow-hidden py-2">
-        <div className="text-center space-y-2">
-          <div className="mx-auto h-12 w-12 rounded-2xl bg-primary/15 flex items-center justify-center glow-md">
-            <Heart className="h-6 w-6 text-primary" />
+    <div className={`fixed inset-0 overflow-y-auto overscroll-none bg-background flex justify-center px-4 safe-area-top ${nativeApp ? "items-start" : "items-center"}`}>
+      <div className={`w-full max-w-sm max-h-full py-2 ${nativeApp ? "space-y-2" : "space-y-4"}`}>
+        <div className={`text-center ${nativeApp ? "space-y-0.5" : "space-y-2"}`}>
+          <div className={`mx-auto rounded-xl bg-primary/15 flex items-center justify-center glow-md ${nativeApp ? "h-9 w-9" : "h-12 w-12"}`}>
+            <Heart className={nativeApp ? "h-5 w-5 text-primary" : "h-6 w-6 text-primary"} />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Date Planner</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className={`${nativeApp ? "text-xl" : "text-2xl"} font-bold text-foreground`}>Date Planner</h1>
+          <p className={`${nativeApp ? "text-xs" : "text-sm"} text-muted-foreground`}>
             {view === "forgot" ? "Reset your password"
               : emailOtpSent ? "Verify your email"
               : isSignUp ? "Create your account" : "Welcome back"}
@@ -330,12 +331,12 @@ const AuthPage = () => {
 
         {/* Sign up / Log in switch — sign up first for new users */}
         {view === "auth" && !emailOtpSent && (
-          <div className="space-y-2">
+          <div className={nativeApp ? "space-y-1" : "space-y-2"}>
             <div className="grid grid-cols-2 gap-1 p-1 rounded-2xl bg-secondary/60 border border-border">
               <button
                 type="button"
                 onClick={() => setIsSignUp(true)}
-                className={`h-11 rounded-xl text-sm font-semibold font-sans transition-all ${
+                className={`${nativeApp ? "h-9" : "h-11"} rounded-xl text-sm font-semibold font-sans transition-all ${
                   isSignUp ? "bg-primary text-primary-foreground glow-sm" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -344,14 +345,14 @@ const AuthPage = () => {
               <button
                 type="button"
                 onClick={() => setIsSignUp(false)}
-                className={`h-11 rounded-xl text-sm font-semibold font-sans transition-all ${
+                className={`${nativeApp ? "h-9" : "h-11"} rounded-xl text-sm font-semibold font-sans transition-all ${
                   !isSignUp ? "bg-primary text-primary-foreground glow-sm" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Log in
               </button>
             </div>
-            <p className="text-center text-xs text-muted-foreground">
+            <p className={`text-center text-xs text-muted-foreground ${nativeApp && isSignUp ? "sr-only" : ""}`}>
               {isSignUp ? "New here? Create your account below." : "Already have an account? Enter your details below."}
             </p>
           </div>
@@ -456,7 +457,7 @@ const AuthPage = () => {
 
         {/* Email Form */}
         {view === "auth" && !emailOtpSent && (
-          <form onSubmit={handleEmailSubmit} className="space-y-4">
+          <form onSubmit={handleEmailSubmit} className={nativeApp ? "space-y-2" : "space-y-4"}>
             <div className="relative">
               <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
@@ -464,7 +465,7 @@ const AuthPage = () => {
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 bg-secondary/50 border-border"
+                className={`pl-10 bg-secondary/50 border-border ${nativeApp ? "h-10" : ""}`}
                 required
               />
             </div>
@@ -475,24 +476,24 @@ const AuthPage = () => {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 bg-secondary/50 border-border"
+                className={`pl-10 bg-secondary/50 border-border ${nativeApp ? "h-10" : ""}`}
                 required
                 minLength={6}
               />
             </div>
             {isSignUp && (
-              <div className="space-y-1">
+              <div className={nativeApp ? "space-y-0.5" : "space-y-1"}>
                 <div className="flex items-center gap-2 px-1 text-xs uppercase tracking-wide text-muted-foreground">
                   <Cake className="h-3.5 w-3.5" />
                   Date of birth
                 </div>
                 <DateOfBirthWheel value={dob} onChange={setDob} />
-                <p className="text-[11px] text-muted-foreground px-1">You must be 13 or older to use this app.</p>
+                <p className={`${nativeApp ? "text-[10px]" : "text-[11px]"} text-muted-foreground px-1`}>You must be 13 or older to use this app.</p>
               </div>
             )}
 
             <div className="flex items-center justify-between gap-3">
-              <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none min-h-[44px]">
+              <label className={`flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none ${nativeApp ? "min-h-8" : "min-h-[44px]"}`}>
                 <input
                   type="checkbox"
                   checked={rememberMe}
@@ -511,12 +512,12 @@ const AuthPage = () => {
                 </button>
               )}
             </div>
-            <Button type="submit" disabled={loading} className="w-full h-11 rounded-xl">
+            <Button type="submit" disabled={loading} className={`w-full rounded-xl ${nativeApp ? "h-10" : "h-11"}`}>
               {loading ? "Loading..." : isSignUp ? "Create Account" : "Log In"}
               <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
             {isSignUp && (
-              <p className="text-xs text-muted-foreground text-center leading-relaxed">
+              <p className={`${nativeApp ? "text-[10px] leading-snug" : "text-xs leading-relaxed"} text-muted-foreground text-center`}>
                 By creating an account you agree to our{" "}
                 <a href="/terms" className="underline">Terms</a> and{" "}
                 <a href="/privacy" className="underline">Privacy Policy</a>. We have zero tolerance for
@@ -528,8 +529,8 @@ const AuthPage = () => {
 
         {/* Social sign-in */}
         {view === "auth" && !emailOtpSent && appleAuthAvailable && (
-          <div className="mt-5 space-y-3">
-            <div className="flex items-center gap-3 mb-4">
+          <div className={nativeApp ? "mt-2 space-y-2" : "mt-5 space-y-3"}>
+            <div className={`flex items-center gap-3 ${nativeApp ? "mb-1" : "mb-4"}`}>
               <div className="h-px flex-1 bg-border" />
               <span className="text-xs text-muted-foreground">or</span>
               <div className="h-px flex-1 bg-border" />
@@ -540,12 +541,12 @@ const AuthPage = () => {
               disabled={appleLoading}
               onClick={handleAppleSignIn}
               aria-label={isSignUp ? "Sign up with Apple" : "Sign in with Apple"}
-              className="block w-full h-11 disabled:opacity-60"
+              className={`block w-full disabled:opacity-60 ${nativeApp ? "h-10" : "h-11"}`}
             >
               <img
                 src={`https://appleid.cdn-apple.com/appleid/button?height=44&width=375&type=${isSignUp ? "sign-up" : "sign-in"}&color=white&border=false&border_radius=12&scale=2&locale=en_US`}
                 alt={isSignUp ? "Sign up with Apple" : "Sign in with Apple"}
-                className="h-11 w-full object-contain"
+                className={`${nativeApp ? "h-10" : "h-11"} w-full object-contain`}
                 draggable={false}
               />
             </button>
@@ -554,7 +555,7 @@ const AuthPage = () => {
               variant="outline"
               disabled={googleLoading}
               onClick={handleGoogleSignIn}
-              className="w-full h-11 rounded-xl gap-2"
+              className={`w-full rounded-xl gap-2 ${nativeApp ? "h-10" : "h-11"}`}
             >
               <svg className="h-4 w-4" viewBox="0 0 48 48" aria-hidden="true">
                 <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.720 17.74 9.5 24 9.5z"/>
