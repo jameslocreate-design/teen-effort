@@ -45,7 +45,7 @@ export default function Privacy() {
               ),
               strong: ({ node, ...props }) => (
                 <strong
-                  className="block font-semibold text-foreground mt-5 mb-2"
+                  className="font-semibold text-foreground"
                   {...props}
                 />
               ),
