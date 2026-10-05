@@ -11,8 +11,6 @@ const EXPORT_TABLES = [
   { name: "calendar_entries", label: "Calendar Entries", icon: "📅" },
   { name: "bucket_list", label: "Bucket List Items", icon: "✅" },
   { name: "saved_gifts", label: "Saved Gifts", icon: "🎁" },
-  { name: "expert_posts", label: "Expert Posts", icon: "💬" },
-  { name: "expert_replies", label: "Expert Replies", icon: "💭" },
   { name: "special_events", label: "Special Events", icon: "🎉" },
   { name: "user_roles", label: "User Roles", icon: "🛡️" },
   { name: "wishlists", label: "Wishlists", icon: "📝" },
