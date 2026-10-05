@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import privacyMd from "@/content/privacy.md?raw";
@@ -18,11 +19,12 @@ export default function Privacy() {
           Privacy Policy
         </h1>
         <p className="text-sm text-muted-foreground mb-10">
-          Last updated September 8, 2026
+          Last updated October 5, 2026
         </p>
 
         <article className="text-foreground/90 font-sans">
           <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
             components={{
               h1: () => null,
               h2: ({ node, ...props }) => (
@@ -61,6 +63,13 @@ export default function Privacy() {
                 <ul className="list-disc pl-6 mb-4 space-y-1 text-sm md:text-base" {...props} />
               ),
               li: ({ node, ...props }) => <li className="leading-relaxed" {...props} />,
+              table: ({ node, ...props }) => (
+                <div className="mb-6 overflow-x-auto rounded-md border border-border">
+                  <table className="min-w-[760px] w-full border-collapse text-left text-xs md:text-sm" {...props} />
+                </div>
+              ),
+              th: ({ node, ...props }) => <th className="bg-muted px-3 py-2 font-semibold text-foreground border-b border-r border-border last:border-r-0" {...props} />,
+              td: ({ node, ...props }) => <td className="align-top px-3 py-2 leading-relaxed border-b border-r border-border last:border-r-0" {...props} />,
             }}
           >
             {privacyMd}
