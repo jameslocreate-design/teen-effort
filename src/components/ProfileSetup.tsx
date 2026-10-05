@@ -129,7 +129,8 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
         now.getMonth() < dobDate.getMonth() ||
         (now.getMonth() === dobDate.getMonth() && now.getDate() < dobDate.getDate());
       if (before) age -= 1;
-      if (age < 13) {
+      if (age < 13 || Number(localStorage.getItem("age-gate-lock") || 0) > Date.now()) {
+        if (age < 13) localStorage.setItem("age-gate-lock", String(Date.now() + 24 * 60 * 60 * 1000));
         toast.error("You must be at least 13 years old to use Teen Effort");
         return;
       }

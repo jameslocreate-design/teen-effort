@@ -168,9 +168,15 @@ const AuthPage = () => {
   }, [resetResendIn]);
 
   const verifyAge = (dobValue: string): boolean => {
+    const lockUntil = Number(localStorage.getItem("age-gate-lock") || 0);
+    if (lockUntil > Date.now()) { toast.error("You must be at least 13 years old to use this app."); return false; }
     const age = calcAge(dobValue);
     if (age < 0) { toast.error("Please enter a valid date of birth"); return false; }
-    if (age < 13) { toast.error("You must be at least 13 years old to use this app."); return false; }
+    if (age < 13) {
+      localStorage.setItem("age-gate-lock", String(Date.now() + 24 * 60 * 60 * 1000));
+      toast.error("You must be at least 13 years old to use this app.");
+      return false;
+    }
     if (age > 120) { toast.error("Please enter a valid date of birth"); return false; }
     return true;
   };
