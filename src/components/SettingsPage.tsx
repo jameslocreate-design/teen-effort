@@ -29,6 +29,7 @@ interface PrivacySettings {
   date_ideas_visibility: "partner" | "private";
   wishlists_visibility: "partner" | "private";
   location_precision: "precise" | "zip";
+  precise_prompted?: boolean;
   ghost_mode: boolean;
 }
 
@@ -283,7 +284,7 @@ const SettingsPage = ({ onBack }: { onBack: () => void }) => {
             <Switch
               checked={privacy.location_precision === "precise"}
               disabled={savingPrivacy}
-              onCheckedChange={(v) => updatePrivacy({ ...privacy, location_precision: v ? "precise" : "zip" })}
+              onCheckedChange={(v) => updatePrivacy({ ...privacy, location_precision: v ? "precise" : "zip", precise_prompted: true })}
             />
           </div>
           <div className="flex items-start justify-between gap-4 py-2">
@@ -346,44 +347,7 @@ const SettingsPage = ({ onBack }: { onBack: () => void }) => {
         </Section>
 
         {/* Danger Zone */}
-        <Section icon={<Trash2 className="h-4 w-4" />} title="Danger Zone" desc="Pause or permanently delete your account">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="outline" className="w-full h-11 rounded-xl justify-start gap-2">
-                <PauseCircle className="h-4 w-4" />
-                Deactivate Account
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Deactivate your account?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Your account will be paused and you'll be signed out. Your data is preserved
-                  and your account will automatically reactivate the next time you sign in.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={async () => {
-                    if (!user) return;
-                    const { error } = await supabase
-                      .from("profiles")
-                      .update({ deactivated_at: new Date().toISOString() } as any)
-                      .eq("user_id", user.id);
-                    if (error) toast.error("Failed to deactivate");
-                    else {
-                      toast.success("Account deactivated. Signing you out...");
-                      setTimeout(() => supabase.auth.signOut(), 800);
-                    }
-                  }}
-                >
-                  Deactivate
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-
+        <Section icon={<Trash2 className="h-4 w-4" />} title="Danger Zone" desc="Permanently delete your account">
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="outline" className="w-full h-11 rounded-xl justify-start gap-2 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive">
