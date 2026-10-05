@@ -82,7 +82,6 @@ const AdminDashboard = () => {
     { label: "Calendar Entries", value: stats.total_calendar_entries, icon: CalendarDays, color: "text-green-500" },
     { label: "Bucket List Items", value: stats.total_bucket_items, icon: ListChecks, color: "text-purple-500" },
     { label: "Saved Gifts", value: stats.total_saved_gifts, icon: Gift, color: "text-orange-500" },
-    { label: "Expert Posts", value: stats.total_expert_posts, icon: HelpCircle, color: "text-cyan-500" },
     { label: "Favorited Dates", value: stats.total_favorites, icon: Bookmark, color: "text-red-500" },
     { label: "Rated Dates", value: stats.total_rated_dates, icon: Star, color: "text-yellow-500" },
     { label: "Avg Rating", value: stats.avg_date_rating, icon: Star, color: "text-amber-500" },

@@ -58,6 +58,28 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Delete every uploaded file (stored under "<userId>/..." in each bucket)
+    const listAll = async (bucket: string, prefix: string): Promise<string[]> => {
+      const out: string[] = [];
+      const { data } = await admin.storage.from(bucket).list(prefix, { limit: 1000 });
+      for (const item of data ?? []) {
+        const full = `${prefix}/${item.name}`;
+        if (item.id) out.push(full);
+        else out.push(...(await listAll(bucket, full)));
+      }
+      return out;
+    };
+    for (const bucket of ["avatars", "date-photos"]) {
+      try {
+        const paths = await listAll(bucket, userId);
+        for (let i = 0; i < paths.length; i += 100) {
+          await admin.storage.from(bucket).remove(paths.slice(i, i + 100));
+        }
+      } catch (e) {
+        console.error(`Failed to clear ${bucket}`, (e as Error).message);
+      }
+    }
+
     // Delete the auth user
     const { error: deleteErr } = await admin.auth.admin.deleteUser(userId);
     if (deleteErr) {
