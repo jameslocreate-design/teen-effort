@@ -65,13 +65,21 @@ const DatePlanner = () => {
     setLocationStatus("loading");
     try {
       const coords = await getCurrentCoords({ enableHighAccuracy: false, timeout: 12000 });
-      setFilters(prev => ({ ...prev, latitude: coords.latitude, longitude: coords.longitude }));
+      // Respect the user's Precise Location setting: when off, round to ~1 km
+      // on-device so exact coordinates never leave the phone.
+      let precise = true;
+      if (user) {
+        const { data } = await supabase.from("profiles").select("privacy_settings").eq("user_id", user.id).maybeSingle();
+        precise = ((data as any)?.privacy_settings?.location_precision ?? "precise") === "precise";
+      }
+      const round = (n: number) => (precise ? n : Math.round(n * 100) / 100);
+      setFilters(prev => ({ ...prev, latitude: round(coords.latitude), longitude: round(coords.longitude) }));
       setLocationStatus("granted");
     } catch {
       const permission = await checkLocationPermission();
       setLocationStatus(permission === "granted" ? "unavailable" : "needed");
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     const initializeLocation = async () => {

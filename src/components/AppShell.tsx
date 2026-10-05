@@ -20,6 +20,7 @@ import BucketList from "@/components/BucketList";
 import ExpertComingSoon from "@/components/ExpertComingSoon";
 import OnboardingTour from "@/components/OnboardingTour";
 import LocationPermissionPrompt from "@/components/LocationPermissionPrompt";
+import TeenPreciseLocationPrompt from "@/components/TeenPreciseLocationPrompt";
 import DateRoulette from "@/components/DateRoulette";
 import PhotoJournal from "@/components/PhotoJournal";
 import DateStats from "@/components/DateStats";
@@ -134,10 +135,6 @@ const AppShell = () => {
       .eq("user_id", user.id)
       .single()
       .then(async ({ data }) => {
-        if ((data as any)?.deactivated_at) {
-          await supabase.from("profiles").update({ deactivated_at: null } as any).eq("user_id", user.id);
-          toast.success("Welcome back! Your account has been reactivated.");
-        }
         const isComplete = !!data?.name;
         setProfileComplete(isComplete);
         if (data?.name) setProfileName(data.name);
@@ -376,6 +373,7 @@ const AppShell = () => {
         {/* Content */}
         <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
           <LocationPermissionPrompt />
+          <TeenPreciseLocationPrompt />
           <div className="mx-auto max-w-3xl px-4 sm:px-6 py-6 sm:py-8">
             {activeTab === "planner" && <><DateStreak /><DatePlanner /></>}
             {activeTab === "smart" && <PremiumGate feature="Smart Recommendations" minTier={2} description="Get personalized date ideas based on your history and preferences."><SmartRecommendations /></PremiumGate>}

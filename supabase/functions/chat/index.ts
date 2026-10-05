@@ -192,7 +192,7 @@ serve(async (req) => {
       } catch (e) {
         console.warn("Reverse geocode failed:", e);
       }
-      console.log("User city:", cityLabel || "(unknown)", "coords:", latitude, longitude);
+      console.log("User city resolved:", cityLabel ? "yes" : "no");
     }
 
     // Pick the closest 15 to give the AI plenty of options
@@ -205,9 +205,9 @@ serve(async (req) => {
       : "";
 
     const locationLine = cityLabel
-      ? `\n\nUSER LOCATION: ${cityLabel} (lat ${latitude}, lon ${longitude}). Every suggestion MUST be in or within driving distance of ${cityLabel}. ABSOLUTELY DO NOT suggest venues in San Francisco, New York, Los Angeles, or any other city the user is not in.`
+      ? `\n\nUSER LOCATION: ${cityLabel}. Every suggestion MUST be in or within driving distance of ${cityLabel}. ABSOLUTELY DO NOT suggest venues in San Francisco, New York, Los Angeles, or any other city the user is not in.`
       : hasLocation
-        ? `\n\nUSER LOCATION: lat ${latitude}, lon ${longitude}. Suggest places near these coordinates only. Never default to San Francisco.`
+        ? `\n\nThe user is somewhere nearby the venue list above; suggest only those nearby venues. Never default to San Francisco.`
         : "";
 
     const prompt = `You are a creative date planner. Generate exactly 3 unique, specific date ideas based on these preferences:
