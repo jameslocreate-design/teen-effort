@@ -36,6 +36,13 @@
       "when": 1790637565918,
       "tag": "0004_add_home_city_to_profiles",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791229252788,
+      "tag": "0005_teen_precise_location_default",
+      "breakpoints": true
     }
   ]
 }
