@@ -22,6 +22,7 @@ import {
 import jsPDF from "jspdf";
 import ReactMarkdown from "react-markdown";
 import privacyMd from "@/content/privacy.md?raw";
+import remarkGfm from "remark-gfm";
 import SafetyCenter from "@/components/SafetyCenter";
 import { HomeCityPicker } from "@/components/DistanceWidget";
 
@@ -305,6 +306,7 @@ const SettingsPage = ({ onBack }: { onBack: () => void }) => {
               </DialogHeader>
               <ScrollArea className="max-h-[70vh] px-6 pb-6">
                 <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
                   components={{
                     h1: () => null,
                     h2: ({ node, ...props }) => <h2 className="font-display text-xl font-semibold text-foreground mt-7 mb-3" {...props} />,

@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import privacyMd from "@/content/privacy.md?raw";
@@ -23,6 +24,7 @@ export default function Privacy() {
 
         <article className="text-foreground/90 font-sans">
           <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
             components={{
               h1: () => null,
               h2: ({ node, ...props }) => (
