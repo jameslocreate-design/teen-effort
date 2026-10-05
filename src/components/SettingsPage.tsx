@@ -301,7 +301,7 @@ const SettingsPage = ({ onBack }: { onBack: () => void }) => {
             <DialogContent className="max-w-2xl max-h-[85vh] p-0">
               <DialogHeader className="px-6 pt-6 pb-2">
                 <DialogTitle className="font-display italic text-primary text-2xl">Privacy Policy</DialogTitle>
-                <p className="text-xs text-muted-foreground">Last updated: September 8, 2026</p>
+                <p className="text-xs text-muted-foreground">Last updated: October 5, 2026</p>
               </DialogHeader>
               <ScrollArea className="max-h-[70vh] px-6 pb-6">
                 <ReactMarkdown
@@ -313,6 +313,13 @@ const SettingsPage = ({ onBack }: { onBack: () => void }) => {
                     ul: ({ node, ...props }) => <ul className="list-disc pl-5 mb-4 space-y-1.5 text-sm text-foreground/90" {...props} />,
                     li: ({ node, ...props }) => <li className="leading-relaxed" {...props} />,
                     a: ({ node, ...props }) => <a className="text-primary underline underline-offset-2 break-words" target="_blank" rel="noopener noreferrer" {...props} />,
+                    table: ({ node, ...props }) => (
+                      <div className="mb-5 overflow-x-auto rounded-md border border-border">
+                        <table className="min-w-[720px] w-full border-collapse text-left text-xs" {...props} />
+                      </div>
+                    ),
+                    th: ({ node, ...props }) => <th className="bg-muted px-2.5 py-2 font-semibold text-foreground border-b border-r border-border last:border-r-0" {...props} />,
+                    td: ({ node, ...props }) => <td className="align-top px-2.5 py-2 leading-relaxed text-foreground/90 border-b border-r border-border last:border-r-0" {...props} />,
                     strong: ({ node, ...props }) => <strong className="font-semibold text-foreground" {...props} />,
                   }}
                 >
