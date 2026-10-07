@@ -52,12 +52,20 @@ async function searchOverpass(
   const query = `[out:json][timeout:20];(${filterBlocks});out center tags 60;`;
 
   try {
-    const resp = await fetch("https://overpass-api.de/api/interpreter", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: "data=" + encodeURIComponent(query),
-    });
-    if (!resp.ok) {
+    let resp: Response | null = null;
+    for (const host of ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter", "https://maps.mail.ru/osm/tools/overpass/api/interpreter"]) {
+      try {
+        resp = await fetch(host, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded", "User-Agent": "TeenEffort/1.0 (support.teeneffort@gmail.com)" },
+          body: "data=" + encodeURIComponent(query),
+          signal: AbortSignal.timeout(12000),
+        });
+        if (resp.ok) break;
+        console.error("Overpass error:", host, resp.status);
+      } catch (e) { console.error("Overpass failed:", host, e); resp = null; }
+    }
+    if (!resp || !resp.ok) {
       console.error("Overpass error:", resp.status);
       return [];
     }
@@ -120,7 +128,7 @@ serve(async (req) => {
       );
     }
 
-    const { cost, location, activity, distance, timeRange, cuisine, latitude, longitude, funActivity, includeEating } = await req.json();
+    const { cost, location, activity, distance, timeRange, cuisine, latitude, longitude, funActivity, includeEating, city: clientCity } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -180,7 +188,7 @@ serve(async (req) => {
       try {
         const geo = await fetch(
           `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`,
-          { headers: { "User-Agent": "DateApp/1.0" } }
+          { headers: { "User-Agent": "TeenEffort/1.0 (support.teeneffort@gmail.com)" }, signal: AbortSignal.timeout(8000) }
         );
         if (geo.ok) {
           const g = await geo.json();
@@ -192,6 +200,7 @@ serve(async (req) => {
       } catch (e) {
         console.warn("Reverse geocode failed:", e);
       }
+      if (!cityLabel && typeof clientCity === "string") cityLabel = clientCity.trim().slice(0, 80);
       console.log("User city resolved:", cityLabel ? "yes" : "no");
     }
 
@@ -309,7 +318,7 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
             const q = encodeURIComponent(`${venueName}${cityLabel ? ", " + cityLabel : ""}`);
             const r = await fetch(
               `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${q}`,
-              { headers: { "User-Agent": "DateApp/1.0" } }
+              { headers: { "User-Agent": "TeenEffort/1.0 (support.teeneffort@gmail.com)" }, signal: AbortSignal.timeout(8000) }
             );
             if (r.ok) {
               const arr = await r.json();
@@ -329,8 +338,8 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
           url = matched.website;
         } else if (typeof idea.website_url === "string" && idea.website_url.startsWith("http")) {
           url = idea.website_url;
-        } else if (venueName) {
-          const q = encodeURIComponent(`${venueName}${cityLabel ? " " + cityLabel : ""}`);
+        } else if (venueName || idea.title) {
+          const q = encodeURIComponent(`${venueName || idea.title}${cityLabel ? " " + cityLabel : ""}`);
           url = `https://www.google.com/maps/search/?api=1&query=${q}`;
         }
 

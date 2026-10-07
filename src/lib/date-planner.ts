@@ -43,13 +43,28 @@ export async function generateDateIdeas(filters: DateFilters): Promise<DateIdea[
   const { data: { session } } = await supabase.auth.getSession();
   const token = session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
+  // Resolve the city on the device as a backup, so the server never has to guess.
+  let city: string | undefined;
+  if (filters.latitude != null && filters.longitude != null) {
+    try {
+      const r = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${filters.latitude}&lon=${filters.longitude}&zoom=10`,
+        { signal: AbortSignal.timeout(5000) },
+      );
+      if (r.ok) {
+        const a = (await r.json()).address || {};
+        city = [a.city || a.town || a.village || a.county, a.state].filter(Boolean).join(", ") || undefined;
+      }
+    } catch { /* server will try too */ }
+  }
+
   const resp = await fetch(API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ ...filters, includeEating }),
+    body: JSON.stringify({ ...filters, includeEating, city }),
   });
 
   if (!resp.ok) {
