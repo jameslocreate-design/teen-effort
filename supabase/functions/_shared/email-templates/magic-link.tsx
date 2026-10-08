@@ -4,36 +4,41 @@ import * as React from 'npm:react@18.3.1'
 
 import {
   Body,
+  Button,
   Container,
   Head,
   Heading,
   Html,
   Preview,
-  Section,
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
 interface MagicLinkEmailProps {
   siteName: string
-  token?: string
+  confirmationUrl: string
 }
 
-export const MagicLinkEmail = ({ siteName, token }: MagicLinkEmailProps) => (
+export const MagicLinkEmail = ({
+  siteName,
+  confirmationUrl,
+}: MagicLinkEmailProps) => (
   <Html lang="en" dir="ltr">
-    <Head />
-    <Preview>Your {siteName} sign-in code{token ? `: ${token}` : ''}</Preview>
+    <Head>
+      <style>{darkModeCss}</style>
+    </Head>
+    <Preview>Your login link for {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Your sign-in code</Heading>
+        <Heading style={h1}>Your login link</Heading>
         <Text style={text}>
-          Enter this code in <strong>{siteName}</strong> to sign in.
+          Click the button below to log in to {siteName}. This link will expire
+          shortly.
         </Text>
-        <Section style={codeBox}>
-          <Text style={code}>{token ?? '------'}</Text>
-        </Section>
-        <Text style={text}>This code expires in 1 hour. Don't share it with anyone.</Text>
+        <Button className="dm-btn" style={button} href={confirmationUrl}>
+          Log In
+        </Button>
         <Text style={footer}>
-          If you didn't try to sign in, you can safely ignore this email.
+          If you didn't request this link, you can safely ignore this email.
         </Text>
       </Container>
     </Body>
@@ -42,37 +47,35 @@ export const MagicLinkEmail = ({ siteName, token }: MagicLinkEmailProps) => (
 
 export default MagicLinkEmail
 
-const main = {
-  backgroundColor: '#ffffff',
-  fontFamily: "'DM Sans', Helvetica, Arial, sans-serif",
-}
-const container = { padding: '24px 25px', maxWidth: '480px' }
+const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
+const container = { padding: '20px 25px' }
 const h1 = {
-  fontSize: '24px',
+  fontSize: '22px',
   fontWeight: 'bold' as const,
-  fontFamily: "'Playfair Display', Georgia, serif",
-  color: '#171b26',
+  color: '#000000',
   margin: '0 0 20px',
 }
 const text = {
-  fontSize: '15px',
+  fontSize: '14px',
   color: '#55575d',
-  lineHeight: '1.6',
-  margin: '0 0 20px',
+  lineHeight: '1.5',
+  margin: '0 0 25px',
 }
-const codeBox = {
-  backgroundColor: '#fdf2f5',
-  border: '1px solid #f3c3d1',
-  borderRadius: '12px',
-  padding: '18px',
-  textAlign: 'center' as const,
-  margin: '0 0 24px',
-}
-const code = {
-  fontSize: '34px',
-  fontWeight: 'bold' as const,
-  letterSpacing: '10px',
-  color: '#d63a63',
-  margin: '0',
+const button = {
+  backgroundColor: '#000000',
+  color: '#ffffff',
+  fontSize: '14px',
+  border: '1px solid #000000',
+  borderRadius: '8px',
+  padding: '12px 20px',
+  textDecoration: 'none',
 }
 const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+// Rendered as a text child, which React may HTML-escape: keep this CSS free of >, &, and quotes.
+const darkModeCss = `
+  @media (prefers-color-scheme: dark) {
+    .dm-btn { background-color: #ffffff !important; color: #000000 !important; }
+  }
+  [data-ogsc] .dm-btn { background-color: #ffffff !important; color: #000000 !important; }
+  [data-ogsb] .dm-btn { background-color: #ffffff !important; color: #000000 !important; }
+`

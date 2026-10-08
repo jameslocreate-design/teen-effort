@@ -1,3 +1,4 @@
+import { sendTemplateEmail } from "../_shared/transactional-email-templates/send-email.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { type StripeEnv, createStripeClient, getWebhookSecret } from "../_shared/stripe.ts";
 
@@ -64,12 +65,27 @@ async function sendEmail(
     return;
   }
   try {
-    const { error } = await supabase.functions.invoke("send-transactional-email", {
-      body: { templateName, recipientEmail, idempotencyKey, templateData },
+    const result = await sendTemplateEmail(templateName, recipientEmail, {
+      idempotencyKey,
+      templateData,
     });
-    if (error) console.error("send-transactional-email error:", error);
+    const { error: logError } = await supabase.from("email_send_log").insert({
+      message_id: null,
+      template_name: templateName,
+      recipient_email: recipientEmail,
+      status: result.sent ? "sent" : "suppressed",
+    });
+    if (logError) console.error("Failed to log email send", logError);
   } catch (err) {
-    console.error("Failed to invoke send-transactional-email:", err);
+    console.error("Email send failed:", err);
+    const { error: logError } = await supabase.from("email_send_log").insert({
+      message_id: null,
+      template_name: templateName,
+      recipient_email: recipientEmail,
+      status: "failed",
+      error_message: (err instanceof Error ? err.message : String(err)).slice(0, 1000),
+    });
+    if (logError) console.error("Failed to log email failure", logError);
   }
 }
 
