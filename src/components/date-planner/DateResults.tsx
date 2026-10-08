@@ -26,7 +26,7 @@ const DateResults = ({ ideas, partnerLinkId, savingIndex, onAddToCalendar, onSav
       {ideas.map((idea, i) => (
         <div key={i} className="space-y-2">
           <DateIdeaCard idea={idea} index={i} />
-          {partnerLinkId && (
+          {(partnerLinkId || onSaveForLater) && (
             <div className="flex flex-wrap gap-2">
               {onSaveForLater && (
                 <Button
@@ -40,16 +40,18 @@ const DateResults = ({ ideas, partnerLinkId, savingIndex, onAddToCalendar, onSav
                   {savingForLaterIndex === i ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
                 </Button>
               )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onAddToCalendar(idea, i)}
-                disabled={savingIndex === i}
-                className="rounded-lg text-xs gap-1.5 flex-1 min-w-[120px]"
-              >
-                <CalendarPlus className="h-3.5 w-3.5" />
-                {savingIndex === i ? "Saving..." : "Add to Calendar"}
-              </Button>
+              {partnerLinkId && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onAddToCalendar(idea, i)}
+                  disabled={savingIndex === i}
+                  className="rounded-lg text-xs gap-1.5 flex-1 min-w-[120px]"
+                >
+                  <CalendarPlus className="h-3.5 w-3.5" />
+                  {savingIndex === i ? "Saving..." : "Add to Calendar"}
+                </Button>
+              )}
             </div>
           )}
         </div>
