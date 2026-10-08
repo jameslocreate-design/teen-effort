@@ -1,3 +1,4 @@
+import { sendTemplateEmail } from "../_shared/transactional-email-templates/send-email.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { type StripeEnv, createStripeClient, getWebhookSecret } from "../_shared/stripe.ts";
 
