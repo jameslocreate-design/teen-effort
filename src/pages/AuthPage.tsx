@@ -199,6 +199,13 @@ const AuthPage = () => {
           },
         });
         if (error) throw error;
+        // Existing confirmed accounts come back with an empty identities list
+        // (no error is raised, to avoid leaking which emails are registered).
+        if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+          toast.error("This email is already linked to an account. Log in instead, or use Forgot password if you need to reset it.");
+          setIsSignUp(false);
+          return;
+        }
         // Email verification is enabled: signUp returns no session until the
         // user confirms via the 6-digit code (or the link in the same email).
         if (data.session) {
