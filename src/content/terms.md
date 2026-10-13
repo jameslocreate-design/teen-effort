@@ -274,4 +274,11 @@ These Legal Terms and any policies or operating rules posted by us on the Servic
 
 ## 28. CONTACT US
 
-In order to resolve a complaint regarding the Services or to receive further information regarding use of the Services, please contact us at:TEEN EFFORT LLC102 W Main St, PO Box 224, New Albany, OH 43054United StatesPhone: (+1)2073835777jameslocreate@gmail.com ul { list-style-type: square; } ul > li > ul { list-style-type: circle; } ul > li > ul > li > ul { list-style-type: square; } ol li { font-family: Arial ; } This Terms and Conditions was created using Termly's Terms and Conditions Generator
+In order to resolve a complaint regarding the Services or to receive further information regarding use of the Services, please contact us at:
+
+**TEEN EFFORT LLC**
+102 W Main St, PO Box 224, New Albany, OH 43054
+United States
+
+Phone: (+1) 207-383-5777
+Email: jameslocreate@gmail.com
