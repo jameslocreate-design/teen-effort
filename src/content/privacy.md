@@ -181,4 +181,4 @@ We may update this policy from time to time. If we make material changes, we wil
 
 **Teen Effort LLC (Ohio)**  
 Email: [support.teeneffort@gmail.com](mailto:support.teeneffort@gmail.com)  
-Address: 7227 Waterston, New Albany, OH 43054
+Address: 102 W Main St, PO Box 224, New Albany, OH 43054
