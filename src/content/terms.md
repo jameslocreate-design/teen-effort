@@ -1,6 +1,6 @@
-We are TEEN EFFORT LLC ("Company," "we," "us," "our"), a company registered in Ohio, United States at 7227 Waterston, New Albany, OH 43054. Our VAT number is 42-2469650. We operate the website https://teen-effort160c3e5ct-jameslocreate-9478s-projects.vercel.app (the "Site"), as well as any other related products and services that refer or link to these legal terms (the "Legal Terms") (collectively, the "Services").
+We are TEEN EFFORT LLC ("Company," "we," "us," "our"), a company registered in Ohio, United States at 102 W Main St, PO Box 224, New Albany, OH 43054. Our VAT number is 42-2469650. We operate the website https://teen-effort160c3e5ct-jameslocreate-9478s-projects.vercel.app (the "Site"), as well as any other related products and services that refer or link to these legal terms (the "Legal Terms") (collectively, the "Services").
 
-You can contact us by phone at (+1)2073835777, email at jameslocreate@gmail.com, or by mail to 7227 Waterston, New Albany, OH 43054, United States.
+You can contact us by phone at (+1)2073835777, email at jameslocreate@gmail.com, or by mail to 102 W Main St, PO Box 224, New Albany, OH 43054, United States.
 
 These Legal Terms constitute a legally binding agreement made between you, whether personally or on behalf of an entity ("you"), and TEEN EFFORT LLC, concerning your access to and use of the Services. You agree that by accessing the Services, you have read, understood, and agreed to be bound by all of these Legal Terms. IF YOU DO NOT AGREE WITH ALL OF THESE LEGAL TERMS, THEN YOU ARE EXPRESSLY PROHIBITED FROM USING THE SERVICES AND YOU MUST DISCONTINUE USE IMMEDIATELY.
 
@@ -274,4 +274,4 @@ These Legal Terms and any policies or operating rules posted by us on the Servic
 
 ## 28. CONTACT US
 
-In order to resolve a complaint regarding the Services or to receive further information regarding use of the Services, please contact us at:TEEN EFFORT LLC7227 WaterstonNew Albany, OH 43054United StatesPhone: (+1)2073835777jameslocreate@gmail.com ul { list-style-type: square; } ul > li > ul { list-style-type: circle; } ul > li > ul > li > ul { list-style-type: square; } ol li { font-family: Arial ; } This Terms and Conditions was created using Termly's Terms and Conditions Generator
+In order to resolve a complaint regarding the Services or to receive further information regarding use of the Services, please contact us at:TEEN EFFORT LLC102 W Main St, PO Box 224, New Albany, OH 43054United StatesPhone: (+1)2073835777jameslocreate@gmail.com ul { list-style-type: square; } ul > li > ul { list-style-type: circle; } ul > li > ul > li > ul { list-style-type: square; } ol li { font-family: Arial ; } This Terms and Conditions was created using Termly's Terms and Conditions Generator
