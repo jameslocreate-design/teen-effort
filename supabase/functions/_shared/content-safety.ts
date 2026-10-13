@@ -13,7 +13,7 @@ const BLOCK_TERMS = [
   "mimosa", "sangria", "sake", "happy hour", "drunk", "tipsy", "buzzed", "hangover", "shots", "nightclub", "nightclubs",
   "club hopping", "lounge",
   // drugs / tobacco / vaping
-  "drug", "drugs", "weed", "marijuana", "cannabis", "edible", "edibles", "stoned", "high on", "420", "cbd", "thc",
+  "drug", "drugs", "weed", "marijuana", "cannabis", "edibles", "stoned", "high on", "420", "cbd", "thc",
   "tobacco", "cigarette", "cigarettes", "cigar", "cigars", "hookah", "vape", "vaping", "vapes", "smoke shop", "smoking",
   // gambling
   "casino", "casinos", "gamble", "gambling", "betting", "poker", "slot machine", "slots", "blackjack", "roulette table",
@@ -71,9 +71,9 @@ export function isBlockedVenue(tags: Record<string, string>): boolean {
   if (BLOCK_AMENITY.test(tags.amenity || "")) return true;
   if (BLOCK_SHOP.test(tags.shop || "")) return true;
   if (BLOCK_CRAFT.test(tags.craft || "") || /brewery|winery|distillery/i.test(tags.industrial || "")) return true;
-  if (tags.microbrewery === "yes" || tags.brewery || tags["drink:wine"] === "served" && tags.amenity === "bar") return true;
+  if (tags.microbrewery === "yes" || tags.brewery) return true;
   if (/^(adult|erotic|sex)/i.test(tags.leisure || "") || tags.adult === "yes" || tags["adult_gaming"] === "yes") return true;
-  if (tags.leisure === "adult_gaming_centre" || tags.leisure === "hackerspace" && false) return true;
+  if (tags.leisure === "adult_gaming_centre") return true;
   if (tags.tourism === "wine_cellar" || /wine|brew/i.test(tags.tourism || "")) return true;
   if (tags.cuisine && /\b(pub|bar|beer|wine|tapas_bar|brewpub|gastropub)\b/i.test(tags.cuisine)) return true;
   // Restaurants / cafes that primarily serve alcohol
