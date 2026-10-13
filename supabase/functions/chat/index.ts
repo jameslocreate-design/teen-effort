@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { checkAndIncrementUsage } from "../_shared/usage-limits.ts";
+import { SAFETY_PROMPT, isSafe, findMatureTerms, sanitizeUserText, isBlockedVenue } from "../_shared/content-safety.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -75,6 +76,8 @@ async function searchOverpass(
       const tags = el.tags || {};
       const name: string | undefined = tags.name;
       if (!name) continue;
+      // 13+ rule: never show alcohol, adult, gambling or smoking venues
+      if (isBlockedVenue(tags)) continue;
       // Skip places marked closed / disused / demolished in OpenStreetMap
       const closedName = /\b(closed|permanently closed|former|defunct)\b/i.test(name);
       const oh = String(tags.opening_hours || "").toLowerCase().trim();
@@ -134,7 +137,17 @@ serve(async (req) => {
       );
     }
 
-    const { cost, location, activity, distance, timeRange, cuisine, latitude, longitude, funActivity, includeEating, city: clientCity } = await req.json();
+    const body = await req.json();
+    const { latitude, longitude, includeEating } = body;
+    // Neutralize any user/client text before it reaches a prompt
+    const cost = sanitizeUserText(body.cost, 100);
+    const location = sanitizeUserText(body.location, 200);
+    const activity = sanitizeUserText(body.activity, 200);
+    const distance = sanitizeUserText(body.distance, 100);
+    const timeRange = sanitizeUserText(body.timeRange, 100);
+    const cuisine = sanitizeUserText(body.cuisine, 200);
+    const funActivity = sanitizeUserText(body.funActivity, 200);
+    const clientCity = typeof body.city === "string" ? sanitizeUserText(body.city, 80) : undefined;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -155,10 +168,10 @@ serve(async (req) => {
     const combined = `${actStr} ${funStr}`.toLowerCase();
 
     if (includeEating) {
-      osmFilters.push('"amenity"~"restaurant|cafe|bar|pub|ice_cream|fast_food"');
+      osmFilters.push('"amenity"~"restaurant|cafe|ice_cream|fast_food"');
     }
     if (combined.includes("romantic") || combined.includes("relaxed") || combined.includes("cozy")) {
-      osmFilters.push('"amenity"~"cafe|bar|restaurant"');
+      osmFilters.push('"amenity"~"cafe|restaurant|ice_cream"');
       osmFilters.push('"leisure"~"park|garden"');
       osmFilters.push('"tourism"~"viewpoint|gallery|museum"');
     }
@@ -171,7 +184,7 @@ serve(async (req) => {
       osmFilters.push('"amenity"~"arts_centre|theatre|cinema|library"');
     }
     if (combined.includes("social") || combined.includes("nightlife") || combined.includes("playful") || combined.includes("fun")) {
-      osmFilters.push('"amenity"~"bar|pub|nightclub|cinema|theatre|bowling_alley"');
+      osmFilters.push('"amenity"~"cinema|theatre|bowling_alley|ice_cream"');
       osmFilters.push('"leisure"~"bowling_alley|escape_game|amusement_arcade|trampoline_park"');
     }
 
@@ -179,7 +192,7 @@ serve(async (req) => {
     if (osmFilters.length === 0) {
       osmFilters.push('"tourism"~"attraction|museum|gallery|viewpoint|theme_park|zoo|aquarium"');
       osmFilters.push('"leisure"~"park|garden|bowling_alley|escape_game|ice_rink|miniature_golf"');
-      osmFilters.push('"amenity"~"cafe|restaurant|bar|cinema|theatre|arts_centre"');
+      osmFilters.push('"amenity"~"cafe|restaurant|cinema|theatre|arts_centre"');
     }
 
     let venues: OsmVenue[] = [];
@@ -206,7 +219,7 @@ serve(async (req) => {
       } catch (e) {
         console.warn("Reverse geocode failed:", e);
       }
-      if (!cityLabel && typeof clientCity === "string") cityLabel = clientCity.trim().slice(0, 80);
+      if (!cityLabel && clientCity) cityLabel = clientCity;
       console.log("User city resolved:", cityLabel ? "yes" : "no");
     }
 
@@ -225,7 +238,9 @@ serve(async (req) => {
         ? `\n\nThe user is somewhere nearby the venue list above; suggest only those nearby venues. Never default to San Francisco.`
         : "";
 
-    const prompt = `You are a creative date planner. Generate exactly 3 unique, specific date ideas based on these preferences:
+    const prompt = `${SAFETY_PROMPT}
+
+You are a creative date planner for a 13+ audience. Generate exactly 3 unique, specific date ideas based on these preferences:
 
 - Budget (total cost for two people, MUST be respected): ${cost || "any"}
 - Setting: ${location || "any"}
@@ -256,101 +271,97 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
   }
 ]`;
 
-    const response = await fetch(
+    const callAI = async (extra: string): Promise<Response> => fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
       {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "google/gemini-3-flash-preview",
           messages: [
-            { role: "system", content: "You are a date planning assistant. Always respond with valid JSON arrays only. No markdown formatting." },
-            { role: "user", content: prompt },
+            { role: "system", content: `You are a date planning assistant. ${SAFETY_PROMPT} Always respond with valid JSON arrays only. No markdown formatting.` },
+            { role: "user", content: prompt + extra },
           ],
         }),
-      }
+      },
     );
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Too many requests. Please wait a moment." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+    const mapsUrl = (name: string) =>
+      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${name}${cityLabel ? ", " + cityLabel : ""}`)}`;
+
+    const enrich = async (idea: any) => {
+      const venueName: string | undefined = idea.venue_name || undefined;
+      let matched: OsmVenue | undefined;
+      if (venueName) {
+        const vn = venueName.toLowerCase();
+        matched = topVenues.find((v) => v.name.toLowerCase() === vn || v.name.toLowerCase().includes(vn) || vn.includes(v.name.toLowerCase()));
       }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "AI credits exhausted." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+      let distance_miles = "N/A";
+      if (matched) {
+        distance_miles = formatMiles(matched.distance_miles);
+      } else if (hasLocation && venueName) {
+        try {
+          const q = encodeURIComponent(`${venueName}${cityLabel ? ", " + cityLabel : ""}`);
+          const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${q}`,
+            { headers: { "User-Agent": "TeenEffort/1.0 (support.teeneffort@gmail.com)" }, signal: AbortSignal.timeout(8000) });
+          if (r.ok) {
+            const arr = await r.json();
+            if (Array.isArray(arr) && arr[0]?.lat && arr[0]?.lon) {
+              distance_miles = formatMiles(haversineMiles(latitude, longitude, parseFloat(arr[0].lat), parseFloat(arr[0].lon)));
+            }
+          }
+        } catch (e) { console.warn("Nominatim venue lookup failed:", e); }
       }
-      const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
-      return new Response(
-        JSON.stringify({ error: "AI service error" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      // Always link to Google Maps: never 404s and shows hours / "Permanently closed".
+      const url = venueName || idea.title ? mapsUrl(matched?.name || venueName || idea.title) : undefined;
+      return {
+        title: String(idea.title || ""), description: String(idea.description || ""),
+        estimated_cost: String(idea.estimated_cost || ""), duration: String(idea.duration || ""),
+        vibe: String(idea.vibe || ""), venue_name: venueName ?? null, distance_miles, url,
+      };
+    };
+
+    const ignore = [cityLabel, ...cityLabel.split(",").map((x) => x.trim())].filter(Boolean);
+    let ideas: any[] = [];
+    let lastSafe: any[] = [];
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const response = await callAI(attempt === 0 ? "" :
+        "\n\nYour previous answer contained content not suitable for ages 13+. Rewrite with completely wholesome, alcohol-free, non-physical activities only.");
+      if (!response.ok) {
+        if (response.status === 429) {
+          return new Response(JSON.stringify({ error: "Too many requests. Please wait a moment." }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+        if (response.status === 402) {
+          return new Response(JSON.stringify({ error: "AI credits exhausted." }),
+            { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+        console.error("AI gateway error:", response.status, await response.text());
+        return new Response(JSON.stringify({ error: "AI service error" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      const data = await response.json();
+      const raw = data.choices?.[0]?.message?.content || "[]";
+      let parsed: any[] = [];
+      try {
+        const p = JSON.parse(raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim());
+        parsed = Array.isArray(p) ? p : [];
+      } catch { console.error("Failed to parse AI response"); }
+      const enriched = await Promise.all(parsed.slice(0, 3).map(enrich));
+      if (enriched.length > 0 && isSafe(enriched, ignore)) { ideas = enriched; break; }
+      console.warn(`Safety check failed (attempt ${attempt + 1}):`, findMatureTerms(enriched, ignore).join(", "));
+      lastSafe = enriched.filter((i) => isSafe(i, ignore));
     }
 
-    const data = await response.json();
-    const raw = data.choices?.[0]?.message?.content || "[]";
-    const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-
-    let ideas;
-    try {
-      ideas = JSON.parse(cleaned);
-
-      ideas = await Promise.all(ideas.map(async (idea: any) => {
-        const venueName: string | undefined = idea.venue_name;
-        let matched: OsmVenue | undefined;
-        if (venueName) {
-          const vn = venueName.toLowerCase();
-          matched = topVenues.find(
-            (v) => v.name.toLowerCase() === vn ||
-                   v.name.toLowerCase().includes(vn) ||
-                   vn.includes(v.name.toLowerCase())
-          );
-        }
-
-        // Distance: prefer real OSM distance; otherwise geocode the venue name with Nominatim
-        let distance_miles = "N/A";
-        if (matched) {
-          distance_miles = formatMiles(matched.distance_miles);
-        } else if (hasLocation && venueName) {
-          try {
-            const q = encodeURIComponent(`${venueName}${cityLabel ? ", " + cityLabel : ""}`);
-            const r = await fetch(
-              `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${q}`,
-              { headers: { "User-Agent": "TeenEffort/1.0 (support.teeneffort@gmail.com)" }, signal: AbortSignal.timeout(8000) }
-            );
-            if (r.ok) {
-              const arr = await r.json();
-              if (Array.isArray(arr) && arr[0]?.lat && arr[0]?.lon) {
-                const miles = haversineMiles(latitude, longitude, parseFloat(arr[0].lat), parseFloat(arr[0].lon));
-                distance_miles = formatMiles(miles);
-              }
-            }
-          } catch (e) {
-            console.warn("Nominatim venue lookup failed:", e);
-          }
-        }
-
-        // Always link to Google Maps: it never 404s, and it shows current hours
-        // plus a "Permanently closed" notice. Website links from map data/AI were often dead.
-        let url: string | undefined;
-        if (venueName || idea.title) {
-          const q = encodeURIComponent(`${matched?.name || venueName || idea.title}${cityLabel ? ", " + cityLabel : ""}`);
-          url = `https://www.google.com/maps/search/?api=1&query=${q}`;
-        }
-
-        return { ...idea, distance_miles, url };
-      }));
-    } catch {
-      console.error("Failed to parse AI response:", raw);
-      ideas = [];
+    // Fallback: keep only safe ideas, fill the rest with wholesome defaults. Never return failed output.
+    if (ideas.length === 0) {
+      const where = cityLabel ? ` in ${cityLabel}` : "";
+      const defaults = [
+        { title: `Picnic at a local park${where}`, description: "Pack sandwiches, fruit and a blanket, then spend the afternoon talking, playing cards or frisbee in the sunshine.", estimated_cost: "$10-20", duration: "2-3 hours", vibe: "Relaxed", venue_name: null, distance_miles: "N/A", url: mapsUrl("parks") },
+        { title: `Mini golf and ice cream${where}`, description: "Challenge each other to a round of mini golf, then cool off with your favorite ice cream flavors.", estimated_cost: "$20-40", duration: "2 hours", vibe: "Playful", venue_name: null, distance_miles: "N/A", url: mapsUrl("mini golf") },
+        { title: `Museum afternoon${where}`, description: "Explore a local museum together and pick a favorite exhibit each to tell the other about.", estimated_cost: "Free-$30", duration: "2-3 hours", vibe: "Curious", venue_name: null, distance_miles: "N/A", url: mapsUrl("museum") },
+      ];
+      ideas = [...lastSafe, ...defaults].slice(0, 3);
     }
 
     return new Response(JSON.stringify({ ideas }), {
