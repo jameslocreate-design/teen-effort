@@ -67,7 +67,7 @@ async function searchOverpass(
       } catch (e) { console.error("Overpass failed:", host, e); resp = null; }
     }
     if (!resp || !resp.ok) {
-      console.error("Overpass error:", resp.status);
+      console.error("Overpass error:", resp?.status);
       return [];
     }
     const data = await resp.json();

@@ -16,7 +16,7 @@ serve(async (req) => {
   try {
     const { question: rawQuestion, postId } = await req.json();
 
-    if (!question || typeof question !== "string" || question.length > 5000) {
+    if (!rawQuestion || typeof rawQuestion !== "string" || rawQuestion.length > 5000) {
       return new Response(
         JSON.stringify({ error: "Invalid question" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
