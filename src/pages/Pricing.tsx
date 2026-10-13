@@ -25,7 +25,7 @@ export default function Pricing() {
   const [user, setUser] = useState<any>(null);
   const [checkoutPriceId, setCheckoutPriceId] = useState<string | null>(null);
   const [cycle, setCycle] = useState<BillingCycle>("monthly");
-  const { isActive, tier, subscription, isCanceling, periodEnd, loading } = useSubscription(user?.id);
+  const { isActive, tier, subscription, plan, isCanceling, periodEnd, loading } = useSubscription(user?.id);
   const iap = useNativePurchases(user?.id);
   // Apple Guideline 3.1.1: no external purchase flow inside the iOS app.
   // When RevenueCat in-app purchases are available we sell through StoreKit instead.
@@ -178,7 +178,7 @@ export default function Pricing() {
             <p className="text-muted-foreground mb-4">
               {iap.tier > 0 && !isActive
                 ? "Managed through your Apple ID subscriptions"
-                : `Status: ${subscription?.status}`}
+                : `Status: ${plan?.status ?? subscription?.status ?? "active"}`}
               {isCanceling && periodEnd && ` · access until ${new Date(periodEnd).toLocaleDateString()}`}
             </p>
             {!noPurchases && !iap.available && <Button onClick={handleManageBilling}>Manage Billing</Button>}
