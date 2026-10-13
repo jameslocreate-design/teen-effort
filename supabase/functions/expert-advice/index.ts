@@ -57,7 +57,7 @@ serve(async (req) => {
       : "You are a warm, empathetic relationship expert. Give thoughtful, balanced advice to relationship questions. Keep responses concise (2-4 paragraphs). Be supportive but honest. Never be judgmental. Format with markdown.";
     const systemContent = `${baseSystem} You are speaking with users aged 13 and older. ${SAFETY_PROMPT}`;
 
-    const callAI = (extra: string) => fetch( = await fetch(
+    const callAI = (extra: string) => fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
       {
         method: "POST",
