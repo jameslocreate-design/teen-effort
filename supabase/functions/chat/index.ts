@@ -253,7 +253,7 @@ ${!includeEating ? "IMPORTANT: The user does NOT want restaurant or dining sugge
 ${venueContext}
 
 ${topVenues.length > 0
-  ? `CRITICAL: Pick 3 different venues from the numbered list above. Use the EXACT venue name. Do NOT invent venues. Skip any venue you know has permanently closed. Do NOT suggest places from other cities. Every title MUST name the exact venue AND the city, e.g. "Dinner at The Refectory in ${cityLabel || "your city"}". The description must also name the venue and city — never give a generic overview like "a cozy restaurant downtown".`
+  ? `CRITICAL: Pick 3 different venues from the numbered list above. Use the EXACT venue name. Do NOT invent venues. Skip any venue you know has permanently closed. Do NOT suggest places from other cities. Every title MUST name the exact venue AND the city, e.g. "Lunch at Hot Chicken Takeover in ${cityLabel || "your city"}". The description must also name the venue and city — never give a generic overview like "a cozy restaurant downtown".`
   : cityLabel
     ? `CRITICAL: No live venue data. Suggest REAL, well-known places that actually exist in ${cityLabel}, and name the exact place in every title and description, e.g. "Stroll through Franklin Park Conservatory in ${cityLabel}". Never invent venues, only suggest places you are confident are CURRENTLY OPEN (never anything permanently closed, relocated, or seasonal-only out of season), never give generic overviews, and never name places from San Francisco, New York, or other cities.`
     : "CRITICAL: No location data. Keep suggestions generic — do NOT name specific venues."}
@@ -261,7 +261,7 @@ ${topVenues.length > 0
 For each idea, respond ONLY with valid JSON — no markdown, no code fences, no extra text. Use this exact format:
 [
   {
-    "title": "Catchy title that names the exact venue and city, e.g. 'Dinner at The Refectory in Columbus, Ohio'",
+    "title": "Catchy title that names the exact venue and city, e.g. 'Lunch at Hot Chicken Takeover in Columbus, Ohio'",
     "description": "2-3 sentence vivid description that names the specific venue and city — never a generic overview",
     "estimated_cost": "e.g. Free, $10-20, $50+",
     "duration": "e.g. 2-3 hours",
