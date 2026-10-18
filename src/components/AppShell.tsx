@@ -131,11 +131,11 @@ const AppShell = () => {
     if (!user) return;
     supabase
       .from("profiles")
-      .select("name, avatar_url")
+      .select("name, birthday, avatar_url")
       .eq("user_id", user.id)
       .single()
       .then(async ({ data }) => {
-        const isComplete = !!data?.name;
+        const isComplete = !!data?.name && !!data?.birthday;
         setProfileComplete(isComplete);
         if (data?.name) setProfileName(data.name);
         if ((data as any)?.avatar_url) {

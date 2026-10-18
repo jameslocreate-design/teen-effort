@@ -120,6 +120,10 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
       toast.error("Please enter your name");
       return;
     }
+    if (!birthday) {
+      toast.error("Please enter your date of birth");
+      return;
+    }
     if (!birthdayLocked && birthday) {
       const [y, m, d] = birthday.split("-").map(Number);
       const dobDate = new Date(y, (m || 1) - 1, d || 1);
