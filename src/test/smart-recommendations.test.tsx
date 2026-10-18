@@ -2,9 +2,9 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import SmartRecommendations from "@/components/SmartRecommendations";
 
-const mocks = vi.hoisted(() => ({ insert: vi.fn(), link: null as { id: string } | null }));
+const mocks = vi.hoisted(() => ({ insert: vi.fn(), link: null as { id: string } | null, user: { id: "current-user" } }));
 const idea = { title: "Museum afternoon", description: "Explore the exhibits", estimated_cost: "$20", duration: "2 hours", vibe: "Creative", distance_miles: "3", url: "https://www.google.com/maps/search/?api=1&query=Museum%2C%20Columbus", rating: 4.5, review_count: 120 };
-vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: { id: "current-user" } }) }));
+vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: mocks.user }) }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { from: (table: string) => {
   const query = { select: () => query, eq: () => table === "date_reviews" || table === "calendar_entries" ? Promise.resolve({ data: [] }) : query, or: () => query, maybeSingle: async () => ({ data: mocks.link }), insert: (row: unknown) => mocks.insert(table, row) };
   return query;
