@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { checkAndIncrementUsage } from "../_shared/usage-limits.ts";
+import { buildVenueSearchUrl } from "../_shared/venue-links.ts";
 import { SAFETY_PROMPT, isSafe, findMatureTerms, sanitizeUserText, isBlockedVenue } from "../_shared/content-safety.ts";
 
 const corsHeaders = {
@@ -266,7 +267,7 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
     "estimated_cost": "e.g. Free, $10-20, $50+",
     "duration": "e.g. 2-3 hours",
     "vibe": "one word mood like Romantic, Adventurous, Cozy",
-    "venue_name": "EXACT venue name from the list above (or null if no list)",
+    "venue_name": "EXACT venue name from the list above; if no list but a city is provided, the exact real place name you suggest, without activity words or city. Use null only for a generic activity with no specific venue.",
     "website_url": "Official venue website if you know it for certain — otherwise null. NOT Yelp, NOT TripAdvisor, NOT a Google search."
   }
 ]`;
@@ -286,11 +287,10 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
       },
     );
 
-    const mapsUrl = (name: string) =>
-      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${name}${cityLabel ? ", " + cityLabel : ""}`)}`;
+    const mapsUrl = (name: string) => buildVenueSearchUrl(name, cityLabel);
 
     const enrich = async (idea: any) => {
-      const venueName: string | undefined = idea.venue_name || undefined;
+      const venueName = typeof idea.venue_name === "string" ? idea.venue_name.trim() || undefined : undefined;
       let matched: OsmVenue | undefined;
       if (venueName) {
         const vn = venueName.toLowerCase();
@@ -312,8 +312,8 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
           }
         } catch (e) { console.warn("Nominatim venue lookup failed:", e); }
       }
-      // Always link to Google Maps: never 404s and shows hours / "Permanently closed".
-      const url = venueName || idea.title ? mapsUrl(matched?.name || venueName || idea.title) : undefined;
+      // Activity titles are prose, not reliable Maps queries. Missing names have no venue link.
+      const url = buildVenueSearchUrl(matched?.name || venueName, matched?.city || cityLabel);
       return {
         title: String(idea.title || ""), description: String(idea.description || ""),
         estimated_cost: String(idea.estimated_cost || ""), duration: String(idea.duration || ""),
