@@ -92,7 +92,7 @@ const AuthPage = () => {
         return;
       }
       const result = await lovable.auth.signInWithOAuth("apple", {
-        redirect_uri: window.location.origin,
+        redirect_uri: `${window.location.origin}/app`,
       });
       if (result.error) {
         toast.error("Couldn't sign in with Apple. Please try again.");
@@ -114,7 +114,7 @@ const AuthPage = () => {
     setGoogleLoading(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: `${window.location.origin}/app`,
         extraParams: { prompt: "select_account" },
       });
       if (result.error) {
@@ -194,7 +194,7 @@ const AuthPage = () => {
           email,
           password,
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: `${window.location.origin}/app`,
             data: { birthday: dob },
           },
         });
