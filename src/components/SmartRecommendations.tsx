@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Brain, Sparkles, Loader2, TrendingUp, Star } from "lucide-react";
+import { Brain, Loader2, TrendingUp, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,7 +7,9 @@ import { generateDateIdeas, UsageLimitError, type DateIdea, type DateFilters } f
 import { notifyUsageUpdated } from "@/hooks/useUsage";
 import { getCurrentCoords } from "@/lib/geo";
 
-import DateIdeaCard from "@/components/DateIdeaCard";
+import DateResults from "@/components/date-planner/DateResults";
+import DatePickerDialog from "@/components/date-planner/DatePickerDialog";
+import { format } from "date-fns";
 import { toast } from "sonner";
 
 interface UserPreferences {
@@ -24,6 +26,14 @@ const SmartRecommendations = () => {
   const [ideas, setIdeas] = useState<DateIdea[]>([]);
   const [loading, setLoading] = useState(false);
   const [analyzing, setAnalyzing] = useState(true);
+  const [partnerLinkId, setPartnerLinkId] = useState<string | null>(null);
+  const [savingIndex, setSavingIndex] = useState<number | null>(null);
+  const [savingForLaterIndex, setSavingForLaterIndex] = useState<number | null>(null);
+  const [selectedIdea, setSelectedIdea] = useState<DateIdea | null>(null);
+  const [selectedIdeaIndex, setSelectedIdeaIndex] = useState<number | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [selectedTime, setSelectedTime] = useState("");
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -31,6 +41,7 @@ const SmartRecommendations = () => {
       const { data: link } = await supabase
         .from("partner_links").select("id").eq("status", "accepted")
         .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`).maybeSingle();
+      setPartnerLinkId(link?.id ?? null);
 
       // Get calendar entries + reviews
       const [calRes, reviewRes] = await Promise.all([
@@ -57,7 +68,7 @@ const SmartRecommendations = () => {
       const topCuisines = Object.entries(cuisineCounts).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([c]) => c);
 
       // Average rating
-      const ratings = [...entries.filter(e => e.user_rating).map(e => e.user_rating!), ...reviews.map(r => r.rating)];
+      const ratings = [...entries.flatMap(e => e.user_rating == null ? [] : [e.user_rating]), ...reviews.map(r => r.rating)];
       const avgRating = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
 
       // Cost preference
@@ -77,6 +88,68 @@ const SmartRecommendations = () => {
     };
     analyze();
   }, [user]);
+
+  const saveForLater = async (idea: DateIdea, index: number) => {
+    if (!user || savingForLaterIndex !== null) return;
+    setSavingForLaterIndex(index);
+    try {
+      const { error } = await supabase.from("saved_date_ideas").insert({
+        user_id: user.id, title: idea.title, description: idea.description,
+        estimated_cost: idea.estimated_cost, duration: idea.duration, vibe: idea.vibe,
+        distance_miles: idea.distance_miles, yelp_url: idea.url || null,
+        yelp_rating: idea.rating ?? null, yelp_review_count: idea.review_count ?? null,
+      });
+      if (error) throw error;
+      toast.success(`"${idea.title}" saved for later!`);
+    } catch {
+      toast.error("Failed to save idea");
+    } finally {
+      setSavingForLaterIndex(null);
+    }
+  };
+
+  const cancelDatePicker = () => {
+    setDatePickerOpen(false);
+    setSelectedIdea(null);
+    setSelectedIdeaIndex(null);
+    setSelectedDate(undefined);
+    setSelectedTime("");
+  };
+
+  const openDatePicker = (idea: DateIdea, index: number) => {
+    if (!user || !partnerLinkId || savingIndex !== null) return;
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    setSelectedIdea(idea);
+    setSelectedIdeaIndex(index);
+    setSelectedDate(tomorrow);
+    setSelectedTime("");
+    setDatePickerOpen(true);
+  };
+
+  const confirmDate = async () => {
+    if (!user || !partnerLinkId || !selectedIdea || !selectedDate || selectedIdeaIndex === null || savingIndex !== null) return;
+    setSavingIndex(selectedIdeaIndex);
+    setDatePickerOpen(false);
+    try {
+      const { error } = await supabase.from("calendar_entries").insert({
+        partner_link_id: partnerLinkId, added_by: user.id,
+        date: format(selectedDate, "yyyy-MM-dd"), event_time: selectedTime || null,
+        title: selectedIdea.title, description: selectedIdea.description,
+        estimated_cost: selectedIdea.estimated_cost, duration: selectedIdea.duration,
+        vibe: selectedIdea.vibe, yelp_url: selectedIdea.url || null,
+        yelp_rating: selectedIdea.rating ?? null, yelp_review_count: selectedIdea.review_count ?? null,
+      });
+      if (error) throw error;
+      toast.success(`"${selectedIdea.title}" added to calendar!`);
+      cancelDatePicker();
+    } catch {
+      toast.error("Failed to save to calendar");
+      setDatePickerOpen(true);
+    } finally {
+      setSavingIndex(null);
+    }
+  };
 
   const generateSmart = async () => {
     if (!preferences) return;
@@ -194,12 +267,20 @@ const SmartRecommendations = () => {
       </Button>
 
       {ideas.length > 0 && (
-        <div className="space-y-3">
-          {ideas.map((idea, i) => (
-            <DateIdeaCard key={i} idea={idea} index={i} />
-          ))}
-        </div>
+        <DateResults
+          ideas={ideas} partnerLinkId={partnerLinkId} savingIndex={savingIndex}
+          savingForLaterIndex={savingForLaterIndex}
+          onSaveForLater={user ? saveForLater : undefined}
+          onAddToCalendar={openDatePicker} onGenerateMore={generateSmart}
+        />
       )}
+      <DatePickerDialog
+        open={datePickerOpen}
+        onOpenChange={(open) => { if (!open) cancelDatePicker(); }}
+        selectedIdea={selectedIdea} selectedDate={selectedDate}
+        onDateSelect={setSelectedDate} selectedTime={selectedTime}
+        onTimeChange={setSelectedTime} onConfirm={confirmDate} onCancel={cancelDatePicker}
+      />
     </div>
   );
 };

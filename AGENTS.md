@@ -1,5 +1,7 @@
 # Project Architecture Rules
 
+- Smart Recommendations reuse DateResults and DatePickerDialog and save to the existing date tables so suggested dates follow the same saved-list and shared-calendar flows as Date Planner.
+
 - Build generated venue links through the server-side venue-links helper using venue names and locality, never activity titles or user coordinates, because prose searches can return no results.
 
 - Keep the static public/sitemap.xml synchronized with public, indexable routes only; omit account, admin, invite, and callback routes to avoid advertising private flows.
