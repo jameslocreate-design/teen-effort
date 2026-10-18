@@ -16,7 +16,7 @@ const DateLogInner = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur-md px-4 py-3">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="gap-2 text-muted-foreground">
+        <Button variant="ghost" size="sm" onClick={() => navigate("/app")} className="gap-2 text-muted-foreground">
           <ArrowLeft className="h-4 w-4" /> Back
         </Button>
       </div>

@@ -18,7 +18,7 @@ const LinkPartner = () => {
     if (!user) {
       // Store the link code so we can process after login
       if (code) localStorage.setItem("pending-partner-code", code);
-      navigate("/", { replace: true });
+      navigate("/app", { replace: true });
       toast.info("Please sign in first, then the partner link will be applied automatically.");
       return;
     }
@@ -81,7 +81,7 @@ const LinkPartner = () => {
           otherAccepted.user1_id === user!.id ? otherAccepted.user2_id : otherAccepted.user1_id;
         if (otherPartnerId !== partnerId) {
           toast.info("You're already linked with a different partner. Unlink first to change.");
-          navigate("/", { replace: true });
+          navigate("/app", { replace: true });
           return;
         }
       }
@@ -140,7 +140,7 @@ const LinkPartner = () => {
     }
   };
 
-  const handleContinue = () => navigate("/", { replace: true });
+  const handleContinue = () => navigate("/app", { replace: true });
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
