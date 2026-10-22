@@ -177,7 +177,7 @@ struct TeenEffortWidget: Widget {
 struct TeenEffortLockScreenWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "TeenEffortLockScreenWidget", provider: TimeTogetherProvider()) { entry in
-            TimeTogetherAccessoryView(entry: entry)
+            TimeTogetherAccessoryView(entry: entry).widgetBackground(.clear)
         }
         .configurationDisplayName("Time Together")
         .description("Your day count on your Lock Screen.")
