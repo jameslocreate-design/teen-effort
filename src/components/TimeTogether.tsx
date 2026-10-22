@@ -82,7 +82,11 @@ const TimeTogether = () => {
     const ch = supabase
       .channel(`time-together-${linkId}`)
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "partner_links", filter: `id=eq.${linkId}` },
-        (p) => setStartDate((p.new as { relationship_start_date: string | null }).relationship_start_date))
+        (p) => {
+          const d = (p.new as { relationship_start_date: string | null }).relationship_start_date;
+          setStartDate(d);
+          syncTimeTogetherWidget(d);
+        })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [linkId]);
