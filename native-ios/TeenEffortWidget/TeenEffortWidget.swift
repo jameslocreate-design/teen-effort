@@ -91,7 +91,20 @@ struct TimeTogetherWidgetView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .padding()
-        .containerBackground(midnightBackground, for: .widget)
+        .widgetBackground(midnightBackground)
+    }
+}
+
+// containerBackground only exists on iOS 17+; fall back to a plain
+// background on iOS 16 so the widget builds for the 16.6 deployment target.
+extension View {
+    @ViewBuilder
+    func widgetBackground(_ color: Color) -> some View {
+        if #available(iOS 17.0, *) {
+            self.containerBackground(color, for: .widget)
+        } else {
+            self.background(color)
+        }
     }
 }
 
