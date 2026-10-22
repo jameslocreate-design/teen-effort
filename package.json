@@ -14,6 +14,7 @@
     "cap:add:ios": "npx cap add ios",
     "cap:add:android": "npx cap add android",
     "cap:sync": "npx cap sync",
+    "ios:sync": "npx cap sync ios && node scripts/sync-native-ios.mjs",
     "cap:run:ios": "npx cap run ios",
     "cap:run:android": "npx cap run android",
     "cap:open:ios": "npx cap open ios",
