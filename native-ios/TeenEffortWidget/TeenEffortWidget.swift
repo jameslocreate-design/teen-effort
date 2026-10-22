@@ -149,18 +149,10 @@ struct TimeTogetherAccessoryView: View {
 
 // MARK: - Widget configuration
 
-@main
 struct TeenEffortWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "TeenEffortWidget", provider: TimeTogetherProvider()) { entry in
-            Group {
-                if #available(iOS 17.0, *) {
-                    // containerBackground handles home screen; accessory views draw their own
-                    TimeTogetherWidgetView(entry: entry)
-                } else {
-                    TimeTogetherWidgetView(entry: entry)
-                }
-            }
+            TimeTogetherWidgetView(entry: entry)
         }
         .configurationDisplayName("Time Together")
         .description("See how many days you and your partner have been together.")
@@ -177,5 +169,16 @@ struct TeenEffortLockScreenWidget: Widget {
         .configurationDisplayName("Time Together")
         .description("Your day count on your Lock Screen.")
         .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryInline])
+    }
+}
+
+// Both widgets ship in one extension, so they must be listed in a bundle.
+@main
+struct TeenEffortWidgetBundle: WidgetBundle {
+    var body: some Widget {
+        TeenEffortWidget()
+        if #available(iOS 16.1, *) {
+            TeenEffortLockScreenWidget()
+        }
     }
 }
