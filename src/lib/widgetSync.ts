@@ -17,7 +17,9 @@ export async function syncTimeTogetherWidget(startDate: string | null) {
   if (!isNative() || !isIOS()) return;
   try {
     await WidgetData.setTimeTogether({ startDate });
-  } catch {
-    /* plugin not installed in this build yet — ignore */
+  } catch (err) {
+    // Most often: App Group not enabled in Xcode on the App target, or the
+    // WidgetData plugin wasn't added to this build. Log so it's diagnosable.
+    console.warn("Widget sync failed:", err);
   }
 }
