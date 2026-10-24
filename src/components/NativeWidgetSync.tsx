@@ -13,8 +13,11 @@ export default function NativeWidgetSync() {
     if (!isNative() || !isIOS()) return;
     let stopped = false;
     let revision = 0;
+    // Clear old-account data before fetching the newly signed-in account.
+    const cleared = Promise.all([syncDashboardWidgets(null), syncTimeTogetherWidget(null)]);
     const load = async () => {
       const current = ++revision;
+      await cleared;
       if (!user) { await Promise.all([syncDashboardWidgets(null), syncTimeTogetherWidget(null)]); return; }
       const { data: link, error } = await supabase.from("partner_links").select("id,user1_id,user2_id,relationship_start_date")
         .eq("status", "accepted").or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`).maybeSingle();

@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({ native: false, appEntry: vi.fn() }));
 vi.mock("@/lib/native", () => ({ isNative: () => mocks.native }));
 vi.mock("@/contexts/AuthContext", () => ({ AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 vi.mock("@/components/AppShell", () => ({ default: () => { mocks.appEntry(); return <div data-testid="account-entry" />; } }));
+vi.mock("@/components/NativeWidgetSync", () => ({ default: () => null }));
 afterEach(() => { cleanup(); mocks.native = false; mocks.appEntry.mockClear(); });
 
 describe("Public homepage and account entry separation", () => {

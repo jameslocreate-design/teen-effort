@@ -1,48 +1,37 @@
-# iOS Home Screen Widget ("Time Together")
+# iOS relationship widgets
 
-The app now ships everything needed for an iPhone home-screen widget that shows
-how many days the couple has been together. The web side is done; the native
-side is wired up once in Xcode.
+The existing extension includes Time Together, Partner Distance, Date Streak,
+and Date Prep. Distance and streak support small home-screen and all three
+lock-screen sizes. Date Prep supports medium home-screen, rectangular and
+inline lock-screen sizes. Native code targets iOS 16.6 with guarded iOS 17 backgrounds.
 
-## What's already in the repo
+## Updating the existing Xcode project
 
-- `src/lib/widgetSync.ts` — sends the relationship start date to the phone
-  whenever it loads or changes (called from `TimeTogether.tsx`).
-- `native-ios/App/WidgetDataPlugin.swift` + `WidgetDataPlugin.m` — Capacitor
-  plugin that stores the date in the shared App Group container and tells
-  iOS to refresh the widget.
-- `native-ios/TeenEffortWidget/TeenEffortWidget.swift` — the widget itself
-  (small home-screen size, dark "Midnight & Rose" styling).
+1. `git pull`
+2. `npm install` and `npm run build`
+3. `npm run ios:sync` (includes `npx cap sync ios` and automatic Swift/storyboard updates)
+4. Open Xcode, Product → Clean Build Folder, then Run on the phone.
+5. Open the app while signed in, then add the widgets from the home/lock-screen gallery.
 
-## One-time setup in Xcode (on your Mac)
+No new Xcode target or manual file replacement is needed for the already configured project.
+Both App and TeenEffortWidgetExtension must retain App Group `group.com.teeneffort.app`.
+For a new Xcode project, the extension target and App Group still require initial setup.
 
-1. `git pull`, `npm install`, `npm run build`, `npx cap sync ios`, then open
-   the project: `npx cap open ios`.
-2. **Add the plugin files:** in Finder, drag `native-ios/App/WidgetDataPlugin.swift`
-   and `WidgetDataPlugin.m` into Xcode's `App/App` folder (check "Copy items if
-   needed", target: **App**).
-3. **Create the widget target:** Xcode → File → New → Target → **Widget Extension**
-   → name it `TeenEffortWidget` (uncheck "Include Configuration App Intent" if
-   offered) → Finish → Activate scheme when asked.
-4. **Replace the generated widget code:** delete the Swift file Xcode generated
-   inside the `TeenEffortWidget` folder and drag in
-   `native-ios/TeenEffortWidget/TeenEffortWidget.swift` (target:
-   **TeenEffortWidget** only — do NOT also add it to the App target).
-5. **Enable App Groups on both targets:**
-   - App target → Signing & Capabilities → + Capability → **App Groups** → add
-     `group.com.teeneffort.app`.
-   - TeenEffortWidget target → same steps, same group name.
-6. Build and run on your phone (Product → Run).
+## Data and limitations
 
-## Using the widget
-
-On the iPhone: long-press the home screen → tap **+** (top left) → search
-"Teen Effort" → add the **Time Together** widget. It updates at midnight and
-immediately whenever the start date is set or changed in the app.
-
-## Notes
-
-- The widget only reads a date string from the shared container — no account
-  data, no location, nothing else leaves the app.
-- Lock-screen widgets can be added later by adding `.accessoryRectangular` etc.
-  to `supportedFamilies` in `TeenEffortWidget.swift`.
+- Partner distance is calculated from saved home cities, never live GPS.
+- Date Streak mirrors the calendar's Monday–Sunday scheduled-date streak.
+- Each planned date automatically has a personal checklist in the app. Defaults
+  are 45 minutes getting ready, 20 minutes travel, and 10 minutes early arrival;
+  users can edit estimates and tick tasks on that device. Travel is not live traffic.
+- Date Prep shows the next upcoming date. Untimed dates have no invented schedule.
+  Tapping it opens Calendar; checkboxes are edited in the app, not the widget.
+- Preparation settings/completion stay on the device, separate for each account/date;
+  they are not shared with the partner or other devices.
+- The app syncs local widget snapshots on foreground, changes and realtime events.
+  iOS controls actual refresh timing. Partner changes while the app is closed are
+  picked up next time it opens; this is not background/live tracking.
+- Snapshot data includes date titles/times/checklists and derived distance, but no
+  GPS coordinates, account tokens or credentials. Logout/unlink clears snapshots.
+- Swift compilation, signing, widgets and universal-link app opening must be verified
+  in Xcode/on a physical iPhone; they cannot be compiled in the web sandbox.

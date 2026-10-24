@@ -66,7 +66,7 @@ async function searchOverpass(
         });
         if (resp.ok) break;
         console.error("Overpass error:", host, resp.status);
-      } catch (e) { console.error("Overpass failed:", host, e); resp = null; }
+      } catch { console.error("Overpass failed:", host); resp = null; }
     }
     if (!resp || !resp.ok) {
       console.error("Overpass error:", resp?.status);
@@ -103,8 +103,8 @@ async function searchOverpass(
     }
     out.sort((a, b) => a.distance_miles - b.distance_miles);
     return out;
-  } catch (e) {
-    console.error("Overpass fetch failed:", e);
+  } catch {
+    console.error("Overpass fetch failed");
     return [];
   }
 }
@@ -217,8 +217,8 @@ serve(async (req) => {
           const state = a.state || "";
           cityLabel = [city, state].filter(Boolean).join(", ");
         }
-      } catch (e) {
-        console.warn("Reverse geocode failed:", e);
+      } catch {
+        console.warn("Reverse geocode failed");
       }
       if (!cityLabel && clientCity) cityLabel = clientCity;
       console.log("User city resolved:", cityLabel ? "yes" : "no");
@@ -291,8 +291,6 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
       },
     );
 
-    const mapsUrl = (name: string) => buildVenueSearchUrl(name, cityLabel);
-
     const enrich = async (idea: any) => {
       if (!idea || typeof idea !== "object") return null;
       const matched = matchVerifiedVenue(idea.venue_name, topVenues, radiusMeters);
@@ -312,7 +310,6 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
 
     const ignore = [cityLabel, ...cityLabel.split(",").map((x) => x.trim())].filter(Boolean);
     let ideas: any[] = [];
-    let lastSafe: any[] = [];
     for (let attempt = 0; attempt < 2; attempt++) {
       const response = await callAI(attempt === 0 ? "" :
         "\n\nYour previous answer failed venue or safety validation. Use only EXACT names from the verified venue list and completely wholesome, alcohol-free, non-physical activities.");
@@ -340,7 +337,6 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
       const unique = enriched.filter((idea, index) => enriched.findIndex(other => other.venue_name === idea.venue_name) === index);
       if (unique.length === Math.min(3, topVenues.length) && isSafe(parsed, ignore) && isSafe(unique, ignore)) { ideas = unique; break; }
       console.warn(`Safety check failed (attempt ${attempt + 1}):`, findMatureTerms(enriched, ignore).join(", "));
-      lastSafe = [];
     }
 
     // Fallback: keep only safe ideas, fill the rest with wholesome defaults. Never return failed output.
