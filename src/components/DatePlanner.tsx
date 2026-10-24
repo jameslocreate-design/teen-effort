@@ -40,6 +40,7 @@ const DatePlanner = () => {
   const [ideas, setIdeas] = useState<DateIdea[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
   const [partnerLinkId, setPartnerLinkId] = useState<string | null>(null);
   const [savingIndex, setSavingIndex] = useState<number | null>(null);
   const [locationStatus, setLocationStatus] = useState<"idle" | "loading" | "granted" | "needed" | "unavailable">("idle");
@@ -120,6 +121,7 @@ const DatePlanner = () => {
     setIsLoading(true);
     setHasGenerated(false);
     setIdeas([]);
+    setGenerationError(null);
     try {
       setIdeas(await generateDateIdeas(filters));
       setHasGenerated(true);
@@ -131,7 +133,9 @@ const DatePlanner = () => {
           duration: 8000,
         });
       } else {
-        toast.error(err instanceof Error ? err.message : "Failed to generate ideas");
+        const message = err instanceof Error ? err.message : "Failed to generate ideas";
+        setGenerationError(message);
+        toast.error(message);
       }
     } finally {
       setIsLoading(false);
@@ -255,6 +259,8 @@ const DatePlanner = () => {
           )}
         </Button>
       </div>
+
+      {generationError && <p role="alert" className="text-sm text-destructive">{generationError}</p>}
 
       {hasGenerated && !isLoading && (
         <DateResults
