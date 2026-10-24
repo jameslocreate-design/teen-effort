@@ -393,7 +393,24 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
     const enrich = async (idea: any) => {
       if (!idea || typeof idea !== "object") return null;
       const matched = matchVerifiedVenue(idea.venue_name, topVenues, radiusMeters);
-      if (!matched) return null;
+      if (!matched) {
+        // Same-city fallback: no verified venue list, so keep only generic
+        // activity ideas tied to the user's own city, with a Maps search link.
+        if (!cityFallback || !cityLabel) return null;
+        const rawTitle = typeof idea.title === "string" ? idea.title.trim() : "";
+        if (!rawTitle) return null;
+        // Strip any specific business name the AI may have slipped in: keep
+        // only the activity wording, and force the city to the user's city.
+        const activity = rawTitle.replace(/\s+in\s+.+$/i, "").trim();
+        if (!activity) return null;
+        return {
+          title: `${activity} in ${cityLabel}`,
+          description: `Search for ${activity.toLowerCase()} spots in ${cityLabel} and pick one you both like. Check current opening hours before you go.`,
+          estimated_cost: String(idea.estimated_cost || ""), duration: String(idea.duration || ""),
+          vibe: String(idea.vibe || ""), venue_name: null, distance_miles: "", url: buildVenueSearchUrl(activity, cityLabel),
+          fallback: true,
+        };
+      }
       const locality = matched.city || cityLabel;
       // Canonical venue/city copy prevents an otherwise valid venue ID from
       // being paired with hallucinated out-of-area prose or a second venue.
