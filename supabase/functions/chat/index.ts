@@ -321,7 +321,11 @@ serve(async (req) => {
 
     // Pick the closest 15 to give the AI plenty of options
     const topVenues = venues.filter(venue => validCoordinates(venue.lat, venue.lon) && withinRadius(venue.distance_miles, radiusMeters)).slice(0, 15);
-    if (!topVenues.length) {
+    // Same-city fallback: when no live venue data is available but we know the
+    // user's city, the AI suggests activity types in THAT city only — never a
+    // different city — and each idea links to a Google Maps search there.
+    const cityFallback = topVenues.length === 0 && !!cityLabel;
+    if (!topVenues.length && !cityFallback) {
       return new Response(JSON.stringify({ error: "We couldn't verify nearby places right now. Please try again or widen your distance filter." }),
         { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
