@@ -118,9 +118,11 @@ const DatePlanner = () => {
 
   const handleGenerate = async () => {
     setIsLoading(true);
-    setHasGenerated(true);
+    setHasGenerated(false);
+    setIdeas([]);
     try {
       setIdeas(await generateDateIdeas(filters));
+      setHasGenerated(true);
       notifyUsageUpdated("date_ideas");
     } catch (err) {
       if (err instanceof UsageLimitError) {
