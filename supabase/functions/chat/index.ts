@@ -450,8 +450,10 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
         parsed = Array.isArray(p) ? p : [];
       } catch { console.error("Failed to parse AI response"); }
       const enriched = (await Promise.all(parsed.slice(0, 3).map(enrich))).filter((idea) => idea !== null);
-      const unique = enriched.filter((idea, index) => enriched.findIndex(other => other.venue_name === idea.venue_name) === index);
-      if (unique.length === Math.min(3, topVenues.length) && isSafe(parsed, ignore) && isSafe(unique, ignore)) { ideas = unique; break; }
+      // Fallback ideas share venue_name null — dedupe those by title instead
+      const unique = enriched.filter((idea, index) => enriched.findIndex(other => (other.venue_name ?? other.title) === (idea.venue_name ?? idea.title)) === index);
+      const expected = cityFallback ? 3 : Math.min(3, topVenues.length);
+      if (unique.length === expected && isSafe(parsed, ignore) && isSafe(unique, ignore)) { ideas = unique; break; }
       console.warn(`Safety check failed (attempt ${attempt + 1}):`, findMatureTerms(enriched, ignore).join(", "));
     }
 
