@@ -109,6 +109,96 @@ async function searchOverpass(
   }
 }
 
+// Reliable place finder: Google Maps Places API (New) via the connector gateway.
+// Server-side only — never expose LOVABLE_API_KEY or the connection key to the browser.
+const GOOGLE_GATEWAY = "https://connector-gateway.lovable.dev/google_maps";
+
+// Place types we search, grouped by the kind of date they suit. All are
+// alcohol-free-friendly categories; anything bar-like is excluded after the fact.
+const GOOGLE_TYPE_GROUPS: string[][] = [
+  ["restaurant", "cafe", "ice_cream_shop", "bakery"],
+  ["park", "garden", "hiking_area", "picnic_ground"],
+  ["museum", "art_gallery", "aquarium", "zoo", "tourist_attraction"],
+  ["movie_theater", "bowling_alley", "amusement_park", "miniature_golf_course", "ice_skating_rink", "trampoline_park"],
+];
+
+async function searchGooglePlaces(
+  latitude: number,
+  longitude: number,
+  radiusMeters: number,
+): Promise<OsmVenue[]> {
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  const GOOGLE_MAPS_API_KEY = Deno.env.get("GOOGLE_MAPS_API_KEY");
+  if (!LOVABLE_API_KEY || !GOOGLE_MAPS_API_KEY) {
+    console.error("Google Maps connector credentials missing");
+    return [];
+  }
+  const radius = Math.min(Math.max(radiusMeters, 1000), 50000); // Google caps at 50km
+  const results = await Promise.all(
+    GOOGLE_TYPE_GROUPS.map(async (includedTypes) => {
+      try {
+        const resp = await fetch(`${GOOGLE_GATEWAY}/places/v1/places:searchNearby`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "X-Connection-Api-Key": GOOGLE_MAPS_API_KEY,
+            "Content-Type": "application/json",
+            "X-Goog-FieldMask": "places.displayName,places.location,places.primaryType,places.formattedAddress,places.businessStatus",
+          },
+          body: JSON.stringify({
+            includedTypes,
+            maxResultCount: 10,
+            locationRestriction: {
+              circle: { center: { latitude, longitude }, radius },
+            },
+          }),
+          signal: AbortSignal.timeout(12000),
+        });
+        if (!resp.ok) {
+          console.error("Google Places error:", resp.status, await resp.text());
+          return [];
+        }
+        const data = await resp.json();
+        return (data.places || []) as any[];
+      } catch {
+        console.error("Google Places fetch failed");
+        return [];
+      }
+    }),
+  );
+
+  const seen = new Set<string>();
+  const out: OsmVenue[] = [];
+  for (const place of results.flat()) {
+    const name: string | undefined = place?.displayName?.text;
+    const lat = place?.location?.latitude;
+    const lon = place?.location?.longitude;
+    if (!name || typeof lat !== "number" || typeof lon !== "number") continue;
+    // Skip anything Google marks as closed
+    const status = String(place?.businessStatus || "").toUpperCase();
+    if (status === "CLOSED_PERMANENTLY" || status === "CLOSED_TEMPORARILY") continue;
+    // 13+ rule: block alcohol/adult/gambling venues by name
+    if (isBlockedVenue({ name })) continue;
+    const key = name.trim().toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    // Extract the city from the formatted address when possible
+    const addr: string = place?.formattedAddress || "";
+    const parts = addr.split(",").map((p: string) => p.trim()).filter(Boolean);
+    const city = parts.length >= 2 ? parts[parts.length - 2] : undefined;
+    out.push({
+      name,
+      lat,
+      lon,
+      category: String(place?.primaryType || "venue").replace(/_/g, " "),
+      city,
+      distance_miles: haversineMiles(latitude, longitude, lat, lon),
+    });
+  }
+  out.sort((a, b) => a.distance_miles - b.distance_miles);
+  return out;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -198,8 +288,13 @@ serve(async (req) => {
 
     let venues: OsmVenue[] = [];
     if (hasLocation) {
-      venues = await searchOverpass(latitude, longitude, radiusMeters, osmFilters);
-      console.log(`Overpass returned ${venues.length} venues within ${radiusMeters}m`);
+      // Google Maps first (reliable), free OpenStreetMap services as backup
+      venues = await searchGooglePlaces(latitude, longitude, radiusMeters);
+      console.log(`Google Places returned ${venues.length} venues within ${radiusMeters}m`);
+      if (venues.length === 0) {
+        venues = await searchOverpass(latitude, longitude, radiusMeters, osmFilters);
+        console.log(`Overpass returned ${venues.length} venues within ${radiusMeters}m`);
+      }
     }
 
     // Reverse-geocode for the city label
@@ -226,7 +321,11 @@ serve(async (req) => {
 
     // Pick the closest 15 to give the AI plenty of options
     const topVenues = venues.filter(venue => validCoordinates(venue.lat, venue.lon) && withinRadius(venue.distance_miles, radiusMeters)).slice(0, 15);
-    if (!topVenues.length) {
+    // Same-city fallback: when no live venue data is available but we know the
+    // user's city, the AI suggests activity types in THAT city only — never a
+    // different city — and each idea links to a Google Maps search there.
+    const cityFallback = topVenues.length === 0 && !!cityLabel;
+    if (!topVenues.length && !cityFallback) {
       return new Response(JSON.stringify({ error: "We couldn't verify nearby places right now. Please try again or widen your distance filter." }),
         { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
@@ -260,7 +359,7 @@ ${venueContext}
 ${topVenues.length > 0
   ? `CRITICAL: Pick 3 different venues from the numbered list above. Use the EXACT venue name. Do NOT invent venues. Skip any venue you know has permanently closed. Do NOT suggest places from other cities. Every title MUST name the exact venue AND the city, e.g. "Lunch at Hot Chicken Takeover in ${cityLabel || "your city"}". The description must also name the venue and city — never give a generic overview like "a cozy restaurant downtown".`
   : cityLabel
-    ? `CRITICAL: No live venue data. Suggest REAL, well-known places that actually exist in ${cityLabel}, and name the exact place in every title and description, e.g. "Stroll through Franklin Park Conservatory in ${cityLabel}". Never invent venues, only suggest places you are confident are CURRENTLY OPEN (never anything permanently closed, relocated, or seasonal-only out of season), never give generic overviews, and never name places from San Francisco, New York, or other cities.`
+    ? `CRITICAL: No live venue data is available. Suggest ACTIVITY TYPES only — never a specific business name, since you cannot verify it exists or is open. Every title and description MUST name ${cityLabel} and ONLY ${cityLabel} — never any other city, state, or region, even a nearby one. Example: "Mini golf in ${cityLabel}". Set venue_name to null for every idea.`
     : "CRITICAL: No location data. Keep suggestions generic — do NOT name specific venues."}
 
 For each idea, respond ONLY with valid JSON — no markdown, no code fences, no extra text. Use this exact format:
@@ -294,7 +393,24 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
     const enrich = async (idea: any) => {
       if (!idea || typeof idea !== "object") return null;
       const matched = matchVerifiedVenue(idea.venue_name, topVenues, radiusMeters);
-      if (!matched) return null;
+      if (!matched) {
+        // Same-city fallback: no verified venue list, so keep only generic
+        // activity ideas tied to the user's own city, with a Maps search link.
+        if (!cityFallback || !cityLabel) return null;
+        const rawTitle = typeof idea.title === "string" ? idea.title.trim() : "";
+        if (!rawTitle) return null;
+        // Strip any specific business name the AI may have slipped in: keep
+        // only the activity wording, and force the city to the user's city.
+        const activity = rawTitle.replace(/\s+in\s+.+$/i, "").trim();
+        if (!activity) return null;
+        return {
+          title: `${activity} in ${cityLabel}`,
+          description: `Search for ${activity.toLowerCase()} spots in ${cityLabel} and pick one you both like. Check current opening hours before you go.`,
+          estimated_cost: String(idea.estimated_cost || ""), duration: String(idea.duration || ""),
+          vibe: String(idea.vibe || ""), venue_name: null, distance_miles: "", url: buildVenueSearchUrl(activity, cityLabel),
+          fallback: true,
+        };
+      }
       const locality = matched.city || cityLabel;
       // Canonical venue/city copy prevents an otherwise valid venue ID from
       // being paired with hallucinated out-of-area prose or a second venue.
@@ -312,7 +428,9 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
     let ideas: any[] = [];
     for (let attempt = 0; attempt < 2; attempt++) {
       const response = await callAI(attempt === 0 ? "" :
-        "\n\nYour previous answer failed venue or safety validation. Use only EXACT names from the verified venue list and completely wholesome, alcohol-free, non-physical activities.");
+        cityFallback
+          ? `\n\nYour previous answer failed validation. Suggest only generic ACTIVITY TYPES in ${cityLabel} — no business names, no other cities — and keep everything wholesome, alcohol-free and non-physical.`
+          : "\n\nYour previous answer failed venue or safety validation. Use only EXACT names from the verified venue list and completely wholesome, alcohol-free, non-physical activities.");
       if (!response.ok) {
         if (response.status === 429) {
           return new Response(JSON.stringify({ error: "Too many requests. Please wait a moment." }),
@@ -334,15 +452,28 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
         parsed = Array.isArray(p) ? p : [];
       } catch { console.error("Failed to parse AI response"); }
       const enriched = (await Promise.all(parsed.slice(0, 3).map(enrich))).filter((idea) => idea !== null);
-      const unique = enriched.filter((idea, index) => enriched.findIndex(other => other.venue_name === idea.venue_name) === index);
-      if (unique.length === Math.min(3, topVenues.length) && isSafe(parsed, ignore) && isSafe(unique, ignore)) { ideas = unique; break; }
+      // Fallback ideas share venue_name null — dedupe those by title instead
+      const unique = enriched.filter((idea, index) => enriched.findIndex(other => (other.venue_name ?? other.title) === (idea.venue_name ?? idea.title)) === index);
+      const expected = cityFallback ? 3 : Math.min(3, topVenues.length);
+      if (unique.length === expected && isSafe(parsed, ignore) && isSafe(unique, ignore)) { ideas = unique; break; }
       console.warn(`Safety check failed (attempt ${attempt + 1}):`, findMatureTerms(enriched, ignore).join(", "));
     }
 
     // Fallback: keep only safe ideas, fill the rest with wholesome defaults. Never return failed output.
     if (ideas.length === 0) {
-      const defaults = await Promise.all(topVenues.map(venue => enrich({ venue_name: venue.name, estimated_cost: "Check venue pricing", duration: "1-2 hours", vibe: "Relaxed" })));
-      ideas = defaults.filter(idea => idea && isSafe(idea, ignore)).slice(0, 3);
+      if (cityFallback) {
+        // Static same-city activity ideas — no business names, only the user's city
+        const staticActivities = ["A walk in a local park", "Mini golf", "Ice cream together"];
+        ideas = staticActivities.map((activity) => ({
+          title: `${activity} in ${cityLabel}`,
+          description: `Search for ${activity.toLowerCase()} spots in ${cityLabel} and pick one you both like. Check current opening hours before you go.`,
+          estimated_cost: "Varies", duration: "1-2 hours", vibe: "Relaxed",
+          venue_name: null, distance_miles: "", url: buildVenueSearchUrl(activity, cityLabel), fallback: true,
+        }));
+      } else {
+        const defaults = await Promise.all(topVenues.map(venue => enrich({ venue_name: venue.name, estimated_cost: "Check venue pricing", duration: "1-2 hours", vibe: "Relaxed" })));
+        ideas = defaults.filter(idea => idea && isSafe(idea, ignore)).slice(0, 3);
+      }
     }
 
     return new Response(JSON.stringify({ ideas }), {
