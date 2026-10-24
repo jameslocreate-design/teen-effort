@@ -8,6 +8,7 @@ vi.mock("@/integrations/supabase/client", () => ({ supabase: {
 import { generateDateIdeas, type DateFilters } from "@/lib/date-planner";
 const filters: DateFilters = { cost: null, location: null, activity: null, distance: null, timeRange: null, cuisine: null, latitude: 39.1031, longitude: -84.512, funActivity: null, mood: null };
 beforeEach(() => {
+  Object.defineProperty(AbortSignal, "timeout", { configurable: true, value: () => new AbortController().signal });
   mocks.precision = "zip";
   mocks.coords.mockReset().mockResolvedValue({ latitude: 40.08123, longitude: -82.80876 });
   mocks.fetch.mockReset().mockResolvedValue({ ok: true, json: async () => ({ address: { city: "New Albany", state: "Ohio" }, ideas: [] }) });
