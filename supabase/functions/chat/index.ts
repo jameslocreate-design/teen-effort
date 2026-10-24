@@ -428,7 +428,9 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
     let ideas: any[] = [];
     for (let attempt = 0; attempt < 2; attempt++) {
       const response = await callAI(attempt === 0 ? "" :
-        "\n\nYour previous answer failed venue or safety validation. Use only EXACT names from the verified venue list and completely wholesome, alcohol-free, non-physical activities.");
+        cityFallback
+          ? `\n\nYour previous answer failed validation. Suggest only generic ACTIVITY TYPES in ${cityLabel} — no business names, no other cities — and keep everything wholesome, alcohol-free and non-physical.`
+          : "\n\nYour previous answer failed venue or safety validation. Use only EXACT names from the verified venue list and completely wholesome, alcohol-free, non-physical activities.");
       if (!response.ok) {
         if (response.status === 429) {
           return new Response(JSON.stringify({ error: "Too many requests. Please wait a moment." }),
