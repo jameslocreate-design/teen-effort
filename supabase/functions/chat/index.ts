@@ -459,8 +459,19 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
 
     // Fallback: keep only safe ideas, fill the rest with wholesome defaults. Never return failed output.
     if (ideas.length === 0) {
-      const defaults = await Promise.all(topVenues.map(venue => enrich({ venue_name: venue.name, estimated_cost: "Check venue pricing", duration: "1-2 hours", vibe: "Relaxed" })));
-      ideas = defaults.filter(idea => idea && isSafe(idea, ignore)).slice(0, 3);
+      if (cityFallback) {
+        // Static same-city activity ideas — no business names, only the user's city
+        const staticActivities = ["A walk in a local park", "Mini golf", "Ice cream together"];
+        ideas = staticActivities.map((activity) => ({
+          title: `${activity} in ${cityLabel}`,
+          description: `Search for ${activity.toLowerCase()} spots in ${cityLabel} and pick one you both like. Check current opening hours before you go.`,
+          estimated_cost: "Varies", duration: "1-2 hours", vibe: "Relaxed",
+          venue_name: null, distance_miles: "", url: buildVenueSearchUrl(activity, cityLabel), fallback: true,
+        }));
+      } else {
+        const defaults = await Promise.all(topVenues.map(venue => enrich({ venue_name: venue.name, estimated_cost: "Check venue pricing", duration: "1-2 hours", vibe: "Relaxed" })));
+        ideas = defaults.filter(idea => idea && isSafe(idea, ignore)).slice(0, 3);
+      }
     }
 
     return new Response(JSON.stringify({ ideas }), {
