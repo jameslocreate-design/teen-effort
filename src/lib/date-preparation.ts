@@ -7,14 +7,12 @@ export const PREPARATION_EVENT = "date-preparation-changed";
 export interface PreparationTask { id: string; label: string; at: string | null; completed: boolean }
 
 export function dateStreak(dates: string[], now = new Date()) {
-  const today = format(now, "yyyy-MM-dd");
-  const past = dates.filter(date => date <= today);
   let streak = 0;
   for (let i = 0; i < 104; i++) {
     const week = subWeeks(now, i);
     const start = format(startOfWeek(week, { weekStartsOn: 1 }), "yyyy-MM-dd");
     const end = format(endOfWeek(week, { weekStartsOn: 1 }), "yyyy-MM-dd");
-    if (past.some(date => date >= start && date <= end)) streak++;
+    if (dates.some(date => date >= start && date <= end)) streak++;
     else if (i > 0) break;
   }
   return streak;

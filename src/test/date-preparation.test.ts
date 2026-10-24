@@ -11,8 +11,8 @@ describe("date widgets", () => {
   it("does not invent times for dates without a time", () => {
     expect(preparationTasks({ id: "date", title: "Museum", date: "2026-10-24", event_time: null }, defaultPreparation).every(task => task.at === null)).toBe(true);
   });
-  it("does not count future planned dates toward the streak", () => {
-    expect(dateStreak(["2026-10-25", "2026-10-17", "2026-10-10"], new Date(2026, 9, 24))).toBe(2);
+  it("preserves the existing scheduled-date weekly streak", () => {
+    expect(dateStreak(["2026-10-25", "2026-10-17", "2026-10-10"], new Date(2026, 9, 24))).toBe(3);
   });
   it("skips a date whose start time already passed", () => {
     expect(nextPlannedDate([{ id: "past", title: "Past", date: "2026-10-24", event_time: "10:00" }, { id: "next", title: "Next", date: "2026-10-24", event_time: "18:30" }], new Date(2026, 9, 24, 12))?.id).toBe("next");
