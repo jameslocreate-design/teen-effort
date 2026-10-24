@@ -119,15 +119,19 @@ let permissionRequest: Promise<boolean> | null = null;
 export async function getCurrentCoords(opts?: {
   timeout?: number;
   enableHighAccuracy?: boolean;
+  fresh?: boolean;
 }): Promise<Coords> {
-  if (cached && Date.now() - cached.at < CACHE_MS) return cached.coords;
-  if (inFlight) return inFlight;
+  if (!opts?.fresh && cached && Date.now() - cached.at < CACHE_MS) return cached.coords;
+  if (inFlight) {
+    if (!opts?.fresh) return inFlight;
+    await inFlight.catch(() => {});
+  }
 
   const timeout = opts?.timeout ?? 10000;
   const enableHighAccuracy = opts?.enableHighAccuracy ?? true;
 
   inFlight = (async () => {
-    const coords = await lookup(timeout, enableHighAccuracy);
+    const coords = await lookup(timeout, enableHighAccuracy, opts?.fresh ? 0 : CACHE_MS);
     cached = { coords, at: Date.now() };
     return coords;
   })();
@@ -139,7 +143,7 @@ export async function getCurrentCoords(opts?: {
   }
 }
 
-async function lookup(timeout: number, enableHighAccuracy: boolean): Promise<Coords> {
+async function lookup(timeout: number, enableHighAccuracy: boolean, maximumAge: number): Promise<Coords> {
   if (isNative()) {
     const { Geolocation } = await import("@capacitor/geolocation");
     const perm = await withTimeout(
@@ -155,7 +159,7 @@ async function lookup(timeout: number, enableHighAccuracy: boolean): Promise<Coo
         Geolocation.getCurrentPosition({
           enableHighAccuracy,
           timeout,
-          maximumAge: CACHE_MS,
+          maximumAge,
         }),
         timeout + 2000,
         "Location lookup timed out"
@@ -173,7 +177,7 @@ async function lookup(timeout: number, enableHighAccuracy: boolean): Promise<Coo
         Geolocation.getCurrentPosition({
           enableHighAccuracy: false,
           timeout: retryTimeout,
-          maximumAge: CACHE_MS,
+          maximumAge,
         }),
         retryTimeout + 2000,
         "Location lookup timed out"
@@ -191,7 +195,7 @@ async function lookup(timeout: number, enableHighAccuracy: boolean): Promise<Coo
     navigator.geolocation.getCurrentPosition(resolve, reject, {
       enableHighAccuracy,
       timeout,
-      maximumAge: CACHE_MS,
+      maximumAge,
     })
   );
   return {
