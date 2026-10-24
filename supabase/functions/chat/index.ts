@@ -109,6 +109,96 @@ async function searchOverpass(
   }
 }
 
+// Reliable place finder: Google Maps Places API (New) via the connector gateway.
+// Server-side only — never expose LOVABLE_API_KEY or the connection key to the browser.
+const GOOGLE_GATEWAY = "https://connector-gateway.lovable.dev/google_maps";
+
+// Place types we search, grouped by the kind of date they suit. All are
+// alcohol-free-friendly categories; anything bar-like is excluded after the fact.
+const GOOGLE_TYPE_GROUPS: string[][] = [
+  ["restaurant", "cafe", "ice_cream_shop", "bakery"],
+  ["park", "garden", "hiking_area", "picnic_ground"],
+  ["museum", "art_gallery", "aquarium", "zoo", "tourist_attraction"],
+  ["movie_theater", "bowling_alley", "amusement_park", "miniature_golf_course", "ice_skating_rink", "trampoline_park"],
+];
+
+async function searchGooglePlaces(
+  latitude: number,
+  longitude: number,
+  radiusMeters: number,
+): Promise<OsmVenue[]> {
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  const GOOGLE_MAPS_API_KEY = Deno.env.get("GOOGLE_MAPS_API_KEY");
+  if (!LOVABLE_API_KEY || !GOOGLE_MAPS_API_KEY) {
+    console.error("Google Maps connector credentials missing");
+    return [];
+  }
+  const radius = Math.min(Math.max(radiusMeters, 1000), 50000); // Google caps at 50km
+  const results = await Promise.all(
+    GOOGLE_TYPE_GROUPS.map(async (includedTypes) => {
+      try {
+        const resp = await fetch(`${GOOGLE_GATEWAY}/places/v1/places:searchNearby`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "X-Connection-Api-Key": GOOGLE_MAPS_API_KEY,
+            "Content-Type": "application/json",
+            "X-Goog-FieldMask": "places.displayName,places.location,places.primaryType,places.formattedAddress,places.businessStatus",
+          },
+          body: JSON.stringify({
+            includedTypes,
+            maxResultCount: 10,
+            locationRestriction: {
+              circle: { center: { latitude, longitude }, radius },
+            },
+          }),
+          signal: AbortSignal.timeout(12000),
+        });
+        if (!resp.ok) {
+          console.error("Google Places error:", resp.status, await resp.text());
+          return [];
+        }
+        const data = await resp.json();
+        return (data.places || []) as any[];
+      } catch {
+        console.error("Google Places fetch failed");
+        return [];
+      }
+    }),
+  );
+
+  const seen = new Set<string>();
+  const out: OsmVenue[] = [];
+  for (const place of results.flat()) {
+    const name: string | undefined = place?.displayName?.text;
+    const lat = place?.location?.latitude;
+    const lon = place?.location?.longitude;
+    if (!name || typeof lat !== "number" || typeof lon !== "number") continue;
+    // Skip anything Google marks as closed
+    const status = String(place?.businessStatus || "").toUpperCase();
+    if (status === "CLOSED_PERMANENTLY" || status === "CLOSED_TEMPORARILY") continue;
+    // 13+ rule: block alcohol/adult/gambling venues by name
+    if (isBlockedVenue({ name })) continue;
+    const key = name.trim().toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    // Extract the city from the formatted address when possible
+    const addr: string = place?.formattedAddress || "";
+    const parts = addr.split(",").map((p: string) => p.trim()).filter(Boolean);
+    const city = parts.length >= 2 ? parts[parts.length - 2] : undefined;
+    out.push({
+      name,
+      lat,
+      lon,
+      category: String(place?.primaryType || "venue").replace(/_/g, " "),
+      city,
+      distance_miles: haversineMiles(latitude, longitude, lat, lon),
+    });
+  }
+  out.sort((a, b) => a.distance_miles - b.distance_miles);
+  return out;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
