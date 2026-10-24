@@ -288,8 +288,13 @@ serve(async (req) => {
 
     let venues: OsmVenue[] = [];
     if (hasLocation) {
-      venues = await searchOverpass(latitude, longitude, radiusMeters, osmFilters);
-      console.log(`Overpass returned ${venues.length} venues within ${radiusMeters}m`);
+      // Google Maps first (reliable), free OpenStreetMap services as backup
+      venues = await searchGooglePlaces(latitude, longitude, radiusMeters);
+      console.log(`Google Places returned ${venues.length} venues within ${radiusMeters}m`);
+      if (venues.length === 0) {
+        venues = await searchOverpass(latitude, longitude, radiusMeters, osmFilters);
+        console.log(`Overpass returned ${venues.length} venues within ${radiusMeters}m`);
+      }
     }
 
     // Reverse-geocode for the city label
