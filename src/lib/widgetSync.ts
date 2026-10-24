@@ -8,9 +8,22 @@ import { isNative, isIOS } from "@/lib/native";
  */
 interface WidgetDataPlugin {
   setTimeTogether(options: { startDate: string | null }): Promise<void>;
+  setDashboard(options: { snapshot: string | null }): Promise<void>;
 }
 
 const WidgetData = registerPlugin<WidgetDataPlugin>("WidgetData");
+
+export interface WidgetSnapshot {
+  distance: string | null;
+  dates: string[];
+  preparation: { title: string; date: string; eventTime: string | null; tasks: { label: string; at: number | null; completed: boolean }[] } | null;
+}
+
+export async function syncDashboardWidgets(snapshot: WidgetSnapshot | null) {
+  if (!isNative() || !isIOS()) return;
+  try { await WidgetData.setDashboard({ snapshot: snapshot ? JSON.stringify(snapshot) : null }); }
+  catch (err) { console.warn("Widget sync failed:", err); }
+}
 
 /** Push the current relationship start date (yyyy-MM-dd or null) to the iOS widget. */
 export async function syncTimeTogetherWidget(startDate: string | null) {

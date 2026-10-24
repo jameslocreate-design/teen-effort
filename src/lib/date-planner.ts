@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { getCurrentCoords } from "@/lib/geo";
 
 export interface DateIdea {
   title: string;
@@ -42,6 +43,20 @@ export async function generateDateIdeas(filters: DateFilters): Promise<DateIdea[
   const includeEating = (filters.activity || []).includes("Eating out");
   const { data: { session } } = await supabase.auth.getSession();
   const token = session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+  // Every generation refreshes position; apply privacy before either outbound
+  // geocoder or venue lookup, including Smart Recommendations and Swipe Dates.
+  let coords;
+  try { coords = await getCurrentCoords({ fresh: true, timeout: 12000 }); }
+  catch { throw new Error("Couldn't refresh your location. Allow location access and try again."); }
+  let approximate = false;
+  if (session?.user) {
+    const { data, error } = await supabase.from("profiles").select("privacy_settings").eq("user_id", session.user.id).maybeSingle();
+    const privacy = data?.privacy_settings;
+    approximate = !!error || !privacy || (typeof privacy === "object" && !Array.isArray(privacy) && privacy.location_precision === "zip");
+  }
+  const round = (value: number) => approximate ? Math.round(value * 100) / 100 : value;
+  filters = { ...filters, latitude: round(coords.latitude), longitude: round(coords.longitude) };
 
   // Resolve the city on the device as a backup, so the server never has to guess.
   let city: string | undefined;

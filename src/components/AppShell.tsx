@@ -122,7 +122,7 @@ const AppShell = () => {
   const [needsPartnerStep, setNeedsPartnerStep] = useState<boolean | null>(null);
   const [profileName, setProfileName] = useState<string>("");
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>("planner");
+  const [activeTab, setActiveTab] = useState<Tab>(() => new URLSearchParams(window.location.search).get("tab") === "calendar" ? "calendar" : "planner");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);

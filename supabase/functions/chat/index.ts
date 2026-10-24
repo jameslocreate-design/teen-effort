@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { checkAndIncrementUsage } from "../_shared/usage-limits.ts";
 import { buildVenueSearchUrl } from "../_shared/venue-links.ts";
+import { matchVerifiedVenue, searchRadiusMeters, validCoordinates, withinRadius } from "../_shared/venue-locality.ts";
 import { SAFETY_PROMPT, isSafe, findMatureTerms, sanitizeUserText, isBlockedVenue } from "../_shared/content-safety.ts";
 
 const corsHeaders = {
@@ -65,7 +66,7 @@ async function searchOverpass(
         });
         if (resp.ok) break;
         console.error("Overpass error:", host, resp.status);
-      } catch (e) { console.error("Overpass failed:", host, e); resp = null; }
+      } catch { console.error("Overpass failed:", host); resp = null; }
     }
     if (!resp || !resp.ok) {
       console.error("Overpass error:", resp?.status);
@@ -102,8 +103,8 @@ async function searchOverpass(
     }
     out.sort((a, b) => a.distance_miles - b.distance_miles);
     return out;
-  } catch (e) {
-    console.error("Overpass fetch failed:", e);
+  } catch {
+    console.error("Overpass fetch failed");
     return [];
   }
 }
@@ -152,15 +153,14 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const hasLocation = typeof latitude === "number" && typeof longitude === "number";
+    const hasLocation = validCoordinates(latitude, longitude);
 
     // Determine search radius from "distance" filter (miles → meters)
-    let radiusMeters = 16093; // default 10 miles
-    const distStr = Array.isArray(distance) ? distance.join(" ") : String(distance || "");
-    if (distStr.includes("5 miles")) radiusMeters = 8047;
-    else if (distStr.includes("10 miles")) radiusMeters = 16093;
-    else if (distStr.includes("15 miles")) radiusMeters = 24140;
-    else if (distStr.includes("20 miles")) radiusMeters = 32187;
+    const radiusMeters = searchRadiusMeters(body.distance);
+    if (!hasLocation) {
+      return new Response(JSON.stringify({ error: "Allow location access and try again so we can find nearby places." }),
+        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     // Build OSM tag filters based on what the user wants
     const osmFilters: string[] = [];
@@ -217,15 +217,19 @@ serve(async (req) => {
           const state = a.state || "";
           cityLabel = [city, state].filter(Boolean).join(", ");
         }
-      } catch (e) {
-        console.warn("Reverse geocode failed:", e);
+      } catch {
+        console.warn("Reverse geocode failed");
       }
       if (!cityLabel && clientCity) cityLabel = clientCity;
       console.log("User city resolved:", cityLabel ? "yes" : "no");
     }
 
     // Pick the closest 15 to give the AI plenty of options
-    const topVenues = venues.slice(0, 15);
+    const topVenues = venues.filter(venue => validCoordinates(venue.lat, venue.lon) && withinRadius(venue.distance_miles, radiusMeters)).slice(0, 15);
+    if (!topVenues.length) {
+      return new Response(JSON.stringify({ error: "We couldn't verify nearby places right now. Please try again or widen your distance filter." }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     const venueContext = topVenues.length > 0
       ? `\n\nReal venues near the user (from OpenStreetMap, sorted by distance). EVERY date idea MUST be built around ONE of these EXACT venues. Do NOT invent or substitute other names:\n${topVenues
@@ -234,7 +238,7 @@ serve(async (req) => {
       : "";
 
     const locationLine = cityLabel
-      ? `\n\nUSER LOCATION: ${cityLabel}. Every suggestion MUST be in or within driving distance of ${cityLabel}. ABSOLUTELY DO NOT suggest venues in San Francisco, New York, Los Angeles, or any other city the user is not in.`
+      ? `\n\nUSER LOCATION: ${cityLabel}. Every suggestion MUST use a verified venue from the list within ${radiusMeters / 1609.344} miles. Do not substitute a venue from another city.`
       : hasLocation
         ? `\n\nThe user is somewhere nearby the venue list above; suggest only those nearby venues. Never default to San Francisco.`
         : "";
@@ -287,46 +291,28 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
       },
     );
 
-    const mapsUrl = (name: string) => buildVenueSearchUrl(name, cityLabel);
-
     const enrich = async (idea: any) => {
-      const venueName = typeof idea.venue_name === "string" ? idea.venue_name.trim() || undefined : undefined;
-      let matched: OsmVenue | undefined;
-      if (venueName) {
-        const vn = venueName.toLowerCase();
-        matched = topVenues.find((v) => v.name.toLowerCase() === vn || v.name.toLowerCase().includes(vn) || vn.includes(v.name.toLowerCase()));
-      }
-      let distance_miles = "N/A";
-      if (matched) {
-        distance_miles = formatMiles(matched.distance_miles);
-      } else if (hasLocation && venueName) {
-        try {
-          const q = encodeURIComponent(`${venueName}${cityLabel ? ", " + cityLabel : ""}`);
-          const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${q}`,
-            { headers: { "User-Agent": "TeenEffort/1.0 (support.teeneffort@gmail.com)" }, signal: AbortSignal.timeout(8000) });
-          if (r.ok) {
-            const arr = await r.json();
-            if (Array.isArray(arr) && arr[0]?.lat && arr[0]?.lon) {
-              distance_miles = formatMiles(haversineMiles(latitude, longitude, parseFloat(arr[0].lat), parseFloat(arr[0].lon)));
-            }
-          }
-        } catch (e) { console.warn("Nominatim venue lookup failed:", e); }
-      }
-      // Activity titles are prose, not reliable Maps queries. Missing names have no venue link.
-      const url = buildVenueSearchUrl(matched?.name || venueName, matched?.city || cityLabel);
+      if (!idea || typeof idea !== "object") return null;
+      const matched = matchVerifiedVenue(idea.venue_name, topVenues, radiusMeters);
+      if (!matched) return null;
+      const locality = matched.city || cityLabel;
+      // Canonical venue/city copy prevents an otherwise valid venue ID from
+      // being paired with hallucinated out-of-area prose or a second venue.
+      const where = locality ? ` in ${locality}` : " nearby";
+      const url = buildVenueSearchUrl(matched.name, locality);
       return {
-        title: String(idea.title || ""), description: String(idea.description || ""),
+        title: `${matched.name}${where}`,
+        description: `Spend time together at ${matched.name}${where}. Check current opening hours and any booking requirements before you go.`,
         estimated_cost: String(idea.estimated_cost || ""), duration: String(idea.duration || ""),
-        vibe: String(idea.vibe || ""), venue_name: venueName ?? null, distance_miles, url,
+        vibe: String(idea.vibe || ""), venue_name: matched.name, distance_miles: formatMiles(matched.distance_miles), url,
       };
     };
 
     const ignore = [cityLabel, ...cityLabel.split(",").map((x) => x.trim())].filter(Boolean);
     let ideas: any[] = [];
-    let lastSafe: any[] = [];
     for (let attempt = 0; attempt < 2; attempt++) {
       const response = await callAI(attempt === 0 ? "" :
-        "\n\nYour previous answer contained content not suitable for ages 13+. Rewrite with completely wholesome, alcohol-free, non-physical activities only.");
+        "\n\nYour previous answer failed venue or safety validation. Use only EXACT names from the verified venue list and completely wholesome, alcohol-free, non-physical activities.");
       if (!response.ok) {
         if (response.status === 429) {
           return new Response(JSON.stringify({ error: "Too many requests. Please wait a moment." }),
@@ -347,21 +333,16 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
         const p = JSON.parse(raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim());
         parsed = Array.isArray(p) ? p : [];
       } catch { console.error("Failed to parse AI response"); }
-      const enriched = await Promise.all(parsed.slice(0, 3).map(enrich));
-      if (enriched.length > 0 && isSafe(enriched, ignore)) { ideas = enriched; break; }
+      const enriched = (await Promise.all(parsed.slice(0, 3).map(enrich))).filter((idea) => idea !== null);
+      const unique = enriched.filter((idea, index) => enriched.findIndex(other => other.venue_name === idea.venue_name) === index);
+      if (unique.length === Math.min(3, topVenues.length) && isSafe(parsed, ignore) && isSafe(unique, ignore)) { ideas = unique; break; }
       console.warn(`Safety check failed (attempt ${attempt + 1}):`, findMatureTerms(enriched, ignore).join(", "));
-      lastSafe = enriched.filter((i) => isSafe(i, ignore));
     }
 
     // Fallback: keep only safe ideas, fill the rest with wholesome defaults. Never return failed output.
     if (ideas.length === 0) {
-      const where = cityLabel ? ` in ${cityLabel}` : "";
-      const defaults = [
-        { title: `Picnic at a local park${where}`, description: "Pack sandwiches, fruit and a blanket, then spend the afternoon talking, playing cards or frisbee in the sunshine.", estimated_cost: "$10-20", duration: "2-3 hours", vibe: "Relaxed", venue_name: null, distance_miles: "N/A", url: mapsUrl("parks") },
-        { title: `Mini golf and ice cream${where}`, description: "Challenge each other to a round of mini golf, then cool off with your favorite ice cream flavors.", estimated_cost: "$20-40", duration: "2 hours", vibe: "Playful", venue_name: null, distance_miles: "N/A", url: mapsUrl("mini golf") },
-        { title: `Museum afternoon${where}`, description: "Explore a local museum together and pick a favorite exhibit each to tell the other about.", estimated_cost: "Free-$30", duration: "2-3 hours", vibe: "Curious", venue_name: null, distance_miles: "N/A", url: mapsUrl("museum") },
-      ];
-      ideas = [...lastSafe, ...defaults].slice(0, 3);
+      const defaults = await Promise.all(topVenues.map(venue => enrich({ venue_name: venue.name, estimated_cost: "Check venue pricing", duration: "1-2 hours", vibe: "Relaxed" })));
+      ideas = defaults.filter(idea => idea && isSafe(idea, ignore)).slice(0, 3);
     }
 
     return new Response(JSON.stringify({ ideas }), {

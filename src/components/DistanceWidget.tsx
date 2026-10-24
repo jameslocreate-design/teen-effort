@@ -140,7 +140,7 @@ const DistanceWidget = () => {
     };
   }, [user?.id]);
 
-  const toggleUnit = () => { const n = !km; setKm(n); localStorage.setItem("distance-unit", n ? "km" : "mi"); };
+  const toggleUnit = () => { const n = !km; setKm(n); localStorage.setItem("distance-unit", n ? "km" : "mi"); window.dispatchEvent(new CustomEvent("distance-unit-changed")); };
 
   if (loading) return <div className="rounded-xl border border-border bg-card p-4 animate-pulse"><div className="h-16" /></div>;
   if (!linked) return null; // "Link your partner" prompt already shown by Time Together

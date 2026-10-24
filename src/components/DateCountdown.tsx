@@ -2,28 +2,32 @@ import { useState, useEffect } from "react";
 import { CalendarDays, Clock, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { differenceInDays, differenceInHours, differenceInMinutes, parseISO, isAfter, startOfDay } from "date-fns";
+import { differenceInDays, format, parseISO, startOfDay } from "date-fns";
+import DatePreparation from "@/components/DatePreparation";
+import { nextPlannedDate, type PlannedDate } from "@/lib/date-preparation";
 
 const DateCountdown = () => {
   const { user } = useAuth();
-  const [nextDate, setNextDate] = useState<{ title: string; date: string; event_time: string | null } | null>(null);
+  const [nextDate, setNextDate] = useState<PlannedDate | null>(null);
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
     if (!user) return;
     const fetchNext = async () => {
-      const today = new Date().toISOString().split("T")[0];
+      const today = format(new Date(), "yyyy-MM-dd");
       const { data } = await supabase
         .from("calendar_entries")
-        .select("title, date, event_time")
+        .select("id, title, date, event_time")
         .gte("date", today)
         .order("date", { ascending: true })
-        .limit(1)
-        .maybeSingle();
-      if (data) setNextDate(data);
+        .limit(100);
+      if (data) setNextDate(nextPlannedDate(data));
     };
     fetchNext();
-  }, [user]);
+    const refresh = () => { void fetchNext(); };
+    window.addEventListener("calendar-updated", refresh);
+    return () => window.removeEventListener("calendar-updated", refresh);
+  }, [user, now.getMinutes()]);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 60_000);
@@ -47,8 +51,6 @@ const DateCountdown = () => {
   const targetDate = parseISO(nextDate.date);
   const isToday = startOfDay(now).getTime() === startOfDay(targetDate).getTime();
   const days = differenceInDays(targetDate, startOfDay(now));
-  const totalHours = differenceInHours(targetDate, now);
-  const totalMinutes = differenceInMinutes(targetDate, now);
 
   return (
     <div className="rounded-2xl border border-primary/20 bg-card p-5 space-y-3 glow-sm">
@@ -82,6 +84,7 @@ const DateCountdown = () => {
           </>
         )}
       </div>
+      <DatePreparation key={nextDate.id} date={nextDate} />
     </div>
   );
 };

@@ -13,11 +13,26 @@ public class WidgetDataPlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "WidgetDataPlugin"
     public let jsName = "WidgetData"
     public let pluginMethods: [CAPPluginMethod] = [
-        CAPPluginMethod(name: "setTimeTogether", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "setTimeTogether", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "setDashboard", returnType: CAPPluginReturnPromise)
     ]
 
     private let appGroup = "group.com.teeneffort.app"
     private let startDateKey = "relationship_start_date"
+
+    @objc func setDashboard(_ call: CAPPluginCall) {
+        guard let defaults = UserDefaults(suiteName: appGroup) else {
+            call.reject("App Group container unavailable — enable App Groups in Xcode")
+            return
+        }
+        if let snapshot = call.getString("snapshot") {
+            defaults.set(snapshot, forKey: "dashboard_snapshot")
+        } else {
+            defaults.removeObject(forKey: "dashboard_snapshot")
+        }
+        WidgetCenter.shared.reloadAllTimelines()
+        call.resolve()
+    }
 
     @objc func setTimeTogether(_ call: CAPPluginCall) {
         guard let defaults = UserDefaults(suiteName: appGroup) else {
