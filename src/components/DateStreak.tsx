@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Flame, Trophy, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { startOfWeek, subWeeks, isWithinInterval, endOfWeek, parseISO } from "date-fns";
+import { dateStreak } from "@/lib/date-preparation";
 
 const milestones = [
   { weeks: 4, label: "1 Month Streak!", emoji: "🔥" },
@@ -32,24 +32,7 @@ const DateStreak = () => {
 
       if (!entries?.length) { setLoading(false); return; }
 
-      const now = new Date();
-      let currentStreak = 0;
-
-      // Check each week going backwards
-      for (let i = 0; i < 104; i++) {
-        const weekStart = startOfWeek(subWeeks(now, i), { weekStartsOn: 1 });
-        const weekEnd = endOfWeek(subWeeks(now, i), { weekStartsOn: 1 });
-        const hasDate = entries.some(e =>
-          isWithinInterval(parseISO(e.date), { start: weekStart, end: weekEnd })
-        );
-        if (hasDate) currentStreak++;
-        else if (i > 0) break; // Allow current week to be empty
-        else if (i === 0 && !hasDate) {
-          // Check if current week just started, allow grace
-          continue;
-        }
-      }
-      setStreak(currentStreak);
+      setStreak(dateStreak(entries.map(entry => entry.date)));
       setLoading(false);
     };
     fetchStreak();

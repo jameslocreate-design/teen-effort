@@ -142,6 +142,7 @@ const SmartRecommendations = () => {
       });
       if (error) throw error;
       toast.success(`"${selectedIdea.title}" added to calendar!`);
+      window.dispatchEvent(new CustomEvent("calendar-updated"));
       cancelDatePicker();
     } catch {
       toast.error("Failed to save to calendar");

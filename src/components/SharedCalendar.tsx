@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import CalendarInsights from "@/components/CalendarInsights";
 import { CalendarSkeleton } from "@/components/ui/skeleton-card";
 import { signedUrlMap } from "@/lib/storage";
+import DatePreparation from "@/components/DatePreparation";
 
 interface CalendarEntry {
   id: string;
@@ -92,6 +93,7 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
       setEntries((prev) => prev.filter((e) => e.id !== id));
       setTotalDates((prev) => Math.max(0, prev - 1));
       toast.success("Removed from calendar");
+      window.dispatchEvent(new CustomEvent("calendar-updated"));
     }
   };
 
@@ -286,6 +288,8 @@ const SharedCalendar = ({ onPlanDate }: SharedCalendarProps) => {
                   {entry.duration && <span>⏱️ {entry.duration}</span>}
                   {entry.vibe && <span>✨ {entry.vibe}</span>}
                 </div>
+
+                {entry.date >= format(new Date(), "yyyy-MM-dd") && <DatePreparation key={entry.id} date={entry} />}
 
                 {/* User Rating */}
                 <div className="flex items-center gap-2">

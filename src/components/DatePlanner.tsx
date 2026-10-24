@@ -161,7 +161,10 @@ const DatePlanner = () => {
       latitude: filters.latitude, longitude: filters.longitude,
     });
     if (error) toast.error("Failed to save to calendar");
-    else toast.success(`"${selectedIdea.title}" added to calendar!`);
+    else {
+      toast.success(`"${selectedIdea.title}" added to calendar!`);
+      window.dispatchEvent(new CustomEvent("calendar-updated"));
+    }
     setSavingIndex(null); setSelectedIdea(null); setSelectedIdeaIndex(null);
     setSelectedCalendarDate(undefined); setSelectedTime("");
   };
