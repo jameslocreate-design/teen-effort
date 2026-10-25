@@ -11,6 +11,8 @@ export interface DateIdea {
   rating?: number;
   review_count?: number;
   url?: string;
+  /** True when no live venue data was available — idea is an activity type in the user's own city, not a verified place. */
+  fallback?: boolean;
 }
 
 export interface DateFilters {
