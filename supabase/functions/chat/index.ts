@@ -182,10 +182,17 @@ async function searchGooglePlaces(
     const key = name.trim().toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
-    // Extract the city from the formatted address when possible
+    // Extract the city from the formatted address when possible.
+    // US addresses look like "333 W Broad St, Columbus, OH 43215, USA" —
+    // the city is the part before the "ST ZIP" part.
     const addr: string = place?.formattedAddress || "";
     const parts = addr.split(",").map((p: string) => p.trim()).filter(Boolean);
-    const city = parts.length >= 2 ? parts[parts.length - 2] : undefined;
+    let city: string | undefined;
+    if (parts.length >= 3 && /^[A-Z]{2}\s+\d{5}/.test(parts[parts.length - 2])) {
+      city = parts[parts.length - 3];
+    } else if (parts.length >= 2) {
+      city = parts[parts.length - 2].replace(/\s+\d{5}(-\d{4})?$/, "");
+    }
     out.push({
       name,
       lat,
