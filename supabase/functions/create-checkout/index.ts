@@ -1,4 +1,5 @@
 import { type StripeEnv, createStripeClient } from "../_shared/stripe.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,12 +7,47 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// return_url must send buyers back to this app, never to an arbitrary site.
+const ALLOWED_RETURN_HOSTS = ["teeneffort.app", "www.teeneffort.app"];
+
+function isAllowedReturnUrl(raw: string): boolean {
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return false;
+    const host = url.hostname;
+    const isAppHost = ALLOWED_RETURN_HOSTS.includes(host);
+    const isPreviewHost = host.endsWith(".lovable.app");
+    const isLocalDev = host === "localhost" || host === "127.0.0.1";
+    return (isAppHost || isPreviewHost || isLocalDev) && url.pathname.startsWith("/checkout/return");
+  } catch {
+    return false;
+  }
+}
+
+class HttpError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
+// Identity comes only from the signed-in user's session — never from the request body.
+async function requireUser(req: Request) {
+  const token = req.headers.get("Authorization")?.replace("Bearer ", "");
+  if (!token) throw new HttpError("Sign in to check out", 401);
+  const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const { data, error } = await admin.auth.getUser(token);
+  if (error || !data.user) throw new HttpError("Sign in to check out", 401);
+  return data.user;
+}
+
 async function resolveOrCreateCustomer(
   stripe: ReturnType<typeof createStripeClient>,
   options: { email?: string; userId?: string },
 ): Promise<string> {
   if (options.userId && !/^[a-zA-Z0-9_-]+$/.test(options.userId)) {
-    throw new Error("Invalid userId");
+    throw new HttpError("Invalid userId", 400);
   }
   if (options.userId) {
     const found = await stripe.customers.search({
@@ -48,24 +84,27 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const user = await requireUser(req);
     const body = await req.json();
-    const { priceId, quantity, customerEmail, userId, returnUrl, environment } = body;
+    const { priceId, returnUrl, environment } = body;
 
-    if (!priceId || !/^[a-zA-Z0-9_-]+$/.test(priceId)) throw new Error("Invalid priceId");
-    if (!returnUrl) throw new Error("returnUrl required");
-    if (environment !== "sandbox" && environment !== "live") throw new Error("Invalid environment");
+    if (!priceId || !/^[a-zA-Z0-9_-]+$/.test(priceId)) throw new HttpError("Invalid priceId", 400);
+    if (!returnUrl || !isAllowedReturnUrl(returnUrl)) throw new HttpError("Invalid returnUrl", 400);
+    if (environment !== "sandbox" && environment !== "live") throw new HttpError("Invalid environment", 400);
 
     const env = environment as StripeEnv;
     const stripe = createStripeClient(env);
 
     const prices = await stripe.prices.list({ lookup_keys: [priceId] });
-    if (!prices.data.length) throw new Error("Price not found");
+    if (!prices.data.length) throw new HttpError("Price not found", 400);
     const stripePrice = prices.data[0];
     const isRecurring = stripePrice.type === "recurring";
 
-    const customerId = (customerEmail || userId)
-      ? await resolveOrCreateCustomer(stripe, { email: customerEmail, userId })
+    // Use the session email only once the address is confirmed.
+    const verifiedEmail = user.email && (user.email_confirmed_at || user.confirmed_at)
+      ? user.email
       : undefined;
+    const customerId = await resolveOrCreateCustomer(stripe, { userId: user.id, email: verifiedEmail });
 
     let productDescription: string | undefined;
     if (!isRecurring) {
@@ -86,31 +125,33 @@ Deno.serve(async (req) => {
     const trialDays = isRecurring ? TRIAL_DAYS[priceId] : undefined;
 
     const session = await stripe.checkout.sessions.create({
-      line_items: [{ price: stripePrice.id, quantity: quantity || 1 }],
+      // Single purchase only — quantity is never taken from the caller.
+      line_items: [{ price: stripePrice.id, quantity: 1 }],
       mode: isRecurring ? "subscription" : "payment",
       ui_mode: "embedded_page",
       return_url: returnUrl,
       ...(customerId && { customer: customerId }),
       ...(!isRecurring && { payment_intent_data: { description: productDescription } }),
       managed_payments: { enabled: true },
-      ...(isRecurring && (userId || trialDays)
+      ...(isRecurring
         ? {
             subscription_data: {
-              ...(userId && { metadata: { userId } }),
+              metadata: { userId: user.id },
               ...(trialDays && { trial_period_days: trialDays }),
             },
           }
         : {}),
-      ...(userId && { metadata: { userId } }),
+      metadata: { userId: user.id },
     });
 
     return new Response(JSON.stringify({ clientSecret: session.client_secret }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
+    const status = err instanceof HttpError ? err.status : 400;
     console.error("create-checkout error:", err);
     return new Response(JSON.stringify({ error: (err as Error).message }), {
-      status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
