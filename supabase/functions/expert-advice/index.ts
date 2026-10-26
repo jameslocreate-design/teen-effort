@@ -30,24 +30,30 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
+    // Sign-in required — the AI gateway is metered and must not be usable anonymously.
+    const token = req.headers.get("Authorization")?.replace("Bearer ", "");
+    if (!token) {
+      return new Response(
+        JSON.stringify({ error: "Sign in to ask the expert" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const supabaseAuth = createClient(supabaseUrl, serviceRoleKey);
+    const { data: userData, error: authError } = await supabaseAuth.auth.getUser(token);
+    if (authError || !userData.user) {
+      return new Response(
+        JSON.stringify({ error: "Sign in to ask the expert" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const user = userData.user;
+
     // Determine the requester's subscription tier for priority handling.
     let tier = 0;
-    try {
-      const authHeader = req.headers.get("Authorization");
-      const token = authHeader?.replace("Bearer ", "");
-      if (token) {
-        const supabaseAuth = createClient(supabaseUrl, serviceRoleKey);
-        const { data: { user } } = await supabaseAuth.auth.getUser(token);
-        if (user) {
-          const { data: tierData } = await supabaseAuth.rpc("get_subscription_tier", {
-            _user_id: user.id,
-          });
-          tier = typeof tierData === "number" ? tierData : 0;
-        }
-      }
-    } catch (_e) {
-      // Non-fatal: fall back to standard handling.
-    }
+    const { data: tierData } = await supabaseAuth.rpc("get_subscription_tier", {
+      _user_id: user.id,
+    });
+    tier = typeof tierData === "number" ? tierData : 0;
 
     // Soulmate (tier 3) gets a stronger, priority model.
     const isPriority = tier >= 3;
