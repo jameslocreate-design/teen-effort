@@ -39,6 +39,11 @@ const COLUMN_LABELS: Record<string, Record<string, string>> = {
 // Columns to hide (internal IDs)
 const HIDDEN_COLUMNS = ["id", "user_id", "added_by", "partner_link_id", "post_id", "user1_id", "user2_id", "photo_urls", "yelp_url", "yelp_rating", "yelp_review_count", "partner_code"];
 
+// Neutralize spreadsheet formula injection (=, +, -, @) in user-entered values.
+function csvSafe(str: string): string {
+  return /^[=+@\t\r]/.test(str) && /[A-Za-z]/.test(str) ? `'${str}` : str;
+}
+
 function jsonToCsv(data: any[]): string {
   if (!data || data.length === 0) return "";
   const headers = Object.keys(data[0]);
@@ -50,9 +55,9 @@ function jsonToCsv(data: any[]): string {
         if (val === null || val === undefined) return "";
         const str = typeof val === "object" ? JSON.stringify(val) : String(val);
         if (str.includes(",") || str.includes('"') || str.includes("\n")) {
-          return `"${str.replace(/"/g, '""')}"`;
+          return `"${csvSafe(str.replace(/"/g, '""'))}"`;
         }
-        return str;
+        return csvSafe(str);
       }).join(",")
     ),
   ];
@@ -90,6 +95,16 @@ function getVisibleColumns(tableName: string, data: any[]): string[] {
 
 function getColumnLabel(tableName: string, col: string): string {
   return COLUMN_LABELS[tableName]?.[col] || col.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+}
+
+// Escape stored user content before it is written into the generated HTML report.
+function escapeHtml(val: string): string {
+  return val
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function buildReportHTML(allData: Record<string, any[]>): string {
@@ -130,8 +145,8 @@ function buildReportHTML(allData: Record<string, any[]>): string {
     const cols = getVisibleColumns(tableName, data);
     return `
       <table>
-        <thead><tr>${cols.map(c => `<th>${getColumnLabel(tableName, c)}</th>`).join("")}</tr></thead>
-        <tbody>${data.map(row => `<tr>${cols.map(c => `<td>${formatValue(row[c])}</td>`).join("")}</tr>`).join("")}</tbody>
+        <thead><tr>${cols.map(c => `<th>${escapeHtml(getColumnLabel(tableName, c))}</th>`).join("")}</tr></thead>
+        <tbody>${data.map(row => `<tr>${cols.map(c => `<td>${escapeHtml(formatValue(row[c]))}</td>`).join("")}</tr>`).join("")}</tbody>
       </table>`;
   };
 
@@ -249,7 +264,7 @@ function buildReportHTML(allData: Record<string, any[]>): string {
       ${Object.entries(genderCounts).map(([gender, count]) => {
         const pct = Math.round((count / Math.max(totalUsers, 1)) * 100);
         return `<div class="bar-row">
-          <div class="bar-label">${gender}</div>
+          <div class="bar-label">${escapeHtml(String(gender))}</div>
           <div class="bar-track"><div class="bar-fill" style="width:${Math.max(pct, 5)}%"><span>${count} (${pct}%)</span></div></div>
         </div>`;
       }).join("")}
@@ -264,7 +279,7 @@ function buildReportHTML(allData: Record<string, any[]>): string {
       ${topVibes.map(([vibe, count]) => {
         const pct = Math.round((count / maxVibeCount) * 100);
         return `<div class="bar-row">
-          <div class="bar-label">${vibe}</div>
+          <div class="bar-label">${escapeHtml(String(vibe))}</div>
           <div class="bar-track"><div class="bar-fill" style="width:${Math.max(pct, 8)}%"><span>${count}</span></div></div>
         </div>`;
       }).join("")}

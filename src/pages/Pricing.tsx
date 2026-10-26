@@ -104,8 +104,6 @@ export default function Pricing() {
           </Button>
           <StripeEmbeddedCheckout
             priceId={checkoutPriceId}
-            customerEmail={user?.email}
-            userId={user?.id}
           />
         </div>
       </div>

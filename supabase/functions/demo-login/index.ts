@@ -1,15 +1,17 @@
 // Creates a fresh demo account (Soulmate tier) when the correct demo code is entered.
+// The code is a private secret, never hardcoded here.
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
-
-const DEMO_CODE = "fall2026";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS") return json({ ok: true });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
+
+  const DEMO_CODE = Deno.env.get("DEMO_CODE") ?? "";
+  if (!DEMO_CODE) return json({ error: "Demo sign-in is not available right now." }, 503);
 
   let code = "";
   try {
@@ -18,7 +20,7 @@ Deno.serve(async (req) => {
   } catch {
     return json({ error: "Invalid request" }, 400);
   }
-  if (code !== DEMO_CODE) return json({ error: "That demo code isn't valid." }, 403);
+  if (code !== DEMO_CODE.toLowerCase()) return json({ error: "That demo code isn't valid." }, 403);
 
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
   const id = crypto.randomUUID().replace(/-/g, "").slice(0, 12);
