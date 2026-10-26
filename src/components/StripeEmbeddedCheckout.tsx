@@ -4,19 +4,18 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface StripeEmbeddedCheckoutProps {
   priceId: string;
-  quantity?: number;
-  customerEmail?: string;
-  userId?: string;
   returnUrl?: string;
 }
 
 export function StripeEmbeddedCheckout({
-  priceId, quantity, customerEmail, userId, returnUrl,
+  priceId, returnUrl,
 }: StripeEmbeddedCheckoutProps) {
   const fetchClientSecret = async (): Promise<string> => {
+    // Who is buying comes from the signed-in session on the server —
+    // the client never sends email, user id, or quantity.
     const { data, error } = await supabase.functions.invoke("create-checkout", {
       body: {
-        priceId, quantity, customerEmail, userId,
+        priceId,
         returnUrl: returnUrl ?? `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
         environment: getStripeEnvironment(),
       },
