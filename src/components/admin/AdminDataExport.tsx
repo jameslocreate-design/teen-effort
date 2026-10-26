@@ -97,6 +97,16 @@ function getColumnLabel(tableName: string, col: string): string {
   return COLUMN_LABELS[tableName]?.[col] || col.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 }
 
+// Escape stored user content before it is written into the generated HTML report.
+function escapeHtml(val: string): string {
+  return val
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function buildReportHTML(allData: Record<string, any[]>): string {
   const date = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
@@ -135,8 +145,8 @@ function buildReportHTML(allData: Record<string, any[]>): string {
     const cols = getVisibleColumns(tableName, data);
     return `
       <table>
-        <thead><tr>${cols.map(c => `<th>${getColumnLabel(tableName, c)}</th>`).join("")}</tr></thead>
-        <tbody>${data.map(row => `<tr>${cols.map(c => `<td>${formatValue(row[c])}</td>`).join("")}</tr>`).join("")}</tbody>
+        <thead><tr>${cols.map(c => `<th>${escapeHtml(getColumnLabel(tableName, c))}</th>`).join("")}</tr></thead>
+        <tbody>${data.map(row => `<tr>${cols.map(c => `<td>${escapeHtml(formatValue(row[c]))}</td>`).join("")}</tr>`).join("")}</tbody>
       </table>`;
   };
 
@@ -254,7 +264,7 @@ function buildReportHTML(allData: Record<string, any[]>): string {
       ${Object.entries(genderCounts).map(([gender, count]) => {
         const pct = Math.round((count / Math.max(totalUsers, 1)) * 100);
         return `<div class="bar-row">
-          <div class="bar-label">${gender}</div>
+          <div class="bar-label">${escapeHtml(String(gender))}</div>
           <div class="bar-track"><div class="bar-fill" style="width:${Math.max(pct, 5)}%"><span>${count} (${pct}%)</span></div></div>
         </div>`;
       }).join("")}
@@ -269,7 +279,7 @@ function buildReportHTML(allData: Record<string, any[]>): string {
       ${topVibes.map(([vibe, count]) => {
         const pct = Math.round((count / maxVibeCount) * 100);
         return `<div class="bar-row">
-          <div class="bar-label">${vibe}</div>
+          <div class="bar-label">${escapeHtml(String(vibe))}</div>
           <div class="bar-track"><div class="bar-fill" style="width:${Math.max(pct, 8)}%"><span>${count}</span></div></div>
         </div>`;
       }).join("")}
