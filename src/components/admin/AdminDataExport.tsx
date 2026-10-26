@@ -39,6 +39,11 @@ const COLUMN_LABELS: Record<string, Record<string, string>> = {
 // Columns to hide (internal IDs)
 const HIDDEN_COLUMNS = ["id", "user_id", "added_by", "partner_link_id", "post_id", "user1_id", "user2_id", "photo_urls", "yelp_url", "yelp_rating", "yelp_review_count", "partner_code"];
 
+// Neutralize spreadsheet formula injection (=, +, -, @) in user-entered values.
+function csvSafe(str: string): string {
+  return /^[=+@\t\r]/.test(str) && /[A-Za-z]/.test(str) ? `'${str}` : str;
+}
+
 function jsonToCsv(data: any[]): string {
   if (!data || data.length === 0) return "";
   const headers = Object.keys(data[0]);
@@ -50,9 +55,9 @@ function jsonToCsv(data: any[]): string {
         if (val === null || val === undefined) return "";
         const str = typeof val === "object" ? JSON.stringify(val) : String(val);
         if (str.includes(",") || str.includes('"') || str.includes("\n")) {
-          return `"${str.replace(/"/g, '""')}"`;
+          return `"${csvSafe(str.replace(/"/g, '""'))}"`;
         }
-        return str;
+        return csvSafe(str);
       }).join(",")
     ),
   ];
