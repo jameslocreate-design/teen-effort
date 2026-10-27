@@ -19,6 +19,8 @@ import ResetPassword from "./pages/ResetPassword";
 import Unsubscribe from "./pages/Unsubscribe";
 import OAuthConsent from "./pages/OAuthConsent";
 import Support from "./pages/Support";
+import RouteHead from "./components/RouteHead";
+import { HelmetProvider } from "react-helmet-async";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +31,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <RouteHead />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/app" element={<AppEntry />} />
