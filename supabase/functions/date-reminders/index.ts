@@ -62,9 +62,8 @@ Deno.serve(async (req) => {
 
         // Send email via Supabase Auth (resend)
         // For now, log the reminder — email sending requires additional setup
-        console.log(
-          `Reminder: ${userData.user.email} has "${entry.title}" tomorrow${timeStr}`
-        );
+        // Never log emails or date titles.
+        void timeStr;
 
         notified.push(`${userId}-${entry.id}`);
       }
