@@ -116,9 +116,15 @@ serve(async (req) => {
 
     // If postId provided, insert AI reply server-side using service role
     if (postId && typeof postId === "string") {
-      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-      const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-      const supabase = createClient(supabaseUrl, serviceRoleKey);
+      const supabase = supabaseAuth;
+      // Only the post's author can attach the AI reply to it.
+      const { data: post } = await supabase
+        .from("expert_posts").select("user_id").eq("id", postId).maybeSingle();
+      if (!post || post.user_id !== user.id) {
+        return new Response(JSON.stringify({ advice }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
 
       const { error: insertError } = await supabase.from("expert_replies").insert({
         post_id: postId,

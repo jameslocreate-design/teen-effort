@@ -41,7 +41,7 @@ const HIDDEN_COLUMNS = ["id", "user_id", "added_by", "partner_link_id", "post_id
 
 // Neutralize spreadsheet formula injection (=, +, -, @) in user-entered values.
 function csvSafe(str: string): string {
-  return /^[=+@\t\r]/.test(str) && /[A-Za-z]/.test(str) ? `'${str}` : str;
+  return /^[=+\-@\t\r]/.test(str) ? `'${str}` : str;
 }
 
 function jsonToCsv(data: any[]): string {

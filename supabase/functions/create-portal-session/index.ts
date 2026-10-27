@@ -12,6 +12,17 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
 );
 
+function isAllowedReturnUrl(raw: unknown): raw is string {
+  if (typeof raw !== "string") return false;
+  try {
+    const u = new URL(raw);
+    const h = u.hostname;
+    if (h === "localhost" || h === "127.0.0.1") return u.protocol === "http:" || u.protocol === "https:";
+    return u.protocol === "https:" &&
+      (h === "teeneffort.app" || h === "www.teeneffort.app" || h.endsWith(".lovable.app"));
+  } catch { return false; }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -38,7 +49,7 @@ Deno.serve(async (req) => {
     const stripe = createStripeClient(env);
     const portal = await stripe.billingPortal.sessions.create({
       customer: sub.stripe_customer_id,
-      ...(returnUrl && { return_url: returnUrl }),
+      ...(isAllowedReturnUrl(returnUrl) && { return_url: returnUrl }),
     });
 
     return new Response(JSON.stringify({ url: portal.url }), {
