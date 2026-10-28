@@ -20,6 +20,15 @@ interface OsmVenue {
   distance_miles: number;
 }
 
+function shuffle<T>(arr: T[]): T[] {
+  const out = [...arr];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
 function haversineMiles(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 3958.8;
   const toRad = (d: number) => (d * Math.PI) / 180;
@@ -340,7 +349,7 @@ serve(async (req) => {
     }
 
     const venueContext = topVenues.length > 0
-      ? `\n\nReal venues near the user (from OpenStreetMap, sorted by distance). EVERY date idea MUST be built around ONE of these EXACT venues. Do NOT invent or substitute other names:\n${topVenues
+      ? `\n\nReal venues near the user (from Google Maps, in random order). EVERY date idea MUST be built around ONE of these EXACT venues. Do NOT invent or substitute other names, and vary which venues you pick — do not always take the first ones:\n${topVenues
           .map((v, i) => `${i + 1}. ${v.name} — ${v.category} — ${formatMiles(v.distance_miles)} away${v.website ? ` — website: ${v.website}` : ""}`)
           .join("\n")}`
       : "";
