@@ -375,7 +375,7 @@ ${!includeEating ? "IMPORTANT: The user does NOT want restaurant or dining sugge
 ${venueContext}
 
 ${topVenues.length > 0
-  ? `CRITICAL: Pick 3 different venues from the numbered list above. Use the EXACT venue name. Do NOT invent venues. Skip any venue you know has permanently closed. Do NOT suggest places from other cities. Every title MUST name the exact venue AND the city, e.g. "Lunch at Hot Chicken Takeover in ${cityLabel || "your city"}". The description must also name the venue and city — never give a generic overview like "a cozy restaurant downtown".`
+  ? `CRITICAL: Pick 3 different venues from the numbered list above, with different kinds of activities (e.g. not three museums). Use the EXACT venue name. Do NOT invent venues. Skip any venue you know has permanently closed. Do NOT suggest places from other cities. Every title MUST name the exact venue AND the city, e.g. "Lunch at Hot Chicken Takeover in ${cityLabel || "your city"}". The description must also name the venue and city — never give a generic overview like "a cozy restaurant downtown".`
   : cityLabel
     ? `CRITICAL: No live venue data is available. Suggest ACTIVITY TYPES only — never a specific business name, since you cannot verify it exists or is open. Every title and description MUST name ${cityLabel} and ONLY ${cityLabel} — never any other city, state, or region, even a nearby one. Example: "Mini golf in ${cityLabel}". Set venue_name to null for every idea.`
     : "CRITICAL: No location data. Keep suggestions generic — do NOT name specific venues."}
