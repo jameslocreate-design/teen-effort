@@ -495,7 +495,7 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
           venue_name: null, distance_miles: "", url: buildVenueSearchUrl(activity, cityLabel), fallback: true,
         }));
       } else {
-        const defaults = await Promise.all(topVenues.map(venue => enrich({ venue_name: venue.name, estimated_cost: "Check venue pricing", duration: "1-2 hours", vibe: "Relaxed" })));
+        const defaults = await Promise.all(shuffle(topVenues).map(venue => enrich({ venue_name: venue.name, estimated_cost: "Check venue pricing", duration: "1-2 hours", vibe: "Relaxed" })));
         ideas = defaults.filter(idea => idea && isSafe(idea, ignore)).slice(0, 3);
       }
     }
