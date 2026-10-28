@@ -119,7 +119,7 @@ const GOOGLE_TYPE_GROUPS: string[][] = [
   ["restaurant", "cafe", "ice_cream_shop", "bakery"],
   ["park", "garden", "hiking_area", "picnic_ground"],
   ["museum", "art_gallery", "aquarium", "zoo", "tourist_attraction"],
-  ["movie_theater", "bowling_alley", "amusement_park", "miniature_golf_course", "ice_skating_rink", "trampoline_park"],
+  ["movie_theater", "bowling_alley", "amusement_park", "miniature_golf_course", "ice_skating_rink"],
 ];
 
 async function searchGooglePlaces(
@@ -326,8 +326,10 @@ serve(async (req) => {
       console.log("User city resolved:", cityLabel ? "yes" : "no");
     }
 
-    // Pick the closest 15 to give the AI plenty of options
-    const topVenues = venues.filter(venue => validCoordinates(venue.lat, venue.lon) && withinRadius(venue.distance_miles, radiusMeters)).slice(0, 15);
+    // Pick the closest 15 to give the AI plenty of options, then shuffle so
+    // the AI doesn't keep picking the same first few on every generation.
+    const nearest = venues.filter(venue => validCoordinates(venue.lat, venue.lon) && withinRadius(venue.distance_miles, radiusMeters)).slice(0, 15);
+    const topVenues = shuffle(nearest);
     // Same-city fallback: when no live venue data is available but we know the
     // user's city, the AI suggests activity types in THAT city only — never a
     // different city — and each idea links to a Google Maps search there.
