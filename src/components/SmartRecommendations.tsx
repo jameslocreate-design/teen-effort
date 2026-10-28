@@ -155,6 +155,7 @@ const SmartRecommendations = () => {
   const generateSmart = async () => {
     if (!preferences) return;
     setLoading(true);
+    setIdeas([]);
     try {
       const filters: DateFilters = {
         cost: preferences.preferredCost !== "any" ? [preferences.preferredCost] : null,
