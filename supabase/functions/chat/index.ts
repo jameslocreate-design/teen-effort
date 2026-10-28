@@ -20,6 +20,15 @@ interface OsmVenue {
   distance_miles: number;
 }
 
+function shuffle<T>(arr: T[]): T[] {
+  const out = [...arr];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
 function haversineMiles(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 3958.8;
   const toRad = (d: number) => (d * Math.PI) / 180;
@@ -119,7 +128,7 @@ const GOOGLE_TYPE_GROUPS: string[][] = [
   ["restaurant", "cafe", "ice_cream_shop", "bakery"],
   ["park", "garden", "hiking_area", "picnic_ground"],
   ["museum", "art_gallery", "aquarium", "zoo", "tourist_attraction"],
-  ["movie_theater", "bowling_alley", "amusement_park", "miniature_golf_course", "ice_skating_rink", "trampoline_park"],
+  ["movie_theater", "bowling_alley", "amusement_park", "miniature_golf_course", "ice_skating_rink"],
 ];
 
 async function searchGooglePlaces(
@@ -326,8 +335,10 @@ serve(async (req) => {
       console.log("User city resolved:", cityLabel ? "yes" : "no");
     }
 
-    // Pick the closest 15 to give the AI plenty of options
-    const topVenues = venues.filter(venue => validCoordinates(venue.lat, venue.lon) && withinRadius(venue.distance_miles, radiusMeters)).slice(0, 15);
+    // Pick the closest 15 to give the AI plenty of options, then shuffle so
+    // the AI doesn't keep picking the same first few on every generation.
+    const nearest = venues.filter(venue => validCoordinates(venue.lat, venue.lon) && withinRadius(venue.distance_miles, radiusMeters)).slice(0, 15);
+    const topVenues = shuffle(nearest);
     // Same-city fallback: when no live venue data is available but we know the
     // user's city, the AI suggests activity types in THAT city only — never a
     // different city — and each idea links to a Google Maps search there.
@@ -338,7 +349,7 @@ serve(async (req) => {
     }
 
     const venueContext = topVenues.length > 0
-      ? `\n\nReal venues near the user (from OpenStreetMap, sorted by distance). EVERY date idea MUST be built around ONE of these EXACT venues. Do NOT invent or substitute other names:\n${topVenues
+      ? `\n\nReal venues near the user (from Google Maps, in random order). EVERY date idea MUST be built around ONE of these EXACT venues. Do NOT invent or substitute other names, and vary which venues you pick — do not always take the first ones:\n${topVenues
           .map((v, i) => `${i + 1}. ${v.name} — ${v.category} — ${formatMiles(v.distance_miles)} away${v.website ? ` — website: ${v.website}` : ""}`)
           .join("\n")}`
       : "";
@@ -364,7 +375,7 @@ ${!includeEating ? "IMPORTANT: The user does NOT want restaurant or dining sugge
 ${venueContext}
 
 ${topVenues.length > 0
-  ? `CRITICAL: Pick 3 different venues from the numbered list above. Use the EXACT venue name. Do NOT invent venues. Skip any venue you know has permanently closed. Do NOT suggest places from other cities. Every title MUST name the exact venue AND the city, e.g. "Lunch at Hot Chicken Takeover in ${cityLabel || "your city"}". The description must also name the venue and city — never give a generic overview like "a cozy restaurant downtown".`
+  ? `CRITICAL: Pick 3 different venues from the numbered list above, with different kinds of activities (e.g. not three museums). Use the EXACT venue name. Do NOT invent venues. Skip any venue you know has permanently closed. Do NOT suggest places from other cities. Every title MUST name the exact venue AND the city, e.g. "Lunch at Hot Chicken Takeover in ${cityLabel || "your city"}". The description must also name the venue and city — never give a generic overview like "a cozy restaurant downtown".`
   : cityLabel
     ? `CRITICAL: No live venue data is available. Suggest ACTIVITY TYPES only — never a specific business name, since you cannot verify it exists or is open. Every title and description MUST name ${cityLabel} and ONLY ${cityLabel} — never any other city, state, or region, even a nearby one. Example: "Mini golf in ${cityLabel}". Set venue_name to null for every idea.`
     : "CRITICAL: No location data. Keep suggestions generic — do NOT name specific venues."}
@@ -389,6 +400,7 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
         headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "google/gemini-3-flash-preview",
+          temperature: 1,
           messages: [
             { role: "system", content: `You are a date planning assistant. ${SAFETY_PROMPT} Always respond with valid JSON arrays only. No markdown formatting.` },
             { role: "user", content: prompt + extra },
@@ -469,16 +481,21 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
     // Fallback: keep only safe ideas, fill the rest with wholesome defaults. Never return failed output.
     if (ideas.length === 0) {
       if (cityFallback) {
-        // Static same-city activity ideas — no business names, only the user's city
-        const staticActivities = ["A walk in a local park", "Mini golf", "Ice cream together"];
-        ideas = staticActivities.map((activity) => ({
+        // Static same-city activity ideas — no business names, only the user's
+        // city. Rotate through a larger pool so repeat generations differ.
+        const activityPool = [
+          "A walk in a local park", "Mini golf", "Ice cream together",
+          "Bowling", "A movie night out", "A museum visit",
+          "A picnic", "A coffee or hot chocolate stop", "A scenic bike ride",
+        ];
+        ideas = shuffle(activityPool).slice(0, 3).map((activity) => ({
           title: `${activity} in ${cityLabel}`,
           description: `Search for ${activity.toLowerCase()} spots in ${cityLabel} and pick one you both like. Check current opening hours before you go.`,
           estimated_cost: "Varies", duration: "1-2 hours", vibe: "Relaxed",
           venue_name: null, distance_miles: "", url: buildVenueSearchUrl(activity, cityLabel), fallback: true,
         }));
       } else {
-        const defaults = await Promise.all(topVenues.map(venue => enrich({ venue_name: venue.name, estimated_cost: "Check venue pricing", duration: "1-2 hours", vibe: "Relaxed" })));
+        const defaults = await Promise.all(shuffle(topVenues).map(venue => enrich({ venue_name: venue.name, estimated_cost: "Check venue pricing", duration: "1-2 hours", vibe: "Relaxed" })));
         ideas = defaults.filter(idea => idea && isSafe(idea, ignore)).slice(0, 3);
       }
     }
