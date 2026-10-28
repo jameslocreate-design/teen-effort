@@ -400,6 +400,7 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
         headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "google/gemini-3-flash-preview",
+          temperature: 1,
           messages: [
             { role: "system", content: `You are a date planning assistant. ${SAFETY_PROMPT} Always respond with valid JSON arrays only. No markdown formatting.` },
             { role: "user", content: prompt + extra },
@@ -480,9 +481,14 @@ For each idea, respond ONLY with valid JSON — no markdown, no code fences, no 
     // Fallback: keep only safe ideas, fill the rest with wholesome defaults. Never return failed output.
     if (ideas.length === 0) {
       if (cityFallback) {
-        // Static same-city activity ideas — no business names, only the user's city
-        const staticActivities = ["A walk in a local park", "Mini golf", "Ice cream together"];
-        ideas = staticActivities.map((activity) => ({
+        // Static same-city activity ideas — no business names, only the user's
+        // city. Rotate through a larger pool so repeat generations differ.
+        const activityPool = [
+          "A walk in a local park", "Mini golf", "Ice cream together",
+          "Bowling", "A movie night out", "A museum visit",
+          "A picnic", "A coffee or hot chocolate stop", "A scenic bike ride",
+        ];
+        ideas = shuffle(activityPool).slice(0, 3).map((activity) => ({
           title: `${activity} in ${cityLabel}`,
           description: `Search for ${activity.toLowerCase()} spots in ${cityLabel} and pick one you both like. Check current opening hours before you go.`,
           estimated_cost: "Varies", duration: "1-2 hours", vibe: "Relaxed",
