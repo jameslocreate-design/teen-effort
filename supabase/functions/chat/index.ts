@@ -337,8 +337,14 @@ serve(async (req) => {
 
     // Pick the closest 15 to give the AI plenty of options, then shuffle so
     // the AI doesn't keep picking the same first few on every generation.
-    const nearest = venues.filter(venue => validCoordinates(venue.lat, venue.lon) && withinRadius(venue.distance_miles, radiusMeters)).slice(0, 15);
-    const topVenues = shuffle(nearest);
+    // Sample from EVERY venue in range (not just the closest), and skip places
+    // this device was recently shown so the same spot doesn't repeat each time.
+    const recentRaw: unknown[] = Array.isArray(body.recentVenues) ? body.recentVenues.slice(0, 30) : [];
+    const recent = new Set(recentRaw.filter((v): v is string => typeof v === "string").map(v => v.trim().toLowerCase().slice(0, 120)));
+    const inRange = venues.filter(venue => validCoordinates(venue.lat, venue.lon) && withinRadius(venue.distance_miles, radiusMeters));
+    const fresh = inRange.filter(venue => !recent.has(venue.name.trim().toLowerCase()));
+    const pool = fresh.length >= 3 ? fresh : inRange;
+    const topVenues = shuffle(pool).slice(0, 10);
     // Same-city fallback: when no live venue data is available but we know the
     // user's city, the AI suggests activity types in THAT city only — never a
     // different city — and each idea links to a Google Maps search there.

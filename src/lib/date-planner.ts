@@ -75,13 +75,18 @@ export async function generateDateIdeas(filters: DateFilters): Promise<DateIdea[
     } catch { /* server will try too */ }
   }
 
+  const RECENT_KEY = "te_recent_venues";
+  let recentVenues: string[] = [];
+  try { recentVenues = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]"); } catch { /* ignore */ }
+  if (!Array.isArray(recentVenues)) recentVenues = [];
+
   const resp = await fetch(API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ ...filters, includeEating, city }),
+    body: JSON.stringify({ ...filters, includeEating, city, recentVenues }),
   });
 
   if (!resp.ok) {
@@ -93,5 +98,10 @@ export async function generateDateIdeas(filters: DateFilters): Promise<DateIdea[
   }
 
   const data = await resp.json();
-  return data.ideas || [];
+  const ideas: DateIdea[] = data.ideas || [];
+  try {
+    const names = ideas.map((i) => (i as { venue_name?: string }).venue_name).filter((n): n is string => !!n);
+    localStorage.setItem(RECENT_KEY, JSON.stringify([...names, ...recentVenues.filter((n) => !names.includes(n))].slice(0, 15)));
+  } catch { /* ignore */ }
+  return ideas;
 }
