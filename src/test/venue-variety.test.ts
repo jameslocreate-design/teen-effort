@@ -9,7 +9,7 @@ describe("date suggestion variety", () => {
   });
   it("samples beyond the closest fifteen venues", () => {
     const venues = Array.from({ length: 25 }, (_, index) => ({ name: `Place ${index}` }));
-    expect(selectVariedVenues(venues, [], () => 0).map(venue => venue.name)).toContain("Place 24");
+    expect(selectVariedVenues(venues, [], () => 0.04).map(venue => venue.name)).toContain("Place 24");
   });
   it("only repeats enough oldest places to fill three suggestions", () => {
     const venues = ["COSI", "Park", "Cinema", "Bowling"].map(name => ({ name }));
