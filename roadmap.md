@@ -1,6 +1,6 @@
 # Date suggestion variety
-- [ ] Finish and test recent-venue exclusion across the shared generation flow.
-- [ ] Deploy the updated date generation function.
+- [x] Finish and test recent-venue exclusion across the shared generation flow (19 targeted tests passed).
+- [x] Deploy the updated date generation function.
 - [ ] Verify consecutive Columbus generations on the authorized deployed app — Google Maps live checks are unavailable in the agent sandbox.
 
 # Public page access
