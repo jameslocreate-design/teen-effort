@@ -45,6 +45,7 @@ import { SubscriptionStatusBanner } from "@/components/SubscriptionStatusBanner"
 import { toast } from "sonner";
 import { isIOS } from "@/lib/native";
 import AuthPage from "@/pages/AuthPage";
+import { isAppleUser, needsNameStep, APPLE_FALLBACK_NAME } from "@/lib/apple-profile";
 
 type Tab =
   | "planner" | "roulette" | "gifts" | "calendar"
@@ -135,9 +136,10 @@ const AppShell = () => {
       .eq("user_id", user.id)
       .single()
       .then(async ({ data }) => {
-        const isComplete = !!data?.name && !!data?.birthday;
+        const provider = isAppleUser(user) ? "apple" : user.app_metadata.provider;
+        const isComplete = !needsNameStep(!!data?.name?.trim(), provider) && !!data?.birthday;
         setProfileComplete(isComplete);
-        if (data?.name) setProfileName(data.name);
+        setProfileName(data?.name || (provider === "apple" ? APPLE_FALLBACK_NAME : ""));
         if ((data as any)?.avatar_url) {
           setProfileAvatar(await signedUrl("avatars", (data as any).avatar_url));
         }
@@ -199,7 +201,7 @@ const AppShell = () => {
 
   if (!user) return <AuthPage />;
   if (profileComplete === null) return null;
-  if (!profileComplete) return <ProfileSetup onComplete={() => setProfileComplete(true)} />;
+  if (!profileComplete) return <ProfileSetup onboarding onComplete={() => setProfileComplete(true)} />;
 
   if (needsPartnerStep) {
     const finishPartnerStep = () => {

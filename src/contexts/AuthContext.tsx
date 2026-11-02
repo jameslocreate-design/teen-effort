@@ -4,6 +4,8 @@ import type { User } from "@supabase/supabase-js";
 import { registerPush } from "@/lib/push";
 import { syncDateReminders, initReminderTaps, startPartnerActivityWatch, stopPartnerActivityWatch } from "@/lib/reminders";
 import { initPurchases, logOutPurchases } from "@/lib/revenuecat";
+import { isAppleUser, waitForAppleHandoff } from "@/lib/apple-profile";
+import { persistAppleProfile } from "@/lib/apple-profile-persistence";
 
 
 interface AuthContextType {
@@ -21,6 +23,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let revision = 0;
     const handleSession = (session: any) => {
       setUser(session?.user ?? null);
       setLoading(false);
@@ -42,8 +45,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => handleSession(session));
-    supabase.auth.getSession().then(({ data: { session } }) => handleSession(session));
+    const prepareSession = (session: any) => {
+      const current = ++revision;
+      if (!session?.user) { handleSession(null); return; }
+      // Run outside the auth callback lock; no onboarding/navigation until names are saved.
+      setLoading(true);
+      queueMicrotask(async () => {
+        try {
+          await waitForAppleHandoff();
+          const { data, error } = await supabase.auth.getUser();
+          if (error || !data.user) { if (current === revision) handleSession(null); return; }
+          let verifiedUser = data.user;
+          if (isAppleUser(verifiedUser)) verifiedUser = await persistAppleProfile(verifiedUser);
+          if (current === revision) handleSession({ ...session, user: verifiedUser });
+        } catch {
+          if (current === revision) { await supabase.auth.signOut(); handleSession(null); }
+        }
+      });
+    };
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event !== "USER_UPDATED") prepareSession(session);
+    });
+    supabase.auth.getSession().then(({ data: { session } }) => prepareSession(session));
     return () => {
       subscription.unsubscribe();
       stopPartnerActivityWatch();

@@ -1,4 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
+import { beginAppleHandoff } from "./apple-profile";
+import { persistAppleProfile } from "./apple-profile-persistence";
 
 const sha256Hex = async (input: string) => {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(input));
@@ -10,7 +12,9 @@ const sha256Hex = async (input: string) => {
  * the backend receives the raw nonce with the identity token, so it can verify.
  * No web OAuth redirect is involved.
  */
-export async function nativeAppleSignIn(): Promise<{ cancelled?: boolean }> {
+export async function nativeAppleSignIn(): Promise<{ cancelled?: boolean; tokenStored?: boolean }> {
+  const finishHandoff = beginAppleHandoff();
+  try {
   const { SignInWithApple } = await import("@capacitor-community/apple-sign-in");
   const rawNonce = crypto.randomUUID() + crypto.randomUUID();
   const hashedNonce = await sha256Hex(rawNonce);
@@ -28,7 +32,20 @@ export async function nativeAppleSignIn(): Promise<{ cancelled?: boolean }> {
   }
   const token = res.response.identityToken;
   if (!token) throw new Error("Apple did not return an identity token");
-  const { error } = await supabase.auth.signInWithIdToken({ provider: "apple", token, nonce: rawNonce });
+  const { data, error } = await supabase.auth.signInWithIdToken({ provider: "apple", token, nonce: rawNonce });
   if (error) throw error;
-  return {};
+  if (!data.user) throw new Error("Apple sign-in did not create a session");
+  try {
+    await persistAppleProfile(data.user, res.response.givenName, res.response.familyName);
+  } catch (error) {
+    await supabase.auth.signOut();
+    throw error;
+  }
+  const { error: storeError } = await supabase.functions.invoke("apple-store-token", {
+    body: { authorizationCode: res.response.authorizationCode },
+  });
+  return { tokenStored: !storeError };
+  } finally {
+    finishHandoff();
+  }
 }
