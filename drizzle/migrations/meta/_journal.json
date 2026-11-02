@@ -43,6 +43,13 @@
       "when": 1791229252788,
       "tag": "0005_teen_precise_location_default",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793646320584,
+      "tag": "0006_apple_authorization_tokens_and_display_name",
+      "breakpoints": true
     }
   ]
 }

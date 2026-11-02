@@ -88,11 +88,13 @@ const AuthPage = () => {
       if (isNative()) {
         // Native build: Apple sheet → identityToken + nonce → signInWithIdToken (no web redirect).
         const { nativeAppleSignIn } = await import("@/lib/appleSignIn");
-        await nativeAppleSignIn();
+        const result = await nativeAppleSignIn();
+        if (!result.cancelled && !result.tokenStored) toast.warning("Signed in. Apple account disconnection needs setup before account deletion.");
         return;
       }
       const result = await lovable.auth.signInWithOAuth("apple", {
         redirect_uri: `${window.location.origin}/app`,
+        extraParams: { scope: "email name" },
       });
       if (result.error) {
         toast.error("Couldn't sign in with Apple. Please try again.");
@@ -392,7 +394,8 @@ const AuthPage = () => {
               {loading ? "Sending…" : "Send reset code"}
               <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
-            <button
+            <Button
+              variant="ghost"
               type="button"
               onClick={() => { setView("auth"); setResetSent(false); }}
               className="w-full text-sm text-muted-foreground hover:text-foreground"
@@ -553,16 +556,16 @@ const AuthPage = () => {
               type="button"
               disabled={appleLoading}
               onClick={handleAppleSignIn}
-              aria-label={isSignUp ? "Sign up with Apple" : "Sign in with Apple"}
-              className={`block w-full disabled:opacity-60 ${nativeApp ? "h-10" : "h-11"}`}
+              aria-label="Sign in with Apple"
+              className="block w-full h-11 p-0 disabled:opacity-60"
             >
               <img
-                src={`https://appleid.cdn-apple.com/appleid/button?height=44&width=375&type=${isSignUp ? "sign-up" : "sign-in"}&color=white&border=false&border_radius=12&scale=2&locale=en_US`}
-                alt={isSignUp ? "Sign up with Apple" : "Sign in with Apple"}
-                className={`${nativeApp ? "h-10" : "h-11"} w-full object-contain`}
+                src="https://appleid.cdn-apple.com/appleid/button?height=44&width=375&type=sign-in&color=white&border=false&border_radius=6&scale=2&locale=en_US"
+                alt="Sign in with Apple"
+                className="h-11 w-full object-contain"
                 draggable={false}
               />
-            </button>
+            </Button>
             <Button
               type="button"
               variant="outline"

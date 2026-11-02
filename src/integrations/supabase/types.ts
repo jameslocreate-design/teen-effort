@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      apple_authorization_tokens: {
+        Row: {
+          apple_sub: string
+          client_id: string
+          refresh_token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          apple_sub: string
+          client_id: string
+          refresh_token: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          apple_sub?: string
+          client_id?: string
+          refresh_token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       appreciation_prompts: {
         Row: {
           created_at: string
@@ -525,6 +549,7 @@ export type Database = {
           created_at: string
           deactivated_at: string | null
           descriptors: string[] | null
+          display_name: string | null
           gender: string | null
           home_city: string | null
           home_lat: number | null
@@ -545,6 +570,7 @@ export type Database = {
           created_at?: string
           deactivated_at?: string | null
           descriptors?: string[] | null
+          display_name?: string | null
           gender?: string | null
           home_city?: string | null
           home_lat?: number | null
@@ -565,6 +591,7 @@ export type Database = {
           created_at?: string
           deactivated_at?: string | null
           descriptors?: string[] | null
+          display_name?: string | null
           gender?: string | null
           home_city?: string | null
           home_lat?: number | null

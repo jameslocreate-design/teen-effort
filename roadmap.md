@@ -1,3 +1,9 @@
+# Apple sign-in review compliance
+- [ ] Preserve first-authorization names before onboarding and skip required Apple name entry.
+- [ ] Store Apple tokens privately and revoke before account deletion.
+- [ ] Audit official button, identity handling and private email relay; provide final code report.
+- [ ] Verify Apple sign-in/deletion on device — requires Apple credentials and user confirmation before testing.
+
 # Date suggestion variety
 - [x] Finish and test recent-venue exclusion across the shared generation flow (19 targeted tests passed).
 - [x] Deploy the updated date generation function.

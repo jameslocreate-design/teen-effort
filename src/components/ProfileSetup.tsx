@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { User, Save, Camera } from "lucide-react";
 import { signedUrl } from "@/lib/storage";
 import { pickPhotoNative } from "@/lib/camera";
+import { isAppleUser, APPLE_FALLBACK_NAME } from "@/lib/apple-profile";
 
 const loveLanguageOptions = [
   { value: "Words of Affirmation", emoji: "💬" },
@@ -16,8 +17,9 @@ const loveLanguageOptions = [
   { value: "Physical Touch", emoji: "🫂" },
 ];
 
-const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
+const ProfileSetup = ({ onComplete, onboarding = false }: { onComplete: () => void; onboarding?: boolean }) => {
   const { user } = useAuth();
+  const appleUser = isAppleUser(user);
   const [name, setName] = useState("");
   const [birthday, setBirthday] = useState("");
   const [birthdayLocked, setBirthdayLocked] = useState(false);
@@ -116,7 +118,8 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
   const genderOptions = ["Male", "Female", "Non-binary", "Prefer not to say"];
 
   const handleSave = async () => {
-    if (!user || !name.trim()) {
+    if (!user) return;
+    if (!appleUser && !name.trim()) {
       toast.error("Please enter your name");
       return;
     }
@@ -141,7 +144,8 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
     }
     setLoading(true);
     const payload: Record<string, unknown> = {
-      name: name.trim(),
+      name: name.trim() || APPLE_FALLBACK_NAME,
+      display_name: name.trim() || APPLE_FALLBACK_NAME,
       gender,
       descriptors,
       love_language: loveLanguages.length > 0 ? loveLanguages.join(", ") : null,
@@ -209,7 +213,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
         </div>
 
         <div className="space-y-4">
-          <div>
+          {(!onboarding || !appleUser) && <div>
             <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 block">Name</label>
             <Input
               value={name}
@@ -217,7 +221,7 @@ const ProfileSetup = ({ onComplete }: { onComplete: () => void }) => {
               placeholder="Your name"
               className="bg-secondary/50 border-border"
             />
-          </div>
+          </div>}
 
           <div>
             <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 block">Birthday</label>
