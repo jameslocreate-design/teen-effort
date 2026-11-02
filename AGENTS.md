@@ -3,6 +3,7 @@
 - Keep public web pages outside AuthProvider/AppShell; /app owns account entry and native / keeps the installed-app flow, so public browsing never requires birthday verification.
 
 - Smart Recommendations reuse DateResults and DatePickerDialog and save to the existing date tables so suggested dates follow the same saved-list and shared-calendar flows as Date Planner.
+- Date generators share account-scoped device history and server-side venue selection; exclude recent picks before AI selection and only reuse the oldest picks when fresh venues cannot fill a set, so variety is not left to the model.
 
 - Build generated venue links through the server-side venue-links helper using venue names and locality, never activity titles or user coordinates, because prose searches can return no results.
 
