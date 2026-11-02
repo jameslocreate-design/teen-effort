@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getCurrentCoords } from "@/lib/geo";
+import { recentVenueNames } from "../../supabase/functions/_shared/venue-variety";
 
 export interface DateIdea {
   title: string;
@@ -13,6 +14,7 @@ export interface DateIdea {
   url?: string;
   /** True when no live venue data was available — idea is an activity type in the user's own city, not a verified place. */
   fallback?: boolean;
+  venue_name?: string | null;
 }
 
 export interface DateFilters {
@@ -75,10 +77,9 @@ export async function generateDateIdeas(filters: DateFilters): Promise<DateIdea[
     } catch { /* server will try too */ }
   }
 
-  const RECENT_KEY = "te_recent_venues";
+  const RECENT_KEY = `te_recent_venues:${session?.user.id ?? "signed-out"}`;
   let recentVenues: string[] = [];
-  try { recentVenues = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]"); } catch { /* ignore */ }
-  if (!Array.isArray(recentVenues)) recentVenues = [];
+  try { recentVenues = recentVenueNames(JSON.parse(localStorage.getItem(RECENT_KEY) || "[]")); } catch { /* ignore */ }
 
   const resp = await fetch(API_URL, {
     method: "POST",
@@ -100,8 +101,8 @@ export async function generateDateIdeas(filters: DateFilters): Promise<DateIdea[
   const data = await resp.json();
   const ideas: DateIdea[] = data.ideas || [];
   try {
-    const names = ideas.map((i) => (i as { venue_name?: string }).venue_name).filter((n): n is string => !!n);
-    localStorage.setItem(RECENT_KEY, JSON.stringify([...names, ...recentVenues.filter((n) => !names.includes(n))].slice(0, 15)));
+    const names = ideas.map((idea) => idea.venue_name).filter((name): name is string => typeof name === "string");
+    localStorage.setItem(RECENT_KEY, JSON.stringify(recentVenueNames([...names, ...recentVenues])));
   } catch { /* ignore */ }
   return ideas;
 }

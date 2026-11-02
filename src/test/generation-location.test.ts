@@ -8,6 +8,7 @@ vi.mock("@/integrations/supabase/client", () => ({ supabase: {
 import { generateDateIdeas, type DateFilters } from "@/lib/date-planner";
 const filters: DateFilters = { cost: null, location: null, activity: null, distance: null, timeRange: null, cuisine: null, latitude: 39.1031, longitude: -84.512, funActivity: null, mood: null };
 beforeEach(() => {
+  localStorage.clear();
   Object.defineProperty(AbortSignal, "timeout", { configurable: true, value: () => new AbortController().signal });
   mocks.precision = "zip";
   mocks.coords.mockReset().mockResolvedValue({ latitude: 40.08123, longitude: -82.80876 });
@@ -31,5 +32,16 @@ describe("fresh privacy-aware date generation", () => {
     mocks.coords.mockRejectedValue(new Error("denied"));
     await expect(generateDateIdeas(filters)).rejects.toThrow("Couldn't refresh your location");
     expect(mocks.fetch).not.toHaveBeenCalled();
+  });
+  it("sends previous suggestions on the next generation for this account", async () => {
+    mocks.fetch.mockResolvedValue({ ok: true, json: async () => ({ address: { city: "Columbus", state: "Ohio" }, ideas: [{ venue_name: "COSI" }] }) });
+    await generateDateIdeas(filters);
+    await generateDateIdeas(filters);
+    expect(JSON.parse(mocks.fetch.mock.calls[3][1].body).recentVenues).toEqual(["cosi"]);
+  });
+  it("does not use another account's recent suggestions", async () => {
+    localStorage.setItem("te_recent_venues:other-user", JSON.stringify(["COSI"]));
+    await generateDateIdeas(filters);
+    expect(JSON.parse(mocks.fetch.mock.calls[1][1].body).recentVenues).toEqual([]);
   });
 });

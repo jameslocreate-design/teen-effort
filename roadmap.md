@@ -1,3 +1,8 @@
+# Date suggestion variety
+- [x] Finish and test recent-venue exclusion across the shared generation flow (19 targeted tests passed).
+- [x] Deploy the updated date generation function.
+- [ ] Verify consecutive Columbus generations on the authorized deployed app — Google Maps live checks are unavailable in the agent sandbox.
+
 # Public page access
 - [x] Separate the public web homepage from signup and app entry, preserving native entry.
 - [x] Keep birthday verification in signup and app entry, and verify public pages remain accessible.
@@ -13,4 +18,4 @@
 - [x] Test shared widget data and checklist timing; document the iPhone rebuild.
 - [ ] Verify physical iPhone widget rendering — requires the user's Xcode rebuild/device.
 - [ ] Verify a real planned-date checklist end-to-end — requesting user's account has no accepted partner link/calendar dates.
-- [ ] Verify successful live nearby suggestions — map lookup currently returns no verified places; rejection was verified.
+- [ ] Verify successful live nearby suggestions — Google Maps live verification requires an authorized deployed origin.
