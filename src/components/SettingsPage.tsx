@@ -50,6 +50,7 @@ const SettingsPage = ({ onBack }: { onBack: () => void }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changingPw, setChangingPw] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const [homeCity, setHomeCity] = useState<string | null>(null);
   const loadHomeCity = () => {
@@ -364,19 +365,27 @@ const SettingsPage = ({ onBack }: { onBack: () => void }) => {
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction
+                  disabled={deleting}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   onClick={async () => {
+                    setDeleting(true);
                     try {
-                      const { error } = await supabase.functions.invoke("delete-account");
-                      if (error) throw error;
+                      const { data, error } = await supabase.functions.invoke("delete-account");
+                      if (error) {
+                        const response = await error.context?.json?.().catch(() => null);
+                        throw new Error(response?.error || "Failed to delete account");
+                      }
+                      if (!data?.success) throw new Error("Account deletion did not finish");
                       toast.success("Your account has been deleted.");
                       await supabase.auth.signOut();
                     } catch (e: any) {
                       toast.error(e?.message || "Failed to delete account");
+                    } finally {
+                      setDeleting(false);
                     }
                   }}
                 >
-                  Delete forever
+                  {deleting ? "Deleting..." : "Delete forever"}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
