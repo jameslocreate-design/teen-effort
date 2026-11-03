@@ -20,6 +20,7 @@ const loveLanguageOptions = [
 const ProfileSetup = ({ onComplete, onboarding = false }: { onComplete: () => void; onboarding?: boolean }) => {
   const { user } = useAuth();
   const appleUser = isAppleUser(user);
+  const appleOnboarding = onboarding && appleUser;
   const [name, setName] = useState("");
   const [birthday, setBirthday] = useState("");
   const [birthdayLocked, setBirthdayLocked] = useState(false);
@@ -49,7 +50,7 @@ const ProfileSetup = ({ onComplete, onboarding = false }: { onComplete: () => vo
       .from("profiles")
       .select("name, birthday, gender, descriptors, love_language, avatar_url")
       .eq("user_id", user.id)
-      .single()
+      .maybeSingle()
       .then(({ data }) => {
         if (data) {
           if (data.name) setName(data.name);
@@ -143,7 +144,7 @@ const ProfileSetup = ({ onComplete, onboarding = false }: { onComplete: () => vo
       }
     }
     setLoading(true);
-    const payload: Record<string, unknown> = {
+    const payload: Record<string, unknown> = appleOnboarding ? {} : {
       name: name.trim() || APPLE_FALLBACK_NAME,
       display_name: name.trim() || APPLE_FALLBACK_NAME,
       gender,
@@ -174,8 +175,8 @@ const ProfileSetup = ({ onComplete, onboarding = false }: { onComplete: () => vo
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center space-y-3">
-          {/* Avatar upload */}
-          <div className="relative mx-auto w-fit">
+          {/* Apple onboarding asks only for the required birthday. */}
+          {!appleOnboarding && <div className="relative mx-auto w-fit">
             <button
               onClick={async () => {
                 const native = await pickPhotoNative();
@@ -207,7 +208,7 @@ const ProfileSetup = ({ onComplete, onboarding = false }: { onComplete: () => vo
               className="hidden"
             />
             <p className="text-[10px] text-muted-foreground mt-2">Tap to add photo</p>
-          </div>
+          </div>}
           <h1 className="text-2xl font-bold text-foreground">Set Up Your Profile</h1>
           <p className="text-sm text-muted-foreground">Tell us a bit about yourself</p>
         </div>
@@ -241,6 +242,7 @@ const ProfileSetup = ({ onComplete, onboarding = false }: { onComplete: () => vo
             )}
           </div>
 
+          {!appleOnboarding && <>
           <div>
             <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 block">Gender</label>
             <div className="flex flex-wrap gap-2">
@@ -307,6 +309,7 @@ const ProfileSetup = ({ onComplete, onboarding = false }: { onComplete: () => vo
             </div>
           </div>
 
+          </>}
           <Button onClick={handleSave} disabled={loading} className="w-full h-11 rounded-xl mt-2">
             <Save className="h-4 w-4" />
             {loading ? "Saving..." : "Save & Continue"}

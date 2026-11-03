@@ -35,16 +35,19 @@ export async function nativeAppleSignIn(): Promise<{ cancelled?: boolean; tokenS
   const { data, error } = await supabase.auth.signInWithIdToken({ provider: "apple", token, nonce: rawNonce });
   if (error) throw error;
   if (!data.user) throw new Error("Apple sign-in did not create a session");
-  try {
-    await persistAppleProfile(data.user, res.response.givenName, res.response.familyName);
-  } catch (error) {
-    await supabase.auth.signOut();
-    throw error;
+  await persistAppleProfile(data.user, res.response.givenName, res.response.familyName);
+  const authorizationCode = res.response.authorizationCode;
+  if (!authorizationCode) return { tokenStored: false };
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const { error: storeError } = await supabase.functions.invoke("apple-store-token", {
+        body: { authorizationCode },
+      });
+      if (!storeError) return { tokenStored: true };
+      console.error("Apple token setup failed", storeError);
+    } catch (error) { console.error("Apple token setup failed", error); }
   }
-  const { error: storeError } = await supabase.functions.invoke("apple-store-token", {
-    body: { authorizationCode: res.response.authorizationCode },
-  });
-  return { tokenStored: !storeError };
+  return { tokenStored: false };
   } finally {
     finishHandoff();
   }

@@ -5,7 +5,7 @@ import ProfileSetup from "@/components/ProfileSetup";
 const mocks = vi.hoisted(() => ({ update: vi.fn(), error: vi.fn() }));
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: { id: "test-user" } }) }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { from: () => ({
-  select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null }) }) }),
+  select: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve({ data: null }) }) }),
   update: mocks.update,
 }) } }));
 vi.mock("@/lib/storage", () => ({ signedUrl: vi.fn() }));
