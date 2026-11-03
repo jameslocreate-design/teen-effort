@@ -21,7 +21,7 @@ describe("Apple review rules", () => {
     expect(appleNames(user({ full_name: "James Lo", given_name: "James", family_name: "Lo" })).full_name).toBe("James Lo");
   });
   it("recognizes an Apple identity on a linked account", () => {
-    expect(isAppleUser({ app_metadata: { provider: "email" }, identities: [{ provider: "apple" } as User["identities"][number]] })).toBe(true);
+    expect(isAppleUser({ app_metadata: { provider: "email" }, identities: [{ provider: "apple" } as NonNullable<User["identities"]>[number]] })).toBe(true);
   });
   it("holds session publication until first-name persistence finishes", async () => {
     const finish = beginAppleHandoff();

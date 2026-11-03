@@ -1,7 +1,8 @@
 # Apple sign-in review compliance
-- [ ] Preserve first-authorization names before onboarding and skip required Apple name entry.
-- [ ] Store Apple tokens privately and revoke before account deletion.
-- [ ] Audit official button, identity handling and private email relay; provide final code report.
+- [x] Preserve first-authorization names before onboarding and skip required Apple name entry (9 local rule tests passed).
+- [x] Implement and deploy private native Apple token storage and revoke-before-deletion flow.
+- [x] Audit official button, identity handling and private email relay; provide final code report.
+- [ ] Complete web-only Apple account deletion — managed web OAuth does not expose authorizationCode; native credential flow cannot revoke that grant.
 - [ ] Verify Apple sign-in/deletion on device — requires Apple credentials and user confirmation before testing.
 
 # Date suggestion variety
