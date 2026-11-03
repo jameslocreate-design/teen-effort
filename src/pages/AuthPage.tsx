@@ -401,7 +401,7 @@ const AuthPage = () => {
               className="w-full text-sm text-muted-foreground hover:text-foreground"
             >
               ← Back to sign in
-            </button>
+            </Button>
           </form>
         )}
 
@@ -552,7 +552,8 @@ const AuthPage = () => {
               <div className="h-px flex-1 bg-border" />
             </div>
             {/* Apple's official, unmodified Sign in with Apple artwork */}
-            <button
+            <Button
+              variant="ghost"
               type="button"
               disabled={appleLoading}
               onClick={handleAppleSignIn}
