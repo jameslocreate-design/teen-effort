@@ -5,7 +5,7 @@ import { registerPush } from "@/lib/push";
 import { syncDateReminders, initReminderTaps, startPartnerActivityWatch, stopPartnerActivityWatch } from "@/lib/reminders";
 import { initPurchases, logOutPurchases } from "@/lib/revenuecat";
 import { isAppleUser, waitForAppleHandoff } from "@/lib/apple-profile";
-import { persistAppleProfile } from "@/lib/apple-profile-persistence";
+import { hasPendingAppleProfile, persistAppleProfile } from "@/lib/apple-profile-persistence";
 
 
 interface AuthContextType {
@@ -24,6 +24,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     let revision = 0;
+    let disposed = false;
     const handleSession = (session: any) => {
       setUser(session?.user ?? null);
       setLoading(false);
@@ -48,26 +49,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const prepareSession = (session: any) => {
       const current = ++revision;
       if (!session?.user) { handleSession(null); return; }
-      // Run outside the auth callback lock; no onboarding/navigation until names are saved.
+      // Schedule a new task outside the auth callback lock (signInWithIdToken must return).
       setLoading(true);
-      queueMicrotask(async () => {
+      setTimeout(async () => {
         try {
           await waitForAppleHandoff();
+          if (disposed || current !== revision) return;
           const { data, error } = await supabase.auth.getUser();
-          if (error || !data.user) { if (current === revision) handleSession(null); return; }
+          if (error) throw error;
+          if (!data.user) { if (!disposed && current === revision) handleSession(null); return; }
           let verifiedUser = data.user;
           if (isAppleUser(verifiedUser)) verifiedUser = await persistAppleProfile(verifiedUser);
-          if (current === revision) handleSession({ ...session, user: verifiedUser });
-        } catch {
-          if (current === revision) { await supabase.auth.signOut(); handleSession(null); }
+          if (!disposed && current === revision) handleSession({ ...session, user: verifiedUser });
+        } catch (error) {
+          console.error("Session preparation failed; preserving signed-in session", error);
+          if (!disposed && current === revision) handleSession(session);
         }
-      });
+      }, 0);
     };
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Ignore our metadata update to avoid a loop; retry pending names on later auth changes.
       if (event !== "USER_UPDATED") prepareSession(session);
+      else if (session?.user && hasPendingAppleProfile(session.user.id)) {
+        setTimeout(() => { if (!disposed) prepareSession(session); }, 0);
+      }
     });
     supabase.auth.getSession().then(({ data: { session } }) => prepareSession(session));
     return () => {
+      disposed = true;
+      revision += 1;
       subscription.unsubscribe();
       stopPartnerActivityWatch();
     };

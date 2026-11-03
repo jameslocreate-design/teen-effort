@@ -1,5 +1,5 @@
 # Project Architecture Rules
-- Hold Apple auth hydration until first-authorization names are persisted; use the shared Apple profile helpers for onboarding and retain profiles.name/display_name compatibility so name collection is never required for Apple users.
+- Defer Apple auth hydration outside the auth callback until first-name persistence is attempted; keep account-scoped pending names for retries without signing out, and retain profiles.name/display_name compatibility so Apple onboarding asks only for birthday.
 - Native Apple refresh tokens are service-role-only and bound to a verified Apple subject; revoke before destructive deletion and retain the token until cleanup succeeds so failures can be retried without losing revocation credentials.
 
 - Keep public web pages outside AuthProvider/AppShell; /app owns account entry and native / keeps the installed-app flow, so public browsing never requires birthday verification.

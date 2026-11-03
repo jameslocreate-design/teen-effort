@@ -1,4 +1,6 @@
 # Apple sign-in review compliance
+- [ ] Finish Apple-only onboarding, resilient profile persistence, deferred hydration and token invocation retries; verify targeted tests and provide full requested code.
+- [ ] Requested Apple token foreign key to auth.users cannot be added under managed-schema rules (only profiles/user_roles may reference auth.users); retain existing revoke-first cleanup.
 - [x] Preserve first-authorization names before onboarding and skip required Apple name entry (9 local rule tests passed).
 - [x] Implement and deploy private native Apple token storage and revoke-before-deletion flow.
 - [x] Audit official button, identity handling and private email relay; provide final code report.
