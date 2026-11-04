@@ -29,7 +29,7 @@ function storePending(id: string, value: PendingName) {
 async function saveProfile(user: User, pending: PendingName): Promise<User> {
   const { names, suppliedName } = pending;
   // Keep the first-authorization name available even if Cloud is temporarily unavailable.
-  let updatedUser = { ...user, user_metadata: { ...user.user_metadata, ...names } };
+  let updatedUser: User = { ...user, user_metadata: { ...user.user_metadata, ...names } };
   storePending(user.id, pending);
   try {
     if (Object.entries(names).some(([key, value]) => user.user_metadata[key] !== value)) {
@@ -73,8 +73,8 @@ export async function persistAppleProfile(user: User, givenName?: string | null,
   const pending = suppliedName ? { names: appleNames(user, givenName, familyName), suppliedName } : readPending(user.id) ?? { names: appleNames(user), suppliedName: false };
   const active = activeSaves.get(user.id);
   if (active) {
-    await active;
-    if (!suppliedName) return persistAppleProfile(user, givenName, familyName);
+    const savedUser = await active;
+    if (!suppliedName) return savedUser;
   }
   const task = saveProfile(user, pending);
   activeSaves.set(user.id, task);
