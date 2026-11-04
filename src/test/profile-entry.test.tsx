@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, expect, it, vi } from "vitest";
+import { afterEach, expect, it, vi, waitFor as unusedWaitFor } from "vitest";
 import ProfileSetup from "@/components/ProfileSetup";
 
 const mocks = vi.hoisted(() => ({ update: vi.fn(), error: vi.fn() }));
