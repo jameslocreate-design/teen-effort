@@ -171,7 +171,7 @@ const ProfileSetup = ({ onComplete, onboarding = false }: { onComplete: () => vo
 
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+    <div className="min-h-screen overflow-x-hidden overscroll-none bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center space-y-3">
           {/* Apple onboarding asks only for the required birthday. */}
