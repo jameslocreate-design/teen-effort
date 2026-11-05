@@ -170,12 +170,9 @@ const AuthPage = () => {
   }, [resetResendIn]);
 
   const verifyAge = (dobValue: string): boolean => {
-    const lockUntil = Number(localStorage.getItem("age-gate-lock") || 0);
-    if (lockUntil > Date.now()) { toast.error("You must be at least 13 years old to use this app."); return false; }
     const age = calcAge(dobValue);
     if (age < 0) { toast.error("Please enter a valid date of birth"); return false; }
     if (age < 13) {
-      localStorage.setItem("age-gate-lock", String(Date.now() + 24 * 60 * 60 * 1000));
       toast.error("You must be at least 13 years old to use this app.");
       return false;
     }
@@ -316,7 +313,7 @@ const AuthPage = () => {
   };
 
   return (
-    <div className={`fixed inset-0 overflow-y-auto overscroll-none bg-background flex justify-center px-4 safe-area-top ${nativeApp ? "items-start" : "items-center"}`}>
+    <div className={`fixed inset-0 overflow-y-auto overflow-x-hidden overscroll-none touch-pan-y bg-background flex justify-center px-4 safe-area-top ${nativeApp ? "items-start" : "items-center"}`}>
       <div className={`w-full max-w-sm max-h-full py-2 ${nativeApp ? "space-y-2" : "space-y-4"}`}>
         <div className={`text-center ${nativeApp ? "space-y-0.5" : "space-y-2"}`}>
           <div className={`mx-auto rounded-xl bg-primary/15 flex items-center justify-center glow-md ${nativeApp ? "h-9 w-9" : "h-12 w-12"}`}>
